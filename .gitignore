@@ -1,0 +1,6 @@
+.pytest_cache
+__pycache__
+dist
+.coverage
+
+tests/test-notebooks/test-output

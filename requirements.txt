@@ -1,0 +1,12 @@
+nbformat
+nbconvert
+nbclient
+ipykernel
+tabulate
+black
+bs4
+# for grading tests
+pandas
+numpy
+statsmodels
+plotly
