@@ -23,42 +23,50 @@ def grade_notebook(
     notebook_path: str,
     output_path: str = None
 ):
-    # Create a Path object for the notebook path
-    p = Path(notebook_path)
-
+    # Convert notebook_path to an absolute Path object
+    notebook_path = Path(notebook_path).resolve()
+    
+    # Ensure the notebook file exists
+    if not notebook_path.exists():
+        raise FileNotFoundError(f"Notebook file not found: {notebook_path}")
+    
     # Extract the filename from the path
-    filename = p.name
-
+    filename = notebook_path.name
+    
     # If output_path is not provided, use the parent directory of notebook_path
     if output_path is None:
-        output_path = str(p.parent)
-
+        output_path = notebook_path.parent
+    else:
+        # Convert output_path to an absolute Path object
+        output_path = Path(output_path).resolve()
+    
     # Create the output directory if it does not exist
-    output_path = Path(output_path)
     if not output_path.exists():
         output_path.mkdir(parents=True, exist_ok=True)
-
+    elif not output_path.is_dir():
+        raise NotADirectoryError(f"Output path is not a directory: {output_path}")
+    
     # Create a temporary random directory for grading
     temp_workdir_path = Path(tempfile.gettempdir()) / ('jupygrader_' + str(uuid.uuid4())[:8])
     temp_workdir_path.mkdir(parents=True, exist_ok=False)
-
+    
     # Save the current working directory
     original_cwd = os.getcwd()
-
+    
     try:
         # Change the current working directory to the temporary directory
         os.chdir(temp_workdir_path)
-
+        
         # Create a temporary path for the notebook
-        temp_notebook_path = os.path.join(temp_workdir_path, filename)
-
+        temp_notebook_path = temp_workdir_path / filename
+        
         # Copy the original notebook to the temporary directory
         # Attempt to preserve the metadata using shutil.copy2()
         shutil.copy2(
             notebook_path,
             temp_notebook_path
         )
-
+        
         print('=============================')
         # Read the notebook from the temporary path
         nb = nbformat.read(temp_notebook_path, as_version=4)
