@@ -119,7 +119,8 @@ def convert_test_case_using_grader_template(cell) -> str:
 
 def preprocess_test_case_cells(nb):
     for cell in nb.cells:
-        convert_test_case_using_grader_template(cell)
+        if does_cell_contain_test_case(cell):
+            convert_test_case_using_grader_template(cell)
             
     return nb
 
@@ -148,26 +149,6 @@ def remove_grader_scripts(nb):
 
 
 
-# TODO: The current code only extracts code between # YOUR CODE BEGINS and # YOUR CODE ENDS
-# This will not work if a learner changes or deletes the comments
-# Unused, but may be useful later
-def extract_user_code_from_cell_source(source: str) -> str:
-    tc_result = re.search(
-        r'.*# YOUR CODE BEGINS[\s\n]*(.*)# YOUR CODE ENDS',
-        source,
-        flags=re.MULTILINE | re.DOTALL
-    )
-    
-    if not tc_result or len(tc_result.groups()) == 0:
-        return None
-    
-    user_code = tc_result.groups()[0]
-    user_code = user_code.rstrip()
-    
-    return user_code
-
-
-
 def extract_user_code_from_notebook(nb) -> str:
     full_code = ''
 
@@ -176,6 +157,16 @@ def extract_user_code_from_notebook(nb) -> str:
             full_code += cell.source + '\n\n'
                 
     return full_code
+
+
+
+def replace_test_case(nb, test_case_name, new_test_case_code) -> None:
+    for cell in nb.cells:
+        if (cell.cell_type == 'code') and does_cell_contain_test_case(cell):
+            test_case_metadata = extract_test_case_metadata_from_cell(cell.source)
+            
+            if test_case_metadata.get('test_case') == test_case_name:
+                cell.source = new_test_case_code
 
 
 
@@ -215,27 +206,37 @@ def get_test_cases_hash(nb) -> str:
 
 
 def generate_text_summary(graded_result) -> str:
-    summary = ''
-    summary += f"File: {graded_result['filename']}\n"
-    summary += f"Autograded Score: {graded_result['learner_autograded_score']} out of {graded_result['max_autograded_score']}\n"
-    summary += f"Passed {graded_result['num_passed_cases']} out of {graded_result['num_autograded_cases']} autograded test cases\n"
-    
+    summary_parts = [
+        f"File: {graded_result['filename']}",
+        f"Autograded Score: {graded_result['learner_autograded_score']} out of {graded_result['max_autograded_score']}",
+        f"Passed {graded_result['num_passed_cases']} out of {graded_result['num_autograded_cases']} test cases"
+    ]
+
     if graded_result['num_manually_graded_cases'] > 0:
-        summary += f"{graded_result['num_manually_graded_cases']} items will be graded manually.\n"
-        summary += f"{graded_result['max_manually_graded_score']} points are available on manually graded items.\n"
-        summary += f"{graded_result['max_total_score']} total points are available.\n"
-    
-    summary += f"Grading took {graded_result['grading_duration_in_seconds']} seconds\n\n"
-    summary += 'Test Case Summary\n'
+        summary_parts.extend([
+            f"{graded_result['num_manually_graded_cases']} items will be graded manually.",
+            f"{graded_result['max_manually_graded_score']} points are available for manually graded items.",
+            f"{graded_result['max_total_score']} total points are available."
+        ])
+
+    summary_parts.append(f"Grading took {graded_result['grading_duration_in_seconds']} seconds\n")
+    summary_parts.append("Test Case Summary")
 
     for o in graded_result['results']:
-        summary += "-----------------\n"
-        summary += f"{o['test_case_name']} {'passed' if o['pass'] else 'failed'}: {o['points']} out of {o['available_points']} points\n"
-
-        if not o['pass']:
-            summary += f"[Autograder Output]\n{o['message']}\n\n"
+        summary_parts.append("-----------------")
+        
+        if o['grade_manually']:
+            summary_parts.append(f"{o['test_case_name']}: requires manual grading, {o['available_points']} points available")
+        else:
+            summary_parts.append(f"{o['test_case_name']}: {'PASS' if o['pass'] else 'FAIL'}, {o['points']} out of {o['available_points']} points")
             
-    return summary
+            if not o['pass']:
+                summary_parts.extend([
+                    "\n[Autograder Output]",
+                    f"{o['message']}"
+                ])
+
+    return "\n".join(summary_parts)
 
 
 

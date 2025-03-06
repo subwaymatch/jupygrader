@@ -10,7 +10,15 @@
 ## Table of Contents
 
 - [Summary](#summary)
+- [Key Features](#key-features)
 - [Installation](#installation)
+- [Update Jupygrader](#update-jupygrader)
+- [Usage](#usage)
+  - [Specifying the output directory](#specifying-the-output-directory)
+- [Test](#test)
+- [Build and Publish](#build-and-publish)
+  - [Build artifact](#build-artifact)
+  - [Publish to PyPI](#publish-to-pypi)
 - [License](#license)
 
 ## Summary
