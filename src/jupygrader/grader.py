@@ -13,7 +13,8 @@ import uuid
 
 def grade_notebook(
     notebook_path: str,
-    output_path: str = None
+    output_path: str = None,
+    copy_files: list or dict = None
 ):
     """
     Grades a Jupyter notebook by executing it and evaluating test cases.
@@ -25,6 +26,10 @@ def grade_notebook(
     output_path : str, optional
         Directory where the graded notebook and results will be saved.
         Defaults to the parent directory of `notebook_path` if not provided.
+    copy_files : list or dict, optional
+        List or dictionary of files to be copied to the temporary grading directory.
+        If a list is provided, the files will be copied with their original names.
+        If a dictionary is provided, the keys are the source file paths and the values are the destination file names.
 
     Functionality:
     --------------
@@ -102,6 +107,16 @@ def grade_notebook(
             notebook_path,
             temp_notebook_path
         )
+        
+        # Copy additional files if provided
+        if copy_files:
+            if isinstance(copy_files, list):
+                copy_files = {file: file for file in copy_files}
+            for src, dest in copy_files.items():
+                src_path = Path(src).resolve()
+                dest_path = temp_workdir_path / dest
+                dest_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(src_path, dest_path)
         
         print('=============================')
         # Read the notebook from the temporary path

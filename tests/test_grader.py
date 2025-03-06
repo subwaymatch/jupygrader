@@ -1,27 +1,20 @@
 import jupygrader
-import os
+from pathlib import Path
 
-def test_grade_notebook():
-    TEST_NOTEBOOKS_DIR = os.path.join(
-        os.path.dirname(os.path.realpath(__file__)),
-        'test-notebooks',
-    )
+TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / 'test-notebooks'
+TEST_OUTPUT_DIR = TEST_NOTEBOOKS_DIR / 'test-output'
 
-    TEST_OUTPUT_DIR = os.path.join(
-        TEST_NOTEBOOKS_DIR,
-        'test-output',
-    )
-
-    notebook_path = os.path.join(TEST_NOTEBOOKS_DIR, 'test-file.ipynb')
+def test_basic_grading():
+    notebook_path = TEST_NOTEBOOKS_DIR / 'basic-test-file.ipynb'
 
     result = jupygrader.grade_notebook(
-        notebook_path=notebook_path,
-        output_path=TEST_OUTPUT_DIR,
+        notebook_path=str(notebook_path),
+        output_path=str(TEST_OUTPUT_DIR),
     )
     print(result)
 
     # Check the accuracy of the result object
-    assert result['filename'] == 'test-file.ipynb'
+    assert result['filename'] == 'basic-test-file.ipynb'
     assert result['learner_autograded_score'] == 55
     assert result['max_autograded_score'] == 60
     assert result['max_manually_graded_score'] == 10
