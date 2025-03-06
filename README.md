@@ -7,6 +7,14 @@
 
 ---
 
+## Table of Contents
+
+- [Summary](#summary)
+- [Installation](#installation)
+- [License](#license)
+
+## Summary
+
 Jupygrader is a Python package for automated grading of Jupyter notebooks. It provides a framework to:
 
 1. **Execute and grade Jupyter notebooks** containing student work and test cases
@@ -32,11 +40,6 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 - Includes metadata like Python version, platform, and file hashes for verification
 
 Jupygrader is designed for educational settings where instructors need to grade student work in Jupyter notebooks, providing automated feedback while maintaining records of submissions and grading results.
-
-## Table of Contents
-
-- [Installation](#installation)
-- [License](#license)
 
 ## Installation
 

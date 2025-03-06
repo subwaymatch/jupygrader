@@ -11,18 +11,54 @@ import sys
 import platform
 import uuid
 
-# if output_path is not provided, it will be set to the parent directory of notebook_path
-# This is useful for saving the graded notebook and result files in the same directory as the original notebook
-# The function will also create a temporary directory to store the notebook while it is being graded
-# The function will return a summary of the grading results, including the filename, scores, and test case results
-# The function will also generate a text summary of the grading results
-# The function will also extract the user code from the notebook and save it to a separate Python file
-# The function will also save the graded notebook to HTML format
-# The function will also save the graded result to a JSON file
 def grade_notebook(
     notebook_path: str,
     output_path: str = None
 ):
+    """
+    Grades a Jupyter notebook by executing it and evaluating test cases.
+
+    Parameters:
+    -----------
+    notebook_path : str
+        Path to the Jupyter notebook to be graded.
+    output_path : str, optional
+        Directory where the graded notebook and results will be saved.
+        Defaults to the parent directory of `notebook_path` if not provided.
+
+    Functionality:
+    --------------
+    - Copies the original notebook to a temporary directory for grading.
+    - Executes the notebook and evaluates embedded test cases.
+    - Saves the graded notebook in multiple formats:
+        - `.ipynb`: Includes execution results and grading feedback.
+        - `.html`: A rendered version of the graded notebook.
+        - `.json`: Stores grading results, scores, and metadata.
+        - `.txt`: A text summary of the grading results.
+    - Extracts user code from the notebook and saves it as a separate Python file.
+    - Computes an MD5 hash of the submitted notebook for duplicate detection.
+    - Stores metadata including Python version and system information.
+    - Cleans up temporary files after grading.
+
+    Returns:
+    --------
+    dict
+        A dictionary containing the grading results, including:
+        - Filename
+        - Scores
+        - Test case results
+        - Submission hash
+        - Test case hash
+        - Grading environment details
+
+    Raises:
+    -------
+    FileNotFoundError:
+        If the specified notebook file does not exist.
+    NotADirectoryError:
+        If `output_path` is provided but is not a valid directory.
+    """
+
     # Convert notebook_path to an absolute Path object
     notebook_path = Path(notebook_path).resolve()
     
