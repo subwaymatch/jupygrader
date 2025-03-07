@@ -2,6 +2,6 @@ import os
 from pathlib import Path
 
 def test_get_cwd():
-    print(os.getcwd())
+    print(f'os.getcwd={os.getcwd()}')
 
-    print(Path.cwd())
+    print(f'Path.cwd()={Path.cwd()}')

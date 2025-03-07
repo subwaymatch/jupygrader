@@ -2,5 +2,6 @@
 __pycache__
 dist
 .coverage
+htmlcov
 
-tests/test-notebooks/test-output
+tests/**/test-output

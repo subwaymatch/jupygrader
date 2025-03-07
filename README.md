@@ -15,8 +15,8 @@
 - [Update Jupygrader](#update-jupygrader)
 - [Usage](#usage)
   - [Specifying the output directory](#specifying-the-output-directory)
-- [Test](#test)
-- [Build and Publish](#build-and-publish)
+- [Development](#development)
+  - [Test project](#test-project)
   - [Build artifact](#build-artifact)
   - [Publish to PyPI](#publish-to-pypi)
 - [License](#license)
@@ -63,6 +63,8 @@ pip install --upgrade jupygrader
 
 ## Usage
 
+### Basic usage
+
 ```python
 import jupygrader
 
@@ -84,17 +86,32 @@ jupygrader.grade_notebook(
 )
 ```
 
-## Test
+## Development
 
-`hatch` uses `pytest` as the test runner.
+### Test project
+
+`hatch` uses `pytest` as the test runner. All tests are defined in the `tests/` directory.
 
 ```console
 hatch test
 ```
 
-## Build and Publish
+Print a code coverage table by using the `--cover` flag.
 
-### Build artifact
+```console
+hatch test --cover
+```
+
+### Generate a code coverage report
+
+```console
+hatch run test:cov-html
+
+# Output:
+# Wrote HTML report to htmlcov\index.html
+```
+
+### Build artifcat
 
 ```console
 hatch build

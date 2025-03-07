@@ -2,19 +2,21 @@ import jupygrader
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / 'test-notebooks'
-TEST_OUTPUT_DIR = TEST_NOTEBOOKS_DIR / 'test-output'
+TEST_OUTPUT_DIR = Path(__file__).resolve().parent / 'test-output'
 
-def test_basic_grading():
-    notebook_path = TEST_NOTEBOOKS_DIR / 'basic-test-file.ipynb'
+# Create the output directory if it doesn't exist
+TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+def test_basic_workflow():
+    notebook_path = TEST_NOTEBOOKS_DIR / 'simple-test' / 'simple-test.ipynb'
 
     result = jupygrader.grade_notebook(
-        notebook_path=str(notebook_path),
-        output_path=str(TEST_OUTPUT_DIR),
+        notebook_path=notebook_path,
+        output_path=TEST_OUTPUT_DIR,
     )
-    print(result)
 
     # Check the accuracy of the result object
-    assert result['filename'] == 'basic-test-file.ipynb'
+    assert result['filename'] == 'simple-test.ipynb'
     assert result['learner_autograded_score'] == 55
     assert result['max_autograded_score'] == 60
     assert result['max_manually_graded_score'] == 10
@@ -52,3 +54,21 @@ def test_basic_grading():
         assert isinstance(test_result['pass'], bool) or test_result['pass'] is None
         assert isinstance(test_result['grade_manually'], bool)
         assert isinstance(test_result['message'], str)
+
+
+
+def test_file_copy_01():
+    notebook_path = TEST_NOTEBOOKS_DIR / 'file-copy-test/file-copy-test-01.ipynb'
+
+    result = jupygrader.grade_notebook(
+        notebook_path=notebook_path,
+        output_path=TEST_OUTPUT_DIR,
+        copy_files={
+            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-first-input.txt': 'my-first-input.txt',
+            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-second-input.txt': 'input-folder/my-second-input.txt',
+        }
+    )
+
+    assert result['learner_autograded_score'] == 20
+    assert result['max_total_score'] == 20
+    assert result['num_total_test_cases'] == 2

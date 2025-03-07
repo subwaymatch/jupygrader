@@ -44,8 +44,18 @@ check = "mypy --install-types --non-interactive {args:src/jupygrader tests}"
 
 # configure pytest to show all output
 # without this option, pytest will only print stdout for failing tests, but not for passing tests
-[tool.pytest.ini_options]
-addopts = "-v -s --capture=no"
+[tool.hatch.envs.hatch-test]
+extra-args = ["-v", "-s", "--capture=no"]
+
+[tool.hatch.envs.test]
+dependencies = [
+  "coverage[toml]",
+  "pytest",
+  "pytest-cov",
+]
+
+[tool.hatch.envs.test.scripts]
+cov-html = "coverage html && pip freeze > htmlcov/requirements-test.txt"
 
 [tool.coverage.run]
 source_pkgs = ["jupygrader", "tests"]

@@ -1,5 +1,6 @@
-import tempfile
 import jupygrader
+from typing import Union, Dict, Any
+import tempfile
 import nbformat
 from nbclient import NotebookClient
 import os
@@ -12,18 +13,18 @@ import platform
 import uuid
 
 def grade_notebook(
-    notebook_path: str,
-    output_path: str = None,
-    copy_files: list or dict = None
-):
+    notebook_path: Union[str, Path],
+    output_path: Union[str, Path] = None,
+    copy_files: Union[list, dict] = None
+) -> Dict[str, Any]:
     """
     Grades a Jupyter notebook by executing it and evaluating test cases.
 
     Parameters:
     -----------
-    notebook_path : str
+    notebook_path : str or Path
         Path to the Jupyter notebook to be graded.
-    output_path : str, optional
+    output_path : str or Path, optional
         Directory where the graded notebook and results will be saved.
         Defaults to the parent directory of `notebook_path` if not provided.
     copy_files : list or dict, optional
