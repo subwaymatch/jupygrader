@@ -1,5 +1,5 @@
 import jupygrader
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, List, Mapping
 import tempfile
 import nbformat
 from nbclient import NotebookClient
@@ -15,7 +15,7 @@ import uuid
 def grade_notebook(
     notebook_path: Union[str, Path],
     output_path: Union[str, Path] = None,
-    copy_files: Union[list, dict] = None
+    copy_files: Union[List[Union[str, Path]], Mapping[Union[str, Path], Union[str, Path]]] = None
 ) -> Dict[str, Any]:
     """
     Grades a Jupyter notebook by executing it and evaluating test cases.
@@ -27,10 +27,10 @@ def grade_notebook(
     output_path : str or Path, optional
         Directory where the graded notebook and results will be saved.
         Defaults to the parent directory of `notebook_path` if not provided.
-    copy_files : list or dict, optional
-        List or dictionary of files to be copied to the temporary grading directory.
-        If a list is provided, the files will be copied with their original names.
-        If a dictionary is provided, the keys are the source file paths and the values are the destination file names.
+    copy_files : list[str | Path] or dict[str | Path, str | Path], optional
+        Files to be copied to the temporary grading directory.
+        If a list is provided, each element can be a string or Path object. Files will be copied with their original names.
+        If a dictionary is provided, both keys (source) and values (destination) can be strings or Path objects.
 
     Functionality:
     --------------

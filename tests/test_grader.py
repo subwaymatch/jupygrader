@@ -65,7 +65,7 @@ def test_file_copy_01():
         output_path=TEST_OUTPUT_DIR,
         copy_files={
             TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-first-input.txt': 'my-first-input.txt',
-            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-second-input.txt': 'input-folder/my-second-input.txt',
+            (TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-second-input.txt').as_posix(): Path('input-folder/my-second-input.txt'),
         }
     )
 
@@ -83,7 +83,7 @@ def test_file_copy_02():
         output_path=TEST_OUTPUT_DIR,
         copy_files=[
             TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-first-input.txt',
-            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-third-input.txt'
+            (TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-third-input.txt').as_posix()
         ]
     )
 
