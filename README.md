@@ -72,17 +72,29 @@ notebook_file_path = 'path/to/notebook.ipynb'
 jupygrader.grade_notebook(notebook_file_path)
 ```
 
+Supplying a `pathlib.Path()` object is supported.
+
+```python
+import jupygrader
+from pathlib import Path
+
+notebook_path = Path('path/to/notebook.ipynb')
+jupygrader.grade_notebook(notebook_path)
+```
+
+If the `output_dir_path` is not specified, the output files will be stored to the same directory as the notebook file.
+
 ### Specifying the output directory
 
 ```python
 import jupygrader
 
-notebook_file_path = 'path/to/notebook.ipynb'
-output_dir_path = 'path/to/output'
+notebook_path = 'path/to/notebook.ipynb'
+output_path = 'path/to/output'
 
 jupygrader.grade_notebook(
-    notebook_path=notebook_file_path,
-    output_path=output_dir_path
+    notebook_path=notebook_path,
+    output_path=output_path
 )
 ```
 
@@ -111,10 +123,21 @@ hatch run test:cov-html
 # Wrote HTML report to htmlcov\index.html
 ```
 
-### Build artifcat
+### Build artifact
+
+This creates a distribution package, which can be uploaded to PyPI.
+
+- Source distribution (sdist): `dist\jupygrader-...tar.gz`
+- Wheel distribution (wheel): `dist\jupygrader-...-py3-none-any.whl`
 
 ```console
 hatch build
+```
+
+### Installing the built package locally
+
+```console
+pip install dist\jupygrader-...-py3-none-any.whl
 ```
 
 ### Publish to PyPI

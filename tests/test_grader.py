@@ -72,3 +72,21 @@ def test_file_copy_01():
     assert result['learner_autograded_score'] == 20
     assert result['max_total_score'] == 20
     assert result['num_total_test_cases'] == 2
+
+
+
+def test_file_copy_02():
+    notebook_path = TEST_NOTEBOOKS_DIR / 'file-copy-test/file-copy-test-02.ipynb'
+
+    result = jupygrader.grade_notebook(
+        notebook_path=notebook_path,
+        output_path=TEST_OUTPUT_DIR,
+        copy_files=[
+            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-first-input.txt',
+            TEST_NOTEBOOKS_DIR / 'file-copy-test' / 'my-third-input.txt'
+        ]
+    )
+
+    assert result['learner_autograded_score'] == 10
+    assert result['max_total_score'] == 10
+    assert result['num_total_test_cases'] == 1

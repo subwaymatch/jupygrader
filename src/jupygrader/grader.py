@@ -112,10 +112,11 @@ def grade_notebook(
         # Copy additional files if provided
         if copy_files:
             if isinstance(copy_files, list):
-                copy_files = {file: file for file in copy_files}
+                copy_files = {file: Path(file).name for file in copy_files}
             for src, dest in copy_files.items():
                 src_path = Path(src).resolve()
                 dest_path = temp_workdir_path / dest
+                print(f'Copying {src_path} to {dest_path}...')
                 dest_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_path, dest_path)
         
@@ -202,14 +203,12 @@ def grade_notebook(
             graded_result=graded_result
         )
 
-        # LOCAL ENVIRONMENT ONLY
         # Generate a text summary of the graded result
         text_summary = jupygrader.generate_text_summary(graded_result)
 
         # Create a copy of the graded result and add the text summary
         result_summary = graded_result.copy()
         result_summary['text_summary'] = text_summary
-        # del result_summary['results']
 
         text_summary_file_path = os.path.join(output_path, filename.replace('.ipynb', '-graded-result-summary.txt'))
 
@@ -223,7 +222,7 @@ def grade_notebook(
 
         # Clean up the temporary working directory
         if temp_workdir_path.exists() and temp_workdir_path.is_dir():
-            shutil.rmtree(temp_workdir_path)
+            shutil.rmtree(temp_workdir_path, ignore_errors=True)
 
     # Return the result summary
     return result_summary
