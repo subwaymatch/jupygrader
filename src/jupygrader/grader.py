@@ -1,5 +1,5 @@
 import jupygrader
-from typing import Union, Dict, Any, List, Mapping
+from typing import Union, Dict, Any, List, Mapping, Optional
 import tempfile
 import nbformat
 from nbclient import NotebookClient
@@ -14,8 +14,8 @@ import uuid
 
 def grade_notebook(
     notebook_path: Union[str, Path],
-    output_path: Union[str, Path] = None,
-    copy_files: Union[List[Union[str, Path]], Mapping[Union[str, Path], Union[str, Path]]] = None
+    output_path: Optional[Union[str, Path]] = None,
+    copy_files: Optional[Union[List[Union[str, Path]], Mapping[Union[str, Path], Union[str, Path]]]] = None
 ) -> Dict[str, Any]:
     """
     Grades a Jupyter notebook by executing it and evaluating test cases.

@@ -19,8 +19,10 @@ from .core import (
     save_graded_notebook_to_html
 )
 from .grader import grade_notebook
+from .batch_grader import grade_notebooks
 
 __all__ = [
+    __version__,
     extract_test_case_metadata_from_cell,
     extract_test_cases_metadata_from_notebook,
     does_cell_contain_test_case,
@@ -35,5 +37,6 @@ __all__ = [
     generate_text_summary,
     add_graded_result,
     save_graded_notebook_to_html,
-    grade_notebook
+    grade_notebook,
+    grade_notebooks
 ]

@@ -311,6 +311,7 @@ def add_graded_result(nb, graded_result):
             'pass': 'result',
             'points': 'learner_score'
         }, inplace=True)
+        df_r['learner_score'] = df_r['learner_score'].astype(str).fillna('')
         df_r.drop(columns=['test_case_link', 'grade_manually'], inplace=True)
 
         gr_cells.append(new_markdown_cell(df_r.to_markdown()))
