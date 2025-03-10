@@ -176,6 +176,7 @@ def grade_notebook(
         # Store the Python version and platform used to run the notebook
         graded_result['grader_python_version'] = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         graded_result['grader_platform'] = platform.platform()
+        graded_result['jupygrader_version'] = jupygrader.__version__
 
         # Save the updated JSON to file
         with open(graded_result_json_path, 'w') as f:

@@ -1,6 +1,7 @@
 # SPDX-FileCopyrightText: 2025-present Ye Joo Park <subwaymatch@gmail.com>
 #
 # SPDX-License-Identifier: MIT
+from .__about__ import __version__
 from .core import (
     extract_test_case_metadata_from_cell,
     extract_test_cases_metadata_from_notebook,

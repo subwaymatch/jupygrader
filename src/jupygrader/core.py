@@ -245,9 +245,9 @@ def add_graded_result(nb, graded_result):
     gr_cells = []
 
     # add result summary
-    gr_cells.append(new_markdown_cell('# 🧭 Jupygrader Summary'))
+    gr_cells.append(new_markdown_cell('<div style="text-align: center;"><img src="https://github.com/subwaymatch/jupygrader/blob/main/docs/images/logo_jupygrader_with_text_240.png?raw=true" alt="Jupygrader Logo" width="120"/></div>'))
     
-    learner_score_in_percentage = f" ({round(gr['learner_autograded_score'] / gr['max_autograded_score'] * 100, 2)}%)" if gr['max_autograded_score'] != 0 else None
+    learner_score_in_percentage = f" ({round(gr['learner_autograded_score'] / gr['max_autograded_score'] * 100, 2)}%)" if gr['max_autograded_score'] != 0 else ''
     
     gr_dict_for_df = {
         '**Autograded Score**': f"**{gr['learner_autograded_score']} out of {gr['max_autograded_score']}** {learner_score_in_percentage}",
@@ -260,7 +260,8 @@ def add_graded_result(nb, graded_result):
         'Test Cases Checksum': gr['test_cases_hash'],
         'Submission File Checksum': gr['submission_notebook_hash'],
         'Autograder Python Version': f"Python {gr['grader_python_version']}",
-        'Autograder Platform': gr['grader_platform']
+        'Autograder Platform': gr['grader_platform'],
+        'Jupygrader Version': gr['jupygrader_version']
     }
     
     if gr['num_manually_graded_cases'] == 0:
@@ -271,46 +272,49 @@ def add_graded_result(nb, graded_result):
         'description': gr_dict_for_df.values()
     })
     gr_cells.append(new_markdown_cell(df_metadata.to_markdown(index=False)))
-    gr_cells.append(new_markdown_cell(f'<h2 id="{graded_results_element_id}">Test cases result</h2>'))
 
+    if gr['num_autograded_cases'] + gr['num_manually_graded_cases'] == 0:
+        gr_cells.append(new_markdown_cell('Jupygrader did not detect any test cases in this notebook.'))
+    else:
+        gr_cells.append(new_markdown_cell(f'<h2 id="{graded_results_element_id}">Test cases result</h2>'))
 
-    tc_counts = {}
-    gr_results = gr['results'].copy()
-    
-    for o in gr_results:
-        tc_name_cleaned = re.sub(r'[^a-zA-Z0-9_-]', '', o['test_case_name'])
-        if tc_name_cleaned not in tc_counts:
-            tc_counts[tc_name_cleaned] = 0
-        tc_counts[tc_name_cleaned] += 1
-        anchor_id = f'{tc_name_cleaned}_id{tc_counts[tc_name_cleaned]}'
-        test_case_link = f"<a href='#{anchor_id}'>{o['test_case_name']}</a>"
-        o['test_case_link'] = test_case_link
+        tc_counts = {}
+        gr_results = gr['results'].copy()
         
-    df_r = pd.DataFrame(gr_results)
-    
-    # replace test_case_name column with linked texts
-    df_r['test_case_name'] = df_r['test_case_link']
-    
-    df_r.loc[df_r['grade_manually'], 'points'] = np.nan
-    df_r['available_points'] = df_r['available_points'].astype(str)
-    
-    # inner function to generate a human-readable result
-    def get_human_readable_result(row):
-        if row['grade_manually']:
-            return '⌛ Requires manual grading'
-        else:
-            return '✔️ Pass' if row['pass'] else '❌ Fail'
+        for o in gr_results:
+            tc_name_cleaned = re.sub(r'[^a-zA-Z0-9_-]', '', o['test_case_name'])
+            if tc_name_cleaned not in tc_counts:
+                tc_counts[tc_name_cleaned] = 0
+            tc_counts[tc_name_cleaned] += 1
+            anchor_id = f'{tc_name_cleaned}_id{tc_counts[tc_name_cleaned]}'
+            test_case_link = f"<a href='#{anchor_id}'>{o['test_case_name']}</a>"
+            o['test_case_link'] = test_case_link
+            
+        df_r = pd.DataFrame(gr_results)
+        
+        # replace test_case_name column with linked texts
+        df_r['test_case_name'] = df_r['test_case_link']
+        
+        df_r.loc[df_r['grade_manually'], 'points'] = np.nan
+        df_r['available_points'] = df_r['available_points'].astype(str)
+        
+        # inner function to generate a human-readable result
+        def get_human_readable_result(row):
+            if row['grade_manually']:
+                return '⌛ Requires manual grading'
+            else:
+                return '✔️ Pass' if row['pass'] else '❌ Fail'
 
-    df_r['pass'] = df_r.apply(get_human_readable_result, axis=1)
-    df_r.rename(columns={
-        'available_points': 'max_score',
-        'pass': 'result',
-        'points': 'learner_score'
-    }, inplace=True)
-    df_r.drop(columns=['test_case_link', 'grade_manually'], inplace=True)
+        df_r['pass'] = df_r.apply(get_human_readable_result, axis=1)
+        df_r.rename(columns={
+            'available_points': 'max_score',
+            'pass': 'result',
+            'points': 'learner_score'
+        }, inplace=True)
+        df_r.drop(columns=['test_case_link', 'grade_manually'], inplace=True)
 
-    gr_cells.append(new_markdown_cell(df_r.to_markdown()))
-    gr_cells.append(new_markdown_cell('\n---\n'))
+        gr_cells.append(new_markdown_cell(df_r.to_markdown()))
+        gr_cells.append(new_markdown_cell('\n---\n'))
     
     nb.cells = gr_cells + nb.cells
     
