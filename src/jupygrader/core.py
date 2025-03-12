@@ -356,9 +356,9 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
             # add "back to top" link
             el.append(copy.copy(back_to_top_link_el))
             
-    lambda_grader_sidebar_container_el = soup.new_tag("div")
-    lambda_grader_sidebar_container_el['class'] = 'lambda-grader-sidebar-container'
-    soup.body.append(lambda_grader_sidebar_container_el)
+    jupygrader_sidebar_container_el = soup.new_tag("div")
+    jupygrader_sidebar_container_el['class'] = 'lambda-grader-sidebar-container'
+    soup.body.append(jupygrader_sidebar_container_el)
     
     gr_results = graded_result['results']
     
@@ -366,7 +366,7 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
         "<a class='graded-item-link back-to-top' data-text='Jupygrader Test Case Results' href='#_graded_results'>📑</a>",
         "html.parser"
     ).find('a')
-    lambda_grader_sidebar_container_el.append(back_to_top_el)
+    jupygrader_sidebar_container_el.append(back_to_top_el)
     
     
     tc_counts = {}
@@ -386,7 +386,7 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
         item_el['class'] = f'graded-item-link {item_status_classname}'
         item_el['href'] = f'#{anchor_id}'
         item_el['data-text'] = o['test_case_name'] + " " + ("(manual grading required)" if o['grade_manually'] else f"({o['points']} out of {o['available_points']})")
-        lambda_grader_sidebar_container_el.append(item_el)
+        jupygrader_sidebar_container_el.append(item_el)
         
     # insert css
     head = soup.head
