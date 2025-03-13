@@ -2,8 +2,7 @@
   <img src="https://github.com/subwaymatch/jupygrader/blob/main/docs/images/logo_jupygrader_with_text_240.png?raw=true" alt="Jupygrader Logo" width="240"/>
 </p>
 
-[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch
-4051b5.svg)](https://github.com/pypa/hatch)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch4051b5.svg)](https://github.com/pypa/hatch)
 
 [![PyPI - Version](https://img.shields.io/pypi/v/jupygrader.svg)](https://pypi.org/project/jupygrader)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jupygrader.svg)](https://pypi.org/project/jupygrader)
