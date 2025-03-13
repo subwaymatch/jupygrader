@@ -2,7 +2,8 @@
   <img src="https://github.com/subwaymatch/jupygrader/blob/main/docs/images/logo_jupygrader_with_text_240.png?raw=true" alt="Jupygrader Logo" width="240"/>
 </p>
 
-[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch-4051b5.svg)](https://github.com/pypa/hatch)
+[![Hatch project](https://img.shields.io/badge/%F0%9F%A5%9A-Hatch
+4051b5.svg)](https://github.com/pypa/hatch)
 
 [![PyPI - Version](https://img.shields.io/pypi/v/jupygrader.svg)](https://pypi.org/project/jupygrader)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jupygrader.svg)](https://pypi.org/project/jupygrader)
@@ -11,17 +12,27 @@
 
 ## 📋 Table of Contents
 
-- [Summary](#summary)
-- [Key Features](#key-features)
-- [Installation](#installation)
-- [Update Jupygrader](#update-jupygrader)
-- [Usage](#usage)
-  - [Specifying the output directory](#specifying-the-output-directory)
-- [Development](#development)
+- [📝 Summary](#-summary)
+- [✨ Key Features](#-key-features)
+- [📦 Installation](#-installation)
+- [🔄 Update Jupygrader](#-update-jupygrader)
+- [🚀 Usage](#-usage)
+  - [Basic usage](#basic-usage)
+  - [Specify the output directory](#specify-the-output-directory)
+- [📒 Create an autogradable notebook](#-create-an-autogradable-notebook)
+  - [Code cell for learners](#code-cell-for-learners)
+  - [Graded test cases](#graded-test-cases)
+  - [Obfuscate test cases](#obfuscate-test-cases)
+  - [Add hidden test cases](#add-hidden-test-cases)
+- [🔧 Utility functions](#-utility-functions)
+  - [Replace test cases](#replace-test-cases)
+- [💻 Development](#-development)
   - [Test project](#test-project)
+  - [Generate a code coverage report](#generate-a-code-coverage-report)
   - [Build artifact](#build-artifact)
+  - [Install the built package locally](#install-the-built-package-locally)
   - [Publish to PyPI](#publish-to-pypi)
-- [License](#license)
+- [📄 License](#-license)
 
 ## 📝 Summary
 
@@ -86,7 +97,7 @@ jupygrader.grade_notebook(notebook_path)
 
 If the `output_dir_path` is not specified, the output files will be stored to the same directory as the notebook file.
 
-### Specifying the output directory
+### Specify the output directory
 
 ```python
 import jupygrader
@@ -279,7 +290,7 @@ This creates a distribution package, which can be uploaded to PyPI.
 hatch build
 ```
 
-### Installing the built package locally
+### Install the built package locally
 
 ```console
 pip install dist\jupygrader-...-py3-none-any.whl
