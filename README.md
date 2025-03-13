@@ -9,7 +9,7 @@
 
 ---
 
-## Table of Contents
+## 📋 Table of Contents
 
 - [Summary](#summary)
 - [Key Features](#key-features)
@@ -23,7 +23,7 @@
   - [Publish to PyPI](#publish-to-pypi)
 - [License](#license)
 
-## Summary
+## 📝 Summary
 
 Jupygrader is a Python package for automated grading of Jupyter notebooks. It provides a framework to:
 
@@ -32,7 +32,7 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 3. **Extract student code** from notebooks into separate Python files
 4. **Verify notebook integrity** by computing hashes of test cases and submissions
 
-## Key Features
+## ✨ Key Features
 
 - Executes notebooks in a controlled, temporary environment
 - Preserves the original notebook while creating graded versions
@@ -51,19 +51,19 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 
 Jupygrader is designed for educational settings where instructors need to grade student work in Jupyter notebooks, providing automated feedback while maintaining records of submissions and grading results.
 
-## Installation
+## 📦 Installation
 
 ```console
 pip install jupygrader
 ```
 
-## Update Jupygrader
+## 🔄 Update Jupygrader
 
 ```console
 pip install --upgrade jupygrader
 ```
 
-## Usage
+## 🚀 Usage
 
 ### Basic usage
 
@@ -100,7 +100,7 @@ jupygrader.grade_notebook(
 )
 ```
 
-## Creating an autogradable notebook
+## 📒 Create an autogradable notebook
 
 The instructor authors only one "solution" notebook, which contains both the solution code and test cases for all graded parts.
 
@@ -215,7 +215,7 @@ if 'is_jupygrader_env' in globals():
     pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
 ```
 
-## Utility functions
+## 🔧 Utility functions
 
 ### Replace test cases
 
@@ -243,7 +243,7 @@ for tc_name, new_tc_code in new_test_cases.items():
     jupygrader.replace_test_case(nb, tc_name, new_tc_code)
 ```
 
-## Development
+## 💻 Development
 
 ### Test project
 
@@ -304,6 +304,6 @@ username = __token__
 password = [your-token-value]
 ```
 
-## License
+## 📄 License
 
 `jupygrader` is distributed under the terms of the [MIT](https://spdx.org/licenses/MIT.html) license.

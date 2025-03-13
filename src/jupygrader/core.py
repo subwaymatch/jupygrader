@@ -357,7 +357,7 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
             el.append(copy.copy(back_to_top_link_el))
             
     jupygrader_sidebar_container_el = soup.new_tag("div")
-    jupygrader_sidebar_container_el['class'] = 'lambda-grader-sidebar-container'
+    jupygrader_sidebar_container_el['class'] = 'jupygrader-sidebar-container'
     soup.body.append(jupygrader_sidebar_container_el)
     
     gr_results = graded_result['results']
@@ -367,7 +367,6 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
         "html.parser"
     ).find('a')
     jupygrader_sidebar_container_el.append(back_to_top_el)
-    
     
     tc_counts = {}
     
@@ -395,7 +394,7 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
 html {
   scroll-behavior: smooth;
 }
-.lambda-grader-sidebar-container {
+.jupygrader-sidebar-container {
   background-color: #f5f5f5;
   position: fixed;
   top: 0;
