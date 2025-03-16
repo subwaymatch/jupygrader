@@ -20,9 +20,10 @@ def test_batch_grader():
     print('test_notebook_paths')
     print(test_notebook_paths)
 
+    grading_items = [jupygrader.GradingItemConfig(notebook_path=notebook) for notebook in test_notebook_paths]
+
     results = jupygrader.grade_notebooks(
-        notebook_paths=test_notebook_paths,
-        output_path=TEST_OUTPUT_DIR
+        grading_items=grading_items
     )
 
     print('results')

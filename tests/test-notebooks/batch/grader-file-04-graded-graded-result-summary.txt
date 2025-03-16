@@ -1,0 +1,22 @@
+File: grader-file-04-graded.ipynb
+Autograded Score: 20 out of 60
+Passed 4 out of 8 test cases
+Grading took 0.19 seconds
+
+Test Case Summary
+-----------------
+first-test-case: PASS, 5 out of 5 points
+-----------------
+first-test-case: PASS, 5 out of 5 points
+-----------------
+second-test-case: FAIL, 0 out of 10 points
+
+[Autograder Output]
+AssertionError: 3 != 2
+-----------------
+second-test-case: FAIL, 0 out of 10 points
+
+[Autograder Output]
+[Warning] Jupygrader: An identical test case name "second-test-case" already exists. Test cases with identical test case names will be graded 
+
+AssertionError: 3 != 2

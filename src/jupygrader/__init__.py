@@ -18,6 +18,7 @@ from .core import (
     add_graded_result,
     save_graded_notebook_to_html
 )
+from .types import GradingItemConfig
 from .grader import grade_notebook
 from .batch_grader import grade_notebooks
 
@@ -37,6 +38,7 @@ __all__ = [
     generate_text_summary,
     add_graded_result,
     save_graded_notebook_to_html,
+    GradingItemConfig,
     grade_notebook,
     grade_notebooks
 ]

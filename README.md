@@ -159,7 +159,7 @@ print(sample_series)
 A graded test case requires a test case name and an assigned point value.
 
 - The `_test_case` variable should store the name of the test case.
-  The `_points` variable should store the number of points, either as an integer or a float.
+- The `_points` variable should store the number of points, either as an integer or a float.
 
 ```python
 _test_case = 'create-a-pandas-series'

@@ -1,32 +1,27 @@
 """
 Batch grading functionality for processing multiple Jupyter notebooks.
 """
-
 import time
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Union
 from pathlib import Path
 from datetime import datetime
 from .grader import grade_notebook
+from .types import GradingItemConfig
 
 def grade_notebooks(
-    notebook_paths: List[Union[str, Path]],
-    output_path: Optional[Union[str, Path]] = None,
-    copy_files: Optional[Union[List[Union[str, Path]], Dict[Union[str, Path], Union[str, Path]]]] = None,
+    grading_items: Union[str, Path, List[Union[str, Path]], GradingItemConfig, List[GradingItemConfig]],
     verbose: bool = True
 ) -> List[Dict[str, Any]]:
     """
-    Grade multiple Jupyter notebooks and report progress.
+    Grade one or multiple Jupyter notebooks using GradingItemConfig objects and report progress.
     
     Parameters
     ----------
-    notebook_paths : List[str or Path]
-        List of paths to Jupyter notebooks to be graded.
-    output_path : str or Path, optional
-        Directory where all graded notebooks and results will be saved.
-        If not provided, results will be saved in the parent directory of each notebook.
-    copy_files : list[str | Path] or dict[str | Path, str | Path], optional
-        Files to be copied to the temporary grading directory for each notebook.
-        See grade_notebook() documentation for details.
+    grading_items : GradingItemConfig or List[GradingItemConfig]
+        Either a single grading item configuration or a list of them, each containing:
+        - notebook_path: Path to the Jupyter notebook to be graded
+        - output_path: Optional directory where results will be saved
+        - copy_files: Optional files to be copied to the grading directory
     verbose : bool, default=True
         Whether to print progress information to stdout.
         
@@ -41,8 +36,29 @@ def grade_notebooks(
     Any errors encountered during grading are caught and reported, allowing
     the batch process to continue with remaining notebooks.
     """
+
+    # Convert single str or Path to a list of GradingItemConfig
+    if isinstance(grading_items, (str, Path)):
+        grading_items=[GradingItemConfig(notebook_path=grading_items)]
+
+    # Convert single GradingItemConfig to a list if needed
+    elif isinstance(grading_items, GradingItemConfig):
+        grading_items = [grading_items]
+
+    # Convert list of str, Path, or GradingItemConfig to a list of GradingItemConfig
+    elif isinstance(grading_items, list) and not all(isinstance(item, GradingItemConfig) for item in grading_items):
+        temp_grading_items = []
+        for item in grading_items:
+            if isinstance(item, (str, Path)):
+                temp_grading_items.append(GradingItemConfig(notebook_path=item))
+            elif isinstance(item, GradingItemConfig):
+                temp_grading_items.append(item)
+            else:
+                raise TypeError(f"Unsupported type in grading_items: {type(item)}")
+        grading_items = temp_grading_items
+    
     results = []
-    total_notebooks = len(notebook_paths)
+    total_notebooks = len(grading_items)
     
     if verbose:
         print(f"Starting batch grading of {total_notebooks} notebook(s) at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -50,18 +66,19 @@ def grade_notebooks(
     
     start_time = time.time()
     
-    for idx, notebook_path in enumerate(notebook_paths, 1):
+    for idx, item in enumerate(grading_items, 1):
         try:
+            notebook_path = item.notebook_path
             notebook_name = Path(notebook_path).name
             
             if verbose:
                 print(f"[{idx}/{total_notebooks}] Grading: {notebook_name} ... ", end="", flush=True)
             
-            # Grade individual notebook
+            # Grade individual notebook using the item's configuration
             result = grade_notebook(
-                notebook_path=notebook_path,
-                output_path=output_path,
-                copy_files=copy_files
+                notebook_path=item.notebook_path,
+                output_path=item.output_path,
+                copy_files=item.copy_files
             )
             
             # Add to results list
@@ -75,11 +92,11 @@ def grade_notebooks(
         except Exception as e:
             if verbose:
                 print(f"Error: {str(e)}")
-                print(f"Failed to grade notebook: {notebook_path}")
+                print(f"Failed to grade notebook: {item.notebook_path}")
             
             # Add error information to results
             results.append({
-                'filename': Path(notebook_path).name if hasattr(notebook_path, 'name') else str(notebook_path),
+                'filename': Path(item.notebook_path).name if hasattr(item.notebook_path, 'name') else str(item.notebook_path),
                 'status': 'error',
                 'error_message': str(e),
                 'error_type': type(e).__name__

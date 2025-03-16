@@ -1,0 +1,37 @@
+{
+  "filename": "grader-file-04.ipynb",
+  "learner_autograded_score": 5,
+  "max_autograded_score": 15,
+  "max_manually_graded_score": 0,
+  "max_total_score": 15,
+  "num_autograded_cases": 2,
+  "num_passed_cases": 1,
+  "num_failed_cases": 1,
+  "num_manually_graded_cases": 0,
+  "num_total_test_cases": 2,
+  "grading_finished_at": "2025-03-16 06:20 PM UTC",
+  "grading_duration_in_seconds": 0.18,
+  "results": [
+    {
+      "test_case_name": "first-test-case",
+      "points": 5,
+      "available_points": 5,
+      "pass": true,
+      "grade_manually": false,
+      "message": ""
+    },
+    {
+      "test_case_name": "second-test-case",
+      "points": 0,
+      "available_points": 10,
+      "pass": false,
+      "grade_manually": false,
+      "message": "AssertionError: 3 != 2"
+    }
+  ],
+  "submission_notebook_hash": "ec3c655692df376c0bfb2d6f29bf4cd1",
+  "test_cases_hash": "fd0e6277e67a56182b7b3007eef97f8e",
+  "grader_python_version": "3.12.5",
+  "grader_platform": "Windows-11-10.0.26100-SP0",
+  "jupygrader_version": "0.1.6"
+}
