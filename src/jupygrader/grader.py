@@ -151,7 +151,7 @@ def grade_notebook(
 
         # Running the notebook will store the graded result to a JSON file
         # Rename the graded result JSON file
-        graded_result_json_path = os.path.join(output_path, filename.replace('.ipynb', '-result.json'))
+        graded_result_json_path = os.path.join(output_path, filename.replace('.ipynb', '-graded-result.json'))
         shutil.move('jupygrader-result.json', graded_result_json_path)
 
         # Read the graded result to generate a summary

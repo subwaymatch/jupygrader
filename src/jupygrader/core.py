@@ -124,7 +124,7 @@ def preprocess_test_case_cells(nb):
             
     return nb
 
-            
+
 
 def add_grader_scripts(nb):
     with open(os.path.join(CELL_SCRIPTS_PATH, 'prepend-to-start-of-notebook.py')) as f:
@@ -139,7 +139,7 @@ def add_grader_scripts(nb):
     nb.cells.append(append_cell)
 
 
-    
+
 def remove_grader_scripts(nb):
     # remove prepend, append cells added by Jupygrader before storing to HTML
     nb.cells.pop(0)  # first cell (added by Jupygrader)
@@ -228,9 +228,9 @@ def generate_text_summary(graded_result) -> str:
         if o['grade_manually']:
             summary_parts.append(f"{o['test_case_name']}: requires manual grading, {o['available_points']} points available")
         else:
-            summary_parts.append(f"{o['test_case_name']}: {'PASS' if o['pass'] else 'FAIL'}, {o['points']} out of {o['available_points']} points")
+            summary_parts.append(f"{o['test_case_name']}: {'PASS' if o['did_pass'] else 'FAIL'}, {o['points']} out of {o['available_points']} points")
             
-            if not o['pass']:
+            if not o['did_pass']:
                 summary_parts.extend([
                     "\n[Autograder Output]",
                     f"{o['message']}"
@@ -303,9 +303,9 @@ def add_graded_result(nb, graded_result):
             if row['grade_manually']:
                 return '⌛ Requires manual grading'
             else:
-                return '✔️ Pass' if row['pass'] else '❌ Fail'
+                return '✔️ Pass' if row['did_pass'] else '❌ Fail'
 
-        df_r['pass'] = df_r.apply(get_human_readable_result, axis=1)
+        df_r['did_pass'] = df_r.apply(get_human_readable_result, axis=1)
         df_r.rename(columns={
             'available_points': 'max_score',
             'pass': 'result',
@@ -377,8 +377,8 @@ def save_graded_notebook_to_html(nb, html_title, output_path, graded_result):
         tc_counts[tc_name_cleaned] += 1
         
         anchor_id = f'{tc_name_cleaned}_id{tc_counts[tc_name_cleaned]}'
-        item_icon = '⌛' if o['grade_manually'] else '✔️' if o['pass'] else '❌'
-        item_status_classname = 'manual-grading-required' if o['grade_manually'] else 'pass' if o['pass'] else 'fail'
+        item_icon = '⌛' if o['grade_manually'] else '✔️' if o['did_pass'] else '❌'
+        item_status_classname = 'manual-grading-required' if o['grade_manually'] else 'pass' if o['did_pass'] else 'fail'
         
         item_el = soup.new_tag("a")
         item_el.string = item_icon

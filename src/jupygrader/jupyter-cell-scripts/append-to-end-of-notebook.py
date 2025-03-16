@@ -21,7 +21,7 @@ for test_case_result in _graded_result['results']:
         _graded_result['max_autograded_score'] += test_case_result['available_points']
         _graded_result['num_autograded_cases'] += 1
         
-        if test_case_result['pass']:
+        if test_case_result['did_pass']:
             _graded_result['num_passed_cases'] += 1
         else:
             _graded_result['num_failed_cases'] += 1

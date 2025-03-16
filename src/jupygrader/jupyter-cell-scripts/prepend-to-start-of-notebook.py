@@ -33,7 +33,7 @@ def _record_test_case(test_case_name, did_pass, available_points, message='', gr
         'test_case_name': test_case_name,
         'points': available_points if did_pass else 0,
         'available_points': available_points,
-        'pass': did_pass,
+        'did_pass': did_pass,
         'grade_manually': grade_manually,
         'message': warning_message + message,
     })

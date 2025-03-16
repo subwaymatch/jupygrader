@@ -37,7 +37,7 @@ def test_basic_workflow():
         'test_case_name',
         'points',
         'available_points',
-        'pass',
+        'did_pass',
         'grade_manually',
         'message'
     }
@@ -51,7 +51,7 @@ def test_basic_workflow():
         assert isinstance(test_result['test_case_name'], str)
         assert isinstance(test_result['points'], (int, float))
         assert isinstance(test_result['available_points'], (int, float))
-        assert isinstance(test_result['pass'], bool) or test_result['pass'] is None
+        assert isinstance(test_result['did_pass'], bool) or test_result['did_pass'] is None
         assert isinstance(test_result['grade_manually'], bool)
         assert isinstance(test_result['message'], str)
 
