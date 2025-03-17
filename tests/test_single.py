@@ -3,29 +3,31 @@ from pathlib import Path
 import glob
 import shutil
 
-TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / 'test-notebooks'
-TEST_OUTPUT_DIR = Path(__file__).resolve().parent / 'test-output'
+TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-notebooks"
+TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output"
+
 
 # use this file to run only a single test function
 # hatch test tests/test_single.py
 def test_batch_grader():
-    notebook_path = TEST_NOTEBOOKS_DIR / 'batch'
+    notebook_path = TEST_NOTEBOOKS_DIR / "batch"
 
-    print('notebook_path')
-    print(str(notebook_path / '*.ipynb'))
-    
-    test_notebook_paths = glob.glob(str(notebook_path / 'grader-file-[0-9][0-9].ipynb'))
+    print("notebook_path")
+    print(str(notebook_path / "*.ipynb"))
 
-    print('test_notebook_paths')
+    test_notebook_paths = glob.glob(str(notebook_path / "grader-file-[0-9][0-9].ipynb"))
+
+    print("test_notebook_paths")
     print(test_notebook_paths)
 
-    grading_items = [jupygrader.GradingItemConfig(notebook_path=notebook) for notebook in test_notebook_paths]
+    grading_items = [
+        jupygrader.GradingItemConfig(notebook_path=notebook)
+        for notebook in test_notebook_paths
+    ]
 
-    results = jupygrader.grade_notebooks(
-        grading_items=grading_items
-    )
+    results = jupygrader.grade_notebooks(grading_items=grading_items)
 
-    print('results')
+    print("results")
     print(results)
 
     # Cleanup
