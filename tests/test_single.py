@@ -6,10 +6,8 @@ import shutil
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / 'test-notebooks'
 TEST_OUTPUT_DIR = Path(__file__).resolve().parent / 'test-output'
 
-notebook_files = glob.glob('')
-
 # use this file to run only a single test function
-# hatch test --ignore tests/test_grader.py
+# hatch test tests/test_single.py
 def test_batch_grader():
     notebook_path = TEST_NOTEBOOKS_DIR / 'batch'
 

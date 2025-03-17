@@ -16,7 +16,7 @@ from .core import (
     get_test_cases_hash,
     generate_text_summary,
     add_graded_result,
-    save_graded_notebook_to_html
+    save_graded_notebook_to_html,
 )
 from .types import GradingItemConfig
 from .grader import grade_notebook
@@ -40,5 +40,5 @@ __all__ = [
     save_graded_notebook_to_html,
     GradingItemConfig,
     grade_notebook,
-    grade_notebooks
+    grade_notebooks,
 ]
