@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional, Union
 from pathlib import Path
 
@@ -14,36 +14,36 @@ class GradingItemConfig:
 class TestCaseResult:
     """Result of an individual test case in the notebook."""
 
-    test_case_name: str
-    points: int
-    available_points: int
-    did_pass: Optional[bool]  # Can be true, false, or null
-    grade_manually: bool
-    message: str
+    test_case_name: str = ""
+    points: Union[int, float] = 0
+    available_points: Union[int, float] = 0
+    did_pass: Optional[bool] = None  # Can be True, False, or None
+    grade_manually: bool = False
+    message: str = ""
 
 
 @dataclass
 class GradedResult:
     """Complete results of grading a notebook."""
 
-    filename: str
-    learner_autograded_score: int
-    max_autograded_score: int
-    max_manually_graded_score: int
-    max_total_score: int
-    num_autograded_cases: int
-    num_passed_cases: int
-    num_failed_cases: int
-    num_manually_graded_cases: int
-    num_total_test_cases: int
-    grading_finished_at: str
-    grading_duration_in_seconds: float
-    results: List[TestCaseResult]
-    submission_notebook_hash: str
-    test_cases_hash: str
-    grader_python_version: str
-    grader_platform: str
-    jupygrader_version: str
+    filename: str = ""
+    learner_autograded_score: Union[int, float] = 0
+    max_autograded_score: Union[int, float] = 0
+    max_manually_graded_score: Union[int, float] = 0
+    max_total_score: Union[int, float] = 0
+    num_autograded_cases: int = 0
+    num_passed_cases: int = 0
+    num_failed_cases: int = 0
+    num_manually_graded_cases: int = 0
+    num_total_test_cases: int = 0
+    grading_finished_at: str = ""
+    grading_duration_in_seconds: float = 0.0
+    results: List[TestCaseResult] = field(default_factory=list)
+    submission_notebook_hash: str = ""
+    test_cases_hash: str = ""
+    grader_python_version: str = ""
+    grader_platform: str = ""
+    jupygrader_version: str = ""
     extracted_user_code_file: Optional[str] = None
     graded_html_file: Optional[str] = None
     text_summary_file: Optional[str] = None
@@ -52,9 +52,7 @@ class GradedResult:
     def from_dict(cls, data: dict) -> "GradedResult":
         """Create a GradedResult instance from a dictionary."""
         # Create TestCaseResult objects from the 'results' list in the data
-        test_results = []
-        for result in data.get("results", []):
-            test_results.append(TestCaseResult(**result))
+        test_results = [TestCaseResult(**result) for result in data.get("results", [])]
 
         # Create the GradedResult with all other fields
         return cls(
