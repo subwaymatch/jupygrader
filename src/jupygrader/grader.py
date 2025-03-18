@@ -115,9 +115,15 @@ def grade_notebook(
 
         # Copy additional files if provided
         if copy_files:
+            copy_files_dict = {} if type(copy_files) is list else copy_files
             if isinstance(copy_files, list):
-                copy_files = {file: Path(file).name for file in copy_files}
-            for src, dest in copy_files.items():
+                for src in copy_files:
+                    src_path = Path(src).resolve()
+                    relative_path = src_path.relative_to(notebook_path.parent)
+                    dest = temp_workdir_path / relative_path
+                    copy_files_dict[src] = dest
+
+            for src, dest in copy_files_dict.items():
                 src_path = Path(src).resolve()
                 dest_path = temp_workdir_path / dest
                 print(f"Copying {src_path} to {dest_path}...")
