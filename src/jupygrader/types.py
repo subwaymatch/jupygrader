@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import List, Optional, Union
+from dataclasses import dataclass, field, asdict
+from typing import List, Optional, Union, Dict, Any
 from pathlib import Path
 
 
@@ -8,6 +8,29 @@ class GradingItemConfig:
     notebook_path: Union[str, Path]
     output_path: Optional[Union[str, Path]] = None
     copy_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None
+
+
+@dataclass
+class TestCaseMetadata:
+    test_case_name: str
+    points: Union[int, float]
+    grade_manually: bool
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "TestCaseMetadata":
+        return cls(
+            test_case_name=data["test_case_name"],
+            points=data["points"],
+            grade_manually=data["grade_manually"],
+        )
+
+    @classmethod
+    def to_dict(cls, instance: "TestCaseMetadata") -> Dict[str, Any]:
+        return {
+            "test_case_name": instance.test_case_name,
+            "points": instance.points,
+            "grade_manually": instance.grade_manually,
+        }
 
 
 @dataclass
@@ -38,7 +61,7 @@ class GradedResult:
     num_total_test_cases: int = 0
     grading_finished_at: str = ""
     grading_duration_in_seconds: float = 0.0
-    results: List[TestCaseResult] = field(default_factory=list)
+    test_case_results: List[TestCaseResult] = field(default_factory=list)
     submission_notebook_hash: str = ""
     test_cases_hash: str = ""
     grader_python_version: str = ""
@@ -48,37 +71,77 @@ class GradedResult:
     graded_html_file: Optional[str] = None
     text_summary_file: Optional[str] = None
 
+    @property
+    def text_summary(self) -> str:
+        """
+        Generates a text summary of the grading results.
+
+        Returns
+        -------
+        str
+            A formatted text summary of the grading results
+        """
+        summary_parts = [
+            f"File: {self.filename}",
+            f"Autograded Score: {self.learner_autograded_score} out of {self.max_autograded_score}",
+            f"Passed {self.num_passed_cases} out of {self.num_autograded_cases} test cases",
+        ]
+
+        if self.num_manually_graded_cases > 0:
+            summary_parts.extend(
+                [
+                    f"{self.num_manually_graded_cases} items will be graded manually.",
+                    f"{self.max_manually_graded_score} points are available for manually graded items.",
+                    f"{self.max_total_score} total points are available.",
+                ]
+            )
+
+        summary_parts.append(
+            f"Grading took {self.grading_duration_in_seconds:.2f} seconds\n"
+        )
+        summary_parts.append("Test Case Summary")
+
+        for test_case in self.test_case_results:
+            summary_parts.append("-----------------")
+
+            if test_case.grade_manually:
+                summary_parts.append(
+                    f"{test_case.test_case_name}: requires manual grading, {test_case.available_points} points available"
+                )
+            else:
+                summary_parts.append(
+                    f"{test_case.test_case_name}: {'PASS' if test_case.did_pass else 'FAIL'}, {test_case.points} out of {test_case.available_points} points"
+                )
+
+                if not test_case.did_pass:
+                    summary_parts.extend(
+                        ["\n[Autograder Output]", f"{test_case.message}"]
+                    )
+
+        return "\n".join(summary_parts)
+
     @classmethod
     def from_dict(cls, data: dict) -> "GradedResult":
-        """Create a GradedResult instance from a dictionary."""
-        # Create TestCaseResult objects from the 'results' list in the data
-        test_results = [TestCaseResult(**result) for result in data.get("results", [])]
+        """Creates a GradedResult instance from a dictionary."""
+        # Copy the dictionary to avoid modifying the original
+        data_copy = data.copy()
 
-        # Create the GradedResult with all other fields
-        return cls(
-            **{k: v for k, v in data.items() if k != "results"}, results=test_results
-        )
+        # Remove 'text_summary' if present in the data since it's now a computed property
+        if "text_summary" in data_copy:
+            del data_copy["text_summary"]
+
+        # Process test_case_results
+        test_case_results = [
+            TestCaseResult(**item) for item in data_copy.get("test_case_results", [])
+        ]
+        data_copy["test_case_results"] = test_case_results
+        return cls(**data_copy)
 
     def to_dict(self) -> dict:
-        """Convert the GradedResult to a dictionary."""
-        # Create a base dictionary from main attributes
-        result_dict = {
-            field: getattr(self, field)
-            for field in self.__dataclass_fields__
-            if field != "results"
-        }
+        """Converts the GradedResult instance to a dictionary."""
+        result_dict = asdict(self)
 
-        # Convert test results to list of dictionaries
-        result_dict["results"] = [
-            {
-                "test_case_name": result.test_case_name,
-                "points": result.points,
-                "available_points": result.available_points,
-                "did_pass": result.did_pass,
-                "grade_manually": result.grade_manually,
-                "message": result.message,
-            }
-            for result in self.results
-        ]
+        # Add the computed text_summary to the dictionary
+        result_dict["text_summary"] = self.text_summary
 
         return result_dict

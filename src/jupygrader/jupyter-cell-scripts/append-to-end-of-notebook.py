@@ -12,9 +12,9 @@ _graded_result["grading_finished_at"] = grading_end_time.strftime(
 _graded_result["grading_duration_in_seconds"] = round(
     (grading_end_time - grading_start_time).total_seconds(), 2
 )
-_graded_result["num_total_test_cases"] = len(_graded_result["results"])
+_graded_result["num_total_test_cases"] = len(_graded_result["test_case_results"])
 
-for test_case_result in _graded_result["results"]:
+for test_case_result in _graded_result["test_case_results"]:
     _graded_result["learner_autograded_score"] += test_case_result["points"]
     _graded_result["max_total_score"] += test_case_result["available_points"]
 

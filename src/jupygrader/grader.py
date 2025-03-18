@@ -12,6 +12,7 @@ import sys
 import platform
 import uuid
 from jupygrader.constants import GRADED_RESULT_JSON_FILENAME
+from jupygrader.types import GradedResult
 
 
 def grade_notebook(
@@ -20,7 +21,7 @@ def grade_notebook(
     copy_files: Optional[
         Union[List[Union[str, Path]], Mapping[Union[str, Path], Union[str, Path]]]
     ] = None,
-) -> Dict[str, Any]:
+) -> GradedResult:
     """
     Grades a Jupyter notebook by executing it and evaluating test cases.
 
@@ -52,8 +53,8 @@ def grade_notebook(
 
     Returns:
     --------
-    dict
-        A dictionary containing the grading results, including:
+    GradedResult
+        An object containing the grading results, including:
         - Filename
         - Scores
         - Test case results
@@ -123,7 +124,6 @@ def grade_notebook(
                 dest_path.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_path, dest_path)
 
-        print("=============================")
         # Read the notebook from the temporary path
         nb = nbformat.read(temp_notebook_path, as_version=4)
 
@@ -131,10 +131,10 @@ def grade_notebook(
         test_cases_hash = jupygrader.get_test_cases_hash(nb)
 
         # Preprocess the test case cells in the notebook
-        jupygrader.preprocess_test_case_cells(nb)
+        jupygrader.core.preprocess_test_case_cells(nb)
 
         # Add grader scripts to the notebook
-        jupygrader.add_grader_scripts(nb)
+        jupygrader.core.add_grader_scripts(nb)
 
         print(f"Grading {temp_notebook_path}")
 
@@ -154,36 +154,30 @@ def grade_notebook(
 
         # Read the graded result to generate a summary
         with open(GRADED_RESULT_JSON_FILENAME, mode="r") as f:
-            graded_result = json.load(f)
+            graded_result_data = json.load(f)
+
+        # Convert the graded result data to a GradedResult object
+        graded_result = GradedResult.from_dict(graded_result_data)
 
         # Add the filename to the graded result
-        # We add it here instead of trying to add it within the Jupyter notebook
-        # because it is tricky to grab the current file name inside a Jupyter kernel
-        graded_result["filename"] = filename
+        graded_result.filename = filename
 
         # Compute the MD5 hash of the submitted Jupyter notebook file
-        # This can be used to detect duplicate submissions to prevent unnecessary re-grading
         with open(temp_notebook_path, "rb") as f:
-            graded_result["submission_notebook_hash"] = hashlib.md5(
-                f.read()
-            ).hexdigest()
+            graded_result.submission_notebook_hash = hashlib.md5(f.read()).hexdigest()
 
         # Add the MD5 hash of the test cases code
-        # This helps us to identify any potential cases
-        # where a learner has modified or deleted the test cases code cell
-        graded_result["test_cases_hash"] = test_cases_hash
+        graded_result.test_cases_hash = test_cases_hash
 
         # Store the Python version and platform used to run the notebook
-        graded_result["grader_python_version"] = (
-            f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-        )
-        graded_result["grader_platform"] = platform.platform()
-        graded_result["jupygrader_version"] = jupygrader.__version__
+        graded_result.grader_python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+        graded_result.grader_platform = platform.platform()
+        graded_result.jupygrader_version = jupygrader.__version__
 
         # Clean up the notebook by removing grader scripts
-        jupygrader.remove_grader_scripts(nb)
+        jupygrader.core.remove_grader_scripts(nb)
         # Add the graded result to the notebook
-        jupygrader.add_graded_result(nb, graded_result)
+        jupygrader.core.add_graded_result_to_notebook(nb, graded_result)
 
         # Extract user code to a Python file
         extracted_user_code = jupygrader.extract_user_code_from_notebook(nb)
@@ -191,7 +185,7 @@ def grade_notebook(
             output_path, filename.replace(".ipynb", "_user_code.py")
         )
 
-        graded_result["extracted_user_code_file"] = extracted_code_path
+        graded_result.extracted_user_code_file = extracted_code_path
 
         with open(extracted_code_path, "w", encoding="utf-8") as f:
             f.write(extracted_user_code)
@@ -201,30 +195,23 @@ def grade_notebook(
         graded_html_path = os.path.join(
             output_path, filename.replace(".ipynb", "-graded.html")
         )
-        jupygrader.save_graded_notebook_to_html(
+        jupygrader.core.save_graded_notebook_to_html(
             nb,
             html_title=filename_only,
             output_path=graded_html_path,
             graded_result=graded_result,
         )
 
-        graded_result["graded_html_file"] = graded_html_path
-
-        # Generate a text summary of the graded result
-        text_summary = jupygrader.generate_text_summary(graded_result)
-
-        # Create a copy of the graded result and add the text summary
-        result_summary = graded_result.copy()
-        result_summary["text_summary"] = text_summary
+        graded_result.graded_html_file = graded_html_path
 
         text_summary_file_path = os.path.join(
             output_path, filename.replace(".ipynb", "-graded-result-summary.txt")
         )
 
         with open(text_summary_file_path, "w", encoding="utf-8") as f:
-            f.write(text_summary)
+            f.write(graded_result.text_summary)
 
-        graded_result["text_summary_file"] = text_summary_file_path
+        graded_result.text_summary_file = text_summary_file_path
 
         # Save the updated JSON to file
         graded_result_json_path = os.path.join(
@@ -232,7 +219,7 @@ def grade_notebook(
         )
 
         with open(graded_result_json_path, "w") as f:
-            json.dump(graded_result, f, indent=2)
+            json.dump(graded_result.to_dict(), f, indent=2)
 
         print(f"Finished grading {filename}")
     finally:
@@ -243,5 +230,5 @@ def grade_notebook(
         if temp_workdir_path.exists() and temp_workdir_path.is_dir():
             shutil.rmtree(temp_workdir_path, ignore_errors=True)
 
-    # Return the result summary
-    return result_summary
+    # Return the GradedResult object
+    return graded_result

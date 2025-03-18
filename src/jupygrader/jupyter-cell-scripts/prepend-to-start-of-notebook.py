@@ -17,7 +17,7 @@ _graded_result = {
     "num_total_test_cases": 0,
     "grading_finished_at": None,
     "grading_duration_in_seconds": 0,
-    "results": [],
+    "test_case_results": [],
 }
 
 is_jupygrader_env = True
@@ -29,10 +29,12 @@ def _record_test_case(
     global _graded_result
     warning_message = ""
 
-    if test_case_name in map(lambda x: x["test_case_name"], _graded_result["results"]):
+    if test_case_name in map(
+        lambda x: x["test_case_name"], _graded_result["test_case_results"]
+    ):
         warning_message = f'[Warning] Jupygrader: An identical test case name "{test_case_name}" already exists. Test cases with identical test case names will be graded \n\n'
 
-    _graded_result["results"].append(
+    _graded_result["test_case_results"].append(
         {
             "test_case_name": test_case_name,
             "points": available_points if did_pass else 0,

@@ -7,15 +7,15 @@ from typing import List, Dict, Any, Union
 from pathlib import Path
 from datetime import datetime
 from .grader import grade_notebook
-from .types import GradingItemConfig
+from .types import GradingItemConfig, GradedResult
 
 
 def grade_notebooks(
     grading_items: Union[
-        str, Path, List[Union[str, Path]], GradingItemConfig, List[GradingItemConfig]
+        str, Path, GradingItemConfig, List[Union[str, Path, GradingItemConfig]]
     ],
     verbose: bool = True,
-) -> List[Dict[str, Any]]:
+) -> List[GradedResult]:
     """
     Grade one or multiple Jupyter notebooks using GradingItemConfig objects and report progress.
 
@@ -63,14 +63,14 @@ def grade_notebooks(
                 raise TypeError(f"Unsupported type in grading_items: {type(item)}")
         grading_items = temp_grading_items
 
-    results = []
+    results: List[GradedResult] = []
     total_notebooks = len(grading_items)
+    num_failed_grading = 0
 
     if verbose:
         print(
             f"Starting batch grading of {total_notebooks} notebook(s) at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
-        print("-" * 70)
 
     start_time = time.time()
 
@@ -80,45 +80,32 @@ def grade_notebooks(
             notebook_name = Path(notebook_path).name
 
             if verbose:
+                print("-" * 70)
                 print(
                     f"[{idx}/{total_notebooks}] Grading: {notebook_name} ... ",
-                    end="",
-                    flush=True,
                 )
 
             # Grade individual notebook using the item's configuration
-            result = grade_notebook(
+            graded_result = grade_notebook(
                 notebook_path=item.notebook_path,
                 output_path=item.output_path,
                 copy_files=item.copy_files,
             )
 
             # Add to results list
-            results.append(result)
+            results.append(graded_result)
 
             if verbose:
-                score = result.get("learner_autograded_score", 0)
-                max_score = result.get("max_autograded_score", 0)
+                score = graded_result.learner_autograded_score
+                max_score = graded_result.max_autograded_score
                 print(f"Done. Score: {score}/{max_score}")
 
         except Exception as e:
+            num_failed_grading += 1
+
             if verbose:
                 print(f"Error: {str(e)}")
                 print(f"Failed to grade notebook: {item.notebook_path}")
-
-            # Add error information to results
-            results.append(
-                {
-                    "filename": (
-                        Path(item.notebook_path).name
-                        if hasattr(item.notebook_path, "name")
-                        else str(item.notebook_path)
-                    ),
-                    "status": "error",
-                    "error_message": str(e),
-                    "error_type": type(e).__name__,
-                }
-            )
 
     elapsed_time = time.time() - start_time
 
@@ -128,11 +115,10 @@ def grade_notebooks(
             f"Completed grading {total_notebooks} notebook(s) in {elapsed_time:.2f} seconds"
         )
 
-        # Summary statistics
-        successful = sum(1 for r in results if r.get("status", "") != "error")
-        failed = total_notebooks - successful
-        print(f"Successfully graded: {successful}/{total_notebooks}")
-        if failed > 0:
-            print(f"Failed to grade: {failed}/{total_notebooks}")
+        print(
+            f"Successfully graded: {total_notebooks - num_failed_grading}/{total_notebooks}"
+        )
+        if num_failed_grading > 0:
+            print(f"Failed to grade: {num_failed_grading}/{total_notebooks}")
 
     return results
