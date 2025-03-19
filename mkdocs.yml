@@ -15,7 +15,11 @@ nav:
 
 plugins:
   - search
-  - mkdocstrings # For API documentation
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            heading_level: -1
 
 # Repository
 repo_name: subwaymatch/jupygrader
