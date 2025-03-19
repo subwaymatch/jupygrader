@@ -74,7 +74,7 @@ def grade_notebooks(
 
     start_time = time.time()
 
-    for idx, item in enumerate(grading_items, 1):
+    for idx, item in enumerate(grading_items, start=1):
         try:
             notebook_path = item.notebook_path
             notebook_name = Path(notebook_path).name
@@ -106,6 +106,10 @@ def grade_notebooks(
             if verbose:
                 print(f"Error: {str(e)}")
                 print(f"Failed to grade notebook: {item.notebook_path}")
+
+        finally:
+            if verbose:
+                print(f"Progress: {round(idx / total_notebooks * 100, 1)}%")
 
     elapsed_time = time.time() - start_time
 

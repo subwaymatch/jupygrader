@@ -29,4 +29,4 @@ def test_batch_grader():
         if file.is_file() and str(file.resolve()) not in test_notebook_set:
             shutil.move(str(file), str(TEST_OUTPUT_DIR / file.name))
 
-    return results
+    assert len(results) == 2

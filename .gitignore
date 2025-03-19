@@ -5,3 +5,6 @@ dist
 htmlcov
 
 tests/**/test-output
+
+# MkDocs site
+site/

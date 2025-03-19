@@ -5,8 +5,13 @@ ipykernel
 tabulate
 black
 bs4
+
 # for grading tests
 pandas
 numpy
 statsmodels
 plotly
+
+# for documentation
+mkdocstrings[python]
+mkdocs-material

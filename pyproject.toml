@@ -23,6 +23,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 
+
 [project.urls]
 Documentation = "https://github.com/subwaymatch/jupygrader#readme"
 Issues = "https://github.com/subwaymatch/jupygrader/issues"
@@ -33,6 +34,10 @@ path = "src/jupygrader/__about__.py"
 
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
+
+[tool.hatch.envs.default.scripts]
+docs-serve = "mkdocs serve"
+docs-build = "mkdocs build"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
@@ -75,3 +80,4 @@ exclude_lines = [
   "if __name__ == .__main__.:",
   "if TYPE_CHECKING:",
 ]
+

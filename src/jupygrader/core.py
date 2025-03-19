@@ -24,6 +24,27 @@ CELL_SCRIPTS_PATH = os.path.join(CWD, "jupyter-cell-scripts")
 
 
 def extract_test_case_metadata_from_code(code_str: str) -> Optional[TestCaseMetadata]:
+    """
+    Extract test case metadata from a code cell string.
+    
+    Parses a code string to extract test case metadata including the test case name,
+    points value, and whether it requires manual grading. The function looks for
+    specific patterns in the code:
+    - _test_case = 'name'  (required)
+    - _points = value      (optional, defaults to 0)
+    - _grade_manually = True/False  (optional, defaults to False)
+    
+    Parameters
+    ----------
+    code_str : str
+        The source code string to parse for test case metadata
+        
+    Returns
+    -------
+    Optional[TestCaseMetadata]
+        A TestCaseMetadata object with extracted values if a test case is found,
+        None otherwise
+    """
     tc_result = re.search(test_case_name_pattern, code_str, flags=re.MULTILINE)
 
     if not tc_result or len(tc_result.groups()) == 0:
@@ -55,6 +76,23 @@ def extract_test_case_metadata_from_code(code_str: str) -> Optional[TestCaseMeta
 def extract_test_cases_metadata_from_notebook(
     nb: NotebookNode,
 ) -> List[TestCaseMetadata]:
+    """
+    Extract metadata from all test cases in a notebook.
+    
+    Iterates through all code cells in the notebook and identifies test case cells
+    by looking for specific pattern markers. For each test case found, extracts
+    the metadata into a TestCaseMetadata object.
+    
+    Parameters
+    ----------
+    nb : NotebookNode
+        The notebook to extract test case metadata from
+        
+    Returns
+    -------
+    List[TestCaseMetadata]
+        A list of TestCaseMetadata objects for all test cases found in the notebook
+    """
     metadata_list: List[TestCaseMetadata] = []
 
     for cell in nb.cells:
@@ -68,6 +106,22 @@ def extract_test_cases_metadata_from_notebook(
 
 
 def does_cell_contain_test_case(cell: NotebookNode) -> bool:
+    """
+    Determine if a notebook cell contains a test case.
+    
+    A cell is considered a test case if it contains the pattern '_test_case = "name"'.
+    This function uses a regular expression to check for this pattern.
+    
+    Parameters
+    ----------
+    cell : NotebookNode
+        The notebook cell to check
+        
+    Returns
+    -------
+    bool
+        True if the cell contains a test case pattern, False otherwise
+    """
     search_result = re.search(test_case_name_pattern, cell.source, flags=re.MULTILINE)
 
     return search_result and (len(search_result.groups()) > 0)
@@ -377,7 +431,6 @@ def save_graded_notebook_to_html(
             + " "
             + (
                 "(manual grading required)"
-                if o.grade_manually
                 else f"({o.points} out of {o.available_points})"
             )
         )

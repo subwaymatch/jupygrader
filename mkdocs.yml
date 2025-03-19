@@ -1,0 +1,24 @@
+site_name: Jupygrader Docuemtnation
+
+theme:
+  name: material
+  logo: images/logo_small_icon.png
+  palette:
+    primary: blue grey
+
+nav:
+  - Home: index.md
+  - Usage: usage.md
+  - API Reference: api.md
+  - Update Docs: docs.md
+
+plugins:
+  - search
+  - mkdocstrings # For API documentation
+
+# Repository
+repo_name: subwaymatch/jupygrader
+repo_url: https://github.com/subwaymatch/jupygrader
+
+# Copyright
+copyright: Copyright &copy; 2025 Ye Joo Park
