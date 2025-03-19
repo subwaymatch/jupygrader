@@ -1,0 +1,15 @@
+File: sample-submission-01.ipynb
+Autograded Score: 5 out of 5
+Passed 2 out of 2 test cases
+1 items will be graded manually.
+5 points are available for manually graded items.
+10 total points are available.
+Grading took 0.02 seconds
+
+Test Case Summary
+-----------------
+calculate-odd-sum: PASS, 2 out of 2 points
+-----------------
+calculate-odd-product: PASS, 3 out of 3 points
+-----------------
+python-discussion: requires manual grading, 5 points available

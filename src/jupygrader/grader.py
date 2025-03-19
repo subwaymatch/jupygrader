@@ -230,18 +230,6 @@ def grade_notebooks(
 
     Raises:
         TypeError: If an element in grading_items is not a supported type.
-
-    Examples:
-        >>> # Grade a list of notebooks
-        >>> results = grade_notebooks(['path/to/notebook1.ipynb', 'path/to/notebook2.ipynb'])
-        >>>
-        >>> # Grade with GradingItemConfig for more options
-        >>> config = GradingItemConfig(
-        ...     notebook_path='path/to/notebook.ipynb',
-        ...     output_path='path/to/output',
-        ...     copy_files=['data.csv']
-        ... )
-        >>> results = grade_notebooks([config])
     """
     temp_grading_items: List[GradingItemConfig] = []
     for item in grading_items:
@@ -332,18 +320,6 @@ def grade_single_notebook(
 
     Returns:
         GradedResult object with detailed grading results, or None if grading failed.
-
-    Examples:
-        >>> # Grade a single notebook by path
-        >>> result = grade_single_notebook('path/to/notebook.ipynb')
-        >>>
-        >>> # Grade with detailed configuration
-        >>> config = GradingItemConfig(
-        ...     notebook_path='path/to/notebook.ipynb',
-        ...     output_path='path/to/output',
-        ...     copy_files=['data.csv']
-        ... )
-        >>> result = grade_single_notebook(config)
     """
     r = grade_notebooks([grading_item], verbose=verbose)
 

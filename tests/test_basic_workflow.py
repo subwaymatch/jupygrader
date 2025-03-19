@@ -9,7 +9,7 @@ TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def test_basic_workflow():
-    notebook_path = TEST_NOTEBOOKS_DIR / "simple" / "simple-test.ipynb"
+    notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / "basic-workflow.ipynb"
 
     result = grade_single_notebook(
         GradingItemConfig(
@@ -19,7 +19,7 @@ def test_basic_workflow():
     )
 
     # Check the accuracy of the result object
-    assert result.filename == "simple-test.ipynb"
+    assert result.filename == "basic-workflow.ipynb"
     assert result.learner_autograded_score == 55
     assert result.max_autograded_score == 60
     assert result.max_manually_graded_score == 10

@@ -6,6 +6,8 @@ theme:
   favicon: images/favicon.png
   palette:
     primary: blue grey
+  features:
+    - content.code.copy
 
 nav:
   - Home: index.md
@@ -20,6 +22,16 @@ plugins:
         python:
           options:
             heading_level: -1
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
 
 # Repository
 repo_name: subwaymatch/jupygrader

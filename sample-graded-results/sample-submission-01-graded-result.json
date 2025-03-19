@@ -1,0 +1,49 @@
+{
+  "filename": "sample-submission-01.ipynb",
+  "learner_autograded_score": 5,
+  "max_autograded_score": 5,
+  "max_manually_graded_score": 5,
+  "max_total_score": 10,
+  "num_autograded_cases": 2,
+  "num_passed_cases": 2,
+  "num_failed_cases": 0,
+  "num_manually_graded_cases": 1,
+  "num_total_test_cases": 3,
+  "grading_finished_at": "2025-03-19 06:49 PM UTC",
+  "grading_duration_in_seconds": 0.02,
+  "test_case_results": [
+    {
+      "test_case_name": "calculate-odd-sum",
+      "points": 2,
+      "available_points": 2,
+      "did_pass": true,
+      "grade_manually": false,
+      "message": ""
+    },
+    {
+      "test_case_name": "calculate-odd-product",
+      "points": 3,
+      "available_points": 3,
+      "did_pass": true,
+      "grade_manually": false,
+      "message": ""
+    },
+    {
+      "test_case_name": "python-discussion",
+      "points": 0,
+      "available_points": 5,
+      "did_pass": null,
+      "grade_manually": true,
+      "message": ""
+    }
+  ],
+  "submission_notebook_hash": "c98c747e12a0456033956759c9daf7a0",
+  "test_cases_hash": "ea8037ca2aedc3c33ec7227962cc2464",
+  "grader_python_version": "3.12.5",
+  "grader_platform": "Windows-11-10.0.26100-SP0",
+  "jupygrader_version": "0.1.6",
+  "extracted_user_code_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01_user_code.py",
+  "graded_html_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01-graded.html",
+  "text_summary_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01-graded-result-summary.txt",
+  "text_summary": "File: sample-submission-01.ipynb\nAutograded Score: 5 out of 5\nPassed 2 out of 2 test cases\n1 items will be graded manually.\n5 points are available for manually graded items.\n10 total points are available.\nGrading took 0.02 seconds\n\nTest Case Summary\n-----------------\ncalculate-odd-sum: PASS, 2 out of 2 points\n-----------------\ncalculate-odd-product: PASS, 3 out of 3 points\n-----------------\npython-discussion: requires manual grading, 5 points available"
+}
