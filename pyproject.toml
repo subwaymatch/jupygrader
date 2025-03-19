@@ -38,6 +38,7 @@ files = ["requirements.txt"]
 [tool.hatch.envs.default.scripts]
 docs-serve = "mkdocs serve"
 docs-build = "mkdocs build"
+docs-deploy = "mkdocs gh-deploy --force"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
