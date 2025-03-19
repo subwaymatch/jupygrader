@@ -1,8 +1,9 @@
-site_name: Jupygrader Docuemtnation
+site_name: Jupygrader Documentation
 
 theme:
   name: material
   logo: images/logo_small_icon.png
+  favicon: images/favicon.png
   palette:
     primary: blue grey
 
@@ -19,6 +20,3 @@ plugins:
 # Repository
 repo_name: subwaymatch/jupygrader
 repo_url: https://github.com/subwaymatch/jupygrader
-
-# Copyright
-copyright: Copyright &copy; 2025 Ye Joo Park

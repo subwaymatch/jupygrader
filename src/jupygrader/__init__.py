@@ -2,7 +2,7 @@
 #
 # SPDX-License-Identifier: MIT
 from .__about__ import __version__
-from .core import (
+from .notebook_operations import (
     extract_test_case_metadata_from_code,
     extract_test_cases_metadata_from_notebook,
     does_cell_contain_test_case,
@@ -12,8 +12,7 @@ from .core import (
     get_test_cases_hash,
 )
 from .types import GradingItemConfig
-from .grader import grade_notebook
-from .batch_grader import grade_notebooks
+from .grader import grade_notebooks, grade_single_notebook
 
 __all__ = [
     "__version__",
@@ -25,6 +24,6 @@ __all__ = [
     "remove_comments",
     "get_test_cases_hash",
     "GradingItemConfig",
-    "grade_notebook",
     "grade_notebooks",
+    "grade_single_notebook",
 ]

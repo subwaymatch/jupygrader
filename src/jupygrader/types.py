@@ -5,6 +5,19 @@ from pathlib import Path
 
 @dataclass
 class GradingItemConfig:
+    """Configuration for grading a single Jupyter notebook.
+
+    This dataclass holds the configuration needed to grade a notebook,
+    including the notebook path, output directory, and any files that
+    should be copied to the grading environment.
+
+    Args:
+        notebook_path: Path to the Jupyter notebook to be graded
+        output_path: Directory where grading results will be saved. Defaults to None.
+        copy_files: Files to be copied to the grading environment.
+            Can be a single file path, a list of file paths, or None. Defaults to None.
+    """
+
     notebook_path: Union[str, Path]
     output_path: Optional[Union[str, Path]] = None
     copy_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None
@@ -12,6 +25,17 @@ class GradingItemConfig:
 
 @dataclass
 class TestCaseMetadata:
+    """Metadata for a test case defined in a notebook.
+
+    Extracted from test case cells in notebooks, this class holds
+    information about the test case name, point value, and grading mode.
+
+    Args:
+        test_case_name: Unique identifier for the test case
+        points: Points awarded for passing this test case
+        grade_manually: Whether this test case should be graded manually
+    """
+
     test_case_name: str
     points: Union[int, float]
     grade_manually: bool
@@ -35,7 +59,22 @@ class TestCaseMetadata:
 
 @dataclass
 class TestCaseResult:
-    """Result of an individual test case in the notebook."""
+    """Result of an individual test case execution in a notebook.
+
+    This class stores the outcome of executing a test case during grading,
+    including the points awarded, whether the test passed, and any output
+    messages generated during execution.
+
+    Args:
+        test_case_name: Unique identifier for the test case. Defaults to "".
+        points: Points awarded for this test case (0 if failed). Defaults to 0.
+        available_points: Maximum possible points for this test case. Defaults to 0.
+        did_pass: Whether the test case passed (True), failed (False),
+            or requires manual grading (None). Defaults to None.
+        grade_manually: Whether this test case should be graded manually. Defaults to False.
+        message: Output message from the test execution, typically contains
+            error information if the test failed. Defaults to "".
+    """
 
     test_case_name: str = ""
     points: Union[int, float] = 0
@@ -47,7 +86,35 @@ class TestCaseResult:
 
 @dataclass
 class GradedResult:
-    """Complete results of grading a notebook."""
+    """Complete results of grading a Jupyter notebook.
+
+    This comprehensive class stores all information related to grading a notebook,
+    including scores, test case results, execution environment details, and file paths
+    for generated outputs.
+
+    Args:
+        filename: Name of the graded notebook file. Defaults to "".
+        learner_autograded_score: Points earned from automatically graded test cases. Defaults to 0.
+        max_autograded_score: Maximum possible points from automatically graded test cases. Defaults to 0.
+        max_manually_graded_score: Maximum possible points from manually graded test cases. Defaults to 0.
+        max_total_score: Total maximum possible points across all test cases. Defaults to 0.
+        num_autograded_cases: Number of automatically graded test cases. Defaults to 0.
+        num_passed_cases: Number of passed test cases. Defaults to 0.
+        num_failed_cases: Number of failed test cases. Defaults to 0.
+        num_manually_graded_cases: Number of test cases requiring manual grading. Defaults to 0.
+        num_total_test_cases: Total number of test cases in the notebook. Defaults to 0.
+        grading_finished_at: Timestamp when grading completed. Defaults to "".
+        grading_duration_in_seconds: Time taken to complete grading. Defaults to 0.0.
+        test_case_results: Detailed results for each individual test case. Defaults to empty list.
+        submission_notebook_hash: MD5 hash of the submitted notebook file. Defaults to "".
+        test_cases_hash: MD5 hash of test case code in the notebook. Defaults to "".
+        grader_python_version: Python version used for grading. Defaults to "".
+        grader_platform: Platform information where grading occurred. Defaults to "".
+        jupygrader_version: Version of Jupygrader used. Defaults to "".
+        extracted_user_code_file: Path to file containing extracted user code. Defaults to None.
+        graded_html_file: Path to HTML output of graded notebook. Defaults to None.
+        text_summary_file: Path to text summary file. Defaults to None.
+    """
 
     filename: str = ""
     learner_autograded_score: Union[int, float] = 0
@@ -73,14 +140,6 @@ class GradedResult:
 
     @property
     def text_summary(self) -> str:
-        """
-        Generates a text summary of the grading results.
-
-        Returns
-        -------
-        str
-            A formatted text summary of the grading results
-        """
         summary_parts = [
             f"File: {self.filename}",
             f"Autograded Score: {self.learner_autograded_score} out of {self.max_autograded_score}",
@@ -122,7 +181,6 @@ class GradedResult:
 
     @classmethod
     def from_dict(cls, data: dict) -> "GradedResult":
-        """Creates a GradedResult instance from a dictionary."""
         # Copy the dictionary to avoid modifying the original
         data_copy = data.copy()
 
@@ -138,7 +196,6 @@ class GradedResult:
         return cls(**data_copy)
 
     def to_dict(self) -> dict:
-        """Converts the GradedResult instance to a dictionary."""
         result_dict = asdict(self)
 
         # Add the computed text_summary to the dictionary
