@@ -38,13 +38,33 @@ item1 = GradingItemConfig(
     output_path='path/to/output1',
     copy_files=['data1.csv']
 )
-
-# You can also specify a dictionary for copy_files to place them in specific locations
-# The key is the source file and the value is the destination path
-# The destination path is relative to the working directory of the Jupyter notebook
 item2 = GradingItemConfig(
     notebook_path='path/to/notebook2.ipynb',
     output_path=None, # Will output to the same path as the notebook2.ipynb file
+    copy_files=None
+)
+
+graded_results = grade_notebooks([item1, item2])
+```
+
+You can also specify a dictionary for `copy_files` to place them in specific locations.
+
+The key is the source file and the value is the destination path.
+
+The destination path is relative to the working directory of the Jupyter notebook.
+
+```python
+from jupygrader import grade_notebooks, GradingItemConfig
+
+item1 = GradingItemConfig(
+    notebook_path='path/to/notebook1.ipynb',
+    copy_files={
+        'my_data.parquet': 'my_data.parquet',
+    }
+)
+
+item2 = GradingItemConfig(
+    notebook_path='path/to/notebook2.ipynb',
     copy_files={
         'data/population.csv': 'another/path/population.csv',
         'titanic.db': 'databases/titanic.db'
@@ -86,3 +106,108 @@ You can grade a single notebook using the `grade_single_notebook` function.
     )
     graded_result = grade_single_notebook(config)
     ```
+
+## 📒 Create an autogradable notebook
+
+The instructor authors only one "solution" notebook, which contains both the solution code and test cases for all graded parts.
+
+### Code cell for learners
+
+Any code between `# YOUR CODE BEGINS` and `# YOUR CODE ENDS` are stripped in the student version.
+
+```python
+import pandas as pd
+
+# YOUR CODE BEGINS
+sample_series = pd.Series([-20, -10, 10, 20])
+# YOUR CODE ENDS
+
+print(sample_series)
+```
+
+nbgrader syntax (`### BEGIN SOLUTION`, `### END SOLUTION`) is also supported.
+
+```python
+import pandas as pd
+
+### BEGIN SOLUTION
+sample_series = pd.Series([-20, -10, 10, 20])
+### END SOLUTION
+
+print(sample_series)
+```
+
+In the student-facing notebook, the code cell will look like:
+
+```python
+import pandas as pd
+
+# YOUR CODE BEGINS
+
+# YOUR CODE ENDS
+
+print(sample_series)
+```
+
+### Graded test cases
+
+A graded test case requires a test case name and an assigned point value.
+
+- The `_test_case` variable should store the name of the test case.
+- The `_points` variable should store the number of points, either as an integer or a float.
+
+```python
+_test_case = 'create-a-pandas-series'
+_points = 2
+
+pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
+```
+
+### Obfuscate test cases
+
+If you want to prevent learners from seeing the test case code, you can optionally set `_obfuscate = True` to base64-encode the test cases.
+
+!!! warning
+
+    This provides only basic obfuscation, and students can easily decode the string to reveal the original code. Supporting a password-based encryption method is planned for future releases.
+
+We may introduce an encryption method in the future.
+
+**Instructor notebook**
+
+```python
+_test_case = 'create-a-pandas-series'
+_points = 2
+_obfuscate = True
+
+pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
+```
+
+**Student notebook**
+
+```python
+# DO NOT CHANGE THE CODE IN THIS CELL
+_test_case = 'create-a-pandas-series'
+_points = 2
+_obfuscate = True
+
+import base64 as _b64
+_64 = _b64.b64decode('cGQudGVzdGluZy5hc3NlcnRfc2VyaWVzX2VxdWFsKHNhbXBsZV9zZXJpZXMsIHBkLlNlcmllcyhbLT\
+IwLCAtMTAsIDEwLCAyMF0pKQ==')
+eval(compile(_64, '<string>', 'exec'))
+```
+
+### Add hidden test cases
+
+Hidden test cases only run while grading.
+
+#### Original test case
+
+```python
+_test_case = 'create-a-pandas-series'
+_points = 2
+
+### BEGIN HIDDEN TESTS
+pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
+### END HIDDEN TESTS
+```

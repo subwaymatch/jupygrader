@@ -20,7 +20,7 @@ def generate_sample_outputs_01():
         SAMPLE_OUTPUT_DIR / "sample-submission-01.ipynb",
     )
 
-    result = grade_notebooks(
+    grade_notebooks(
         [
             GradingItemConfig(
                 notebook_path=notebook_path,

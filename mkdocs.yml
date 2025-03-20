@@ -13,7 +13,7 @@ nav:
   - Home: index.md
   - Usage: usage.md
   - API Reference: api.md
-  - Update Docs: docs.md
+  - Development: development.md
 
 plugins:
   - search
@@ -25,6 +25,11 @@ plugins:
 
 markdown_extensions:
   - admonition
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences

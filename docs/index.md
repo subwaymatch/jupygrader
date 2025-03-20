@@ -10,6 +10,64 @@
 [![PyPI - Version](https://img.shields.io/pypi/v/jupygrader.svg)](https://pypi.org/project/jupygrader)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/jupygrader.svg)](https://pypi.org/project/jupygrader)
 
+Easily grade Jupyter notebooks using test cases and generate detailed reports.
+
+## Sample Usage
+
+```python
+import glob
+from jupygrader import grade_notebooks
+
+# Select all Jupyter notebooks in the "submissions" folder
+notebooks = glob.glob('submissions/*.ipynb')
+
+# Grade notebooks
+graded_results = grade_notebooks(notebooks)
+```
+
+Creating an autogradable item is as simple as adding a cell with a test case name (`_test_case`) and points ( `_points` ) to the notebook.
+
+Assume your student is tasked to calculate the sum of odd numbers in `my_list1` and store it to a new variable named `odd_sum`.
+
+```python
+# Task: Calculate the sum of odd numbers
+# in `my_list1` and store it
+# to a new variable named `odd_sum`.
+
+my_list1 = [1, 2, 3, 4, 5]
+
+# YOUR CODE BEGINS
+odd_sum = 0
+for x in my_list1:
+    if x % 2 != 0:
+        odd_sum += x
+# YOUR CODE ENDS
+```
+
+Add a cell with the following content after the code cell for the student.
+
+```python
+_test_case = "calculate-odd-sum"
+_points = 2
+
+assert odd_sum == 9
+```
+
+For each test case, Jupygrader will mark the test case as ==pass== if the test case cell does not throw an exception. Otherwise, it will mark the test case as ==fail==.
+
+Here is a sample `TestCaseResult` object shown as JSON for the above test case.
+
+```json
+{
+  "test_case_name": "calculate-odd-sum",
+  "points": 2,
+  "available_points": 2,
+  "did_pass": true,
+  "grade_manually": false,
+  "message": ""
+},
+```
+
 ## 📝 Summary
 
 Jupygrader is a Python package for automated grading of Jupyter notebooks. It provides a framework to:

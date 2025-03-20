@@ -10,7 +10,7 @@ import hashlib
 import copy
 from nbconvert import HTMLExporter
 from bs4 import BeautifulSoup
-from jupygrader.types import TestCaseMetadata, GradedResult, TestCaseResult
+from jupygrader.types import TestCaseMetadata, GradedResult
 from pathlib import Path
 from typing import Union, List, Optional
 
