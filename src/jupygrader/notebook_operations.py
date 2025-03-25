@@ -140,11 +140,11 @@ def convert_test_case_using_grader_template(cell: NotebookNode) -> str:
 
     if is_manually_graded_test_case(cell):
         grader_template_code = os.path.join(
-            CELL_SCRIPTS_PATH, "grader-manual-template.py"
+            CELL_SCRIPTS_PATH, "grader_manual_template.py"
         )
         source = cell.source
     else:
-        grader_template_code = os.path.join(CELL_SCRIPTS_PATH, "grader-template.py")
+        grader_template_code = os.path.join(CELL_SCRIPTS_PATH, "grader_template.py")
         source = textwrap.indent(cell.source, "    ")
 
     with open(grader_template_code) as f:
@@ -164,11 +164,11 @@ def preprocess_test_case_cells(nb: NotebookNode) -> NotebookNode:
 
 
 def add_grader_scripts(nb: NotebookNode) -> NotebookNode:
-    with open(os.path.join(CELL_SCRIPTS_PATH, "prepend-to-start-of-notebook.py")) as f:
+    with open(os.path.join(CELL_SCRIPTS_PATH, "prepend_to_start_of_notebook.py")) as f:
         prepend_script = f.read()
         prepend_cell = new_code_cell(prepend_script)
 
-    with open(os.path.join(CELL_SCRIPTS_PATH, "append-to-end-of-notebook.py")) as f:
+    with open(os.path.join(CELL_SCRIPTS_PATH, "append_to_end_of_notebook.py")) as f:
         append_script = f.read()
         append_cell = new_code_cell(append_script)
 

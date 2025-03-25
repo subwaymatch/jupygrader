@@ -10,7 +10,7 @@ from .notebook_operations import (
 )
 from .constants import GRADED_RESULT_JSON_FILENAME
 from .types import GradingItemConfig, GradedResult
-from typing import Union, List
+from typing import Union, List, Optional
 import tempfile
 import nbformat
 from nbclient import NotebookClient
@@ -25,6 +25,7 @@ import uuid
 import copy
 import time
 from datetime import datetime
+import pandas as pd
 
 
 def _grade_item(
@@ -212,6 +213,8 @@ def _grade_item(
 def grade_notebooks(
     grading_items: List[Union[str, Path, GradingItemConfig]],
     verbose: bool = True,
+    export_csv: bool = True,
+    csv_output_path: Optional[Union[str, Path]] = None,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks and report progress.
 
@@ -224,12 +227,16 @@ def grade_notebooks(
             - Path objects pointing to notebook files
             - GradingItemConfig objects with detailed grading configuration
         verbose: Whether to print progress and diagnostic information. Defaults to True.
+        export_csv: Whether to export results to CSV file. Defaults to True.
+        csv_output_path: Optional path for the CSV export. If None, uses current directory.
+            Defaults to None.
 
     Returns:
         List of GradedResult objects containing detailed results for each notebook.
 
     Raises:
         TypeError: If an element in grading_items is not a supported type.
+        ImportError: If pandas is not available when export_csv=True.
     """
     temp_grading_items: List[GradingItemConfig] = []
     for item in grading_items:
@@ -298,6 +305,62 @@ def grade_notebooks(
         )
         if num_failed_grading > 0:
             print(f"Failed to grade: {num_failed_grading}/{total_notebooks}")
+
+    # Export results to CSV if requested
+    if export_csv and results:
+        # Create timestamp for CSV filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"graded_results_{timestamp}.csv"
+
+        # Determine the output path
+        if csv_output_path is None:
+            csv_path = Path(csv_filename)
+
+        else:
+            csv_output_path = Path(csv_output_path)
+
+            if csv_output_path.is_dir():
+                csv_path = Path(csv_output_path) / csv_filename
+                csv_path.parent.mkdir(parents=True, exist_ok=True)
+            else:
+                csv_path = Path(csv_output_path)
+
+        # Extract main attributes from GradedResult objects
+        data = []
+        for result in results:
+            # Create a dictionary with selected attributes
+            result_dict = {
+                "filename": result.filename,
+                "learner_autograded_score": result.learner_autograded_score,
+                "max_autograded_score": result.max_autograded_score,
+                "max_manually_graded_score": result.max_manually_graded_score,
+                "max_total_score": result.max_total_score,
+                "num_autograded_cases": result.num_autograded_cases,
+                "num_passed_cases": result.num_passed_cases,
+                "num_failed_cases": result.num_failed_cases,
+                "num_manually_graded_cases": result.num_manually_graded_cases,
+                "num_total_test_cases": result.num_total_test_cases,
+                "grading_finished_at": result.grading_finished_at,
+                "grading_duration_in_seconds": result.grading_duration_in_seconds,
+                "submission_notebook_hash": result.submission_notebook_hash,
+                "test_cases_hash": result.test_cases_hash,
+                "grader_python_version": result.grader_python_version,
+                "grader_platform": result.grader_platform,
+                "text_summary": result.text_summary,
+            }
+            data.append(result_dict)
+
+        # Create DataFrame and export
+        df = pd.DataFrame(data)
+
+        # Ensure the directory exists
+        csv_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Export to CSV
+        df.to_csv(csv_path, index=False)
+
+        if verbose:
+            print(f"Results exported to CSV: {csv_path}")
 
     return results
 

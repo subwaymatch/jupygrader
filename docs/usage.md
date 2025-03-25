@@ -27,7 +27,11 @@ from jupygrader import grade_notebooks
 graded_results = grade_notebooks(['path/to/notebook1.ipynb', 'path/to/notebook2.ipynb'])
 ```
 
-You can specify the output path and copy files to the working directory for each notebook by using a `GradingItemConfig` dataclass.
+!!! info "Custom Output Path and File Copying"
+
+    You can specify the output path and copy files to the working directory for each notebook by using a `GradingItemConfig` dataclass.
+
+    See the example below.
 
 ```python
 from jupygrader import grade_notebooks, GradingItemConfig
@@ -169,9 +173,7 @@ If you want to prevent learners from seeing the test case code, you can optional
 
 !!! warning
 
-    This provides only basic obfuscation, and students can easily decode the string to reveal the original code. Supporting a password-based encryption method is planned for future releases.
-
-We may introduce an encryption method in the future.
+    This provides only basic obfuscation, and students with technical knowledge can easily decode the string to reveal the original code. Supporting a password-based encryption method is planned for future releases.
 
 **Instructor notebook**
 

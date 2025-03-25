@@ -19,7 +19,9 @@ def test_batch_grader():
         for notebook in test_notebook_paths
     ]
 
-    results = jupygrader.grade_notebooks(grading_items=grading_items)
+    results = jupygrader.grade_notebooks(
+        grading_items=grading_items, csv_output_path=TEST_OUTPUT_DIR
+    )
 
     # Cleanup
     test_notebook_set = {str(Path(tp).resolve()) for tp in test_notebook_paths}

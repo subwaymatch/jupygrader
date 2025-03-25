@@ -72,6 +72,8 @@ hatch run docs-build # Build docs
 
 ## Deploy Docs to GitHub Pages
 
+This is automated by GitHub Actions, but can be used to manually deploy changes without pushing to the main branch.
+
 ```sh
 hatch run mkdocs gh-deploy
 ```
