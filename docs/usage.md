@@ -167,7 +167,7 @@ _points = 2
 pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
 ```
 
-### Obfuscate test cases
+### Obfuscate test cases (Work-in-progress)
 
 If you want to prevent learners from seeing the test case code, you can optionally set `_obfuscate = True` to base64-encode the test cases.
 

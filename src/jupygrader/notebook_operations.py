@@ -132,6 +132,17 @@ def is_manually_graded_test_case(cell: NotebookNode) -> bool:
 
 
 def convert_test_case_using_grader_template(cell: NotebookNode) -> str:
+    """Convert a test case cell to use the grader template.
+
+    Transforms a test case cell by wrapping it with the appropriate grader template
+    based on whether it's manually graded or automatically graded.
+
+    Args:
+        cell: The notebook cell containing a test case
+
+    Returns:
+        Modified source code with the test case wrapped in a grader template
+    """
     if not does_cell_contain_test_case(cell):
         # do nothing if not a test case cell
         return
@@ -156,6 +167,17 @@ def convert_test_case_using_grader_template(cell: NotebookNode) -> str:
 
 
 def preprocess_test_case_cells(nb: NotebookNode) -> NotebookNode:
+    """Process all test case cells in a notebook to use grader templates.
+
+    Identifies all cells containing test cases and converts each one using
+    the appropriate grader template.
+
+    Args:
+        nb: The notebook to process
+
+    Returns:
+        The notebook with all test case cells converted to use grader templates
+    """
     for cell in nb.cells:
         if does_cell_contain_test_case(cell):
             convert_test_case_using_grader_template(cell)
@@ -164,6 +186,17 @@ def preprocess_test_case_cells(nb: NotebookNode) -> NotebookNode:
 
 
 def add_grader_scripts(nb: NotebookNode) -> NotebookNode:
+    """Add grader scripts to the beginning and end of a notebook.
+
+    Inserts a cell with setup code at the beginning of the notebook and
+    a cell with grading code at the end of the notebook.
+
+    Args:
+        nb: The notebook to add grader scripts to
+
+    Returns:
+        The notebook with grader scripts added
+    """
     with open(os.path.join(CELL_SCRIPTS_PATH, "prepend_to_start_of_notebook.py")) as f:
         prepend_script = f.read()
         prepend_cell = new_code_cell(prepend_script)
@@ -179,6 +212,16 @@ def add_grader_scripts(nb: NotebookNode) -> NotebookNode:
 
 
 def remove_grader_scripts(nb: NotebookNode) -> NotebookNode:
+    """Remove grader scripts from the beginning and end of a notebook.
+
+    Removes the first and last cells that were added by Jupygrader.
+
+    Args:
+        nb: The notebook to remove grader scripts from
+
+    Returns:
+        The notebook with grader scripts removed
+    """
     # remove prepend, append cells added by Jupygrader before storing to HTML
     nb.cells.pop(0)  # first cell (added by Jupygrader)
     nb.cells.pop()  # last cell (added by Jupygrader)
@@ -187,6 +230,16 @@ def remove_grader_scripts(nb: NotebookNode) -> NotebookNode:
 
 
 def extract_user_code_from_notebook(nb: NotebookNode) -> str:
+    """Extract user code from a notebook.
+
+    Collects all code from non-test-case code cells in the notebook.
+
+    Args:
+        nb: The notebook to extract code from
+
+    Returns:
+        String containing all user code concatenated with newlines
+    """
     full_code = ""
 
     for cell in nb.cells:
@@ -203,6 +256,18 @@ def extract_user_code_from_notebook(nb: NotebookNode) -> str:
 def replace_test_case(
     nb: NotebookNode, test_case_name: str, new_test_case_code: str
 ) -> NotebookNode:
+    """Replace a test case in a notebook with new code.
+
+    Finds a test case with the specified name and replaces its code.
+
+    Args:
+        nb: The notebook containing the test case
+        test_case_name: Name of the test case to replace
+        new_test_case_code: New code to use for the test case
+
+    Returns:
+        The notebook with the specified test case replaced
+    """
     for cell in nb.cells:
         if (cell.cell_type == "code") and does_cell_contain_test_case(cell):
             test_case_metadata = extract_test_case_metadata_from_code(cell.source)
@@ -214,6 +279,17 @@ def replace_test_case(
 
 
 def remove_comments(source: str) -> str:
+    """Remove comments from Python source code.
+
+    Removes both single line comments (starting with #) and
+    multi-line comments (/* ... */), while preserving strings.
+
+    Args:
+        source: Python source code as string
+
+    Returns:
+        Source code with comments removed
+    """
     pattern = r"(\".*?\"|\'.*?\')|(/\*.*?\*/|#[^\r\n]*$)"
     # first group captures quoted strings (double or single)
     # second group captures comments (# single-line or /* multi-line */)
@@ -231,6 +307,17 @@ def remove_comments(source: str) -> str:
 
 
 def get_test_cases_hash(nb: NotebookNode) -> str:
+    """Generate a hash of all test cases in a notebook.
+
+    Creates a standardized representation of all test case cells by
+    removing comments and formatting with Black, then generates an MD5 hash.
+
+    Args:
+        nb: The notebook to generate a hash for
+
+    Returns:
+        MD5 hash string representing the test cases
+    """
     test_cases_code = ""
 
     for cell in nb.cells:
@@ -251,6 +338,18 @@ def get_test_cases_hash(nb: NotebookNode) -> str:
 def add_graded_result_to_notebook(
     nb: NotebookNode, graded_result: GradedResult
 ) -> NotebookNode:
+    """Add grading results to the beginning of a notebook.
+
+    Creates markdown cells containing a summary of grading results,
+    including scores, test case outcomes, and metadata about the grading process.
+
+    Args:
+        nb: The notebook to add results to
+        graded_result: Grading result data to add
+
+    Returns:
+        Notebook with grading results added at the beginning
+    """
     gr_cells = []
 
     # add result summary
@@ -362,6 +461,17 @@ def save_graded_notebook_to_html(
     output_path: Union[str, Path],
     graded_result: GradedResult,
 ):
+    """Save a graded notebook as HTML with enhanced navigation.
+
+    Converts the notebook to HTML and adds a sidebar with links to test case results
+    and back-to-top functionality. Also adds styling for the graded results.
+
+    Args:
+        nb: The notebook to convert
+        html_title: Title for the HTML document
+        output_path: Path where the HTML file will be saved
+        graded_result: Grading results to use for the sidebar links
+    """
     html_exporter = HTMLExporter()
     r = html_exporter.from_notebook_node(
         nb, resources={"metadata": {"name": html_title}}

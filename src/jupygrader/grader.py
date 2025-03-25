@@ -397,6 +397,6 @@ def grade_single_notebook(
     Returns:
         GradedResult object with detailed grading results, or None if grading failed.
     """
-    r = grade_notebooks([grading_item], verbose=verbose)
+    r = grade_notebooks([grading_item], verbose=verbose, export_csv=False)
 
     return r[0] if len(r) > 0 else None

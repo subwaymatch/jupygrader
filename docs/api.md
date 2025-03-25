@@ -124,3 +124,21 @@
 ### `jupygrader.is_manually_graded_test_case()`
 
 ::: jupygrader.is_manually_graded_test_case
+
+---
+
+### `jupygrader.extract_user_code_from_notebook()`
+
+::: jupygrader.extract_user_code_from_notebook
+
+---
+
+### `jupygrader.remove_comments()`
+
+::: jupygrader.remove_comments
+
+---
+
+### `jupygrader.get_test_cases_hash()`
+
+::: jupygrader.get_test_cases_hash

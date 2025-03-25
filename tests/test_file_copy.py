@@ -37,7 +37,7 @@ def test_file_copy():
         },
     )
 
-    results = grade_notebooks([item1, item2], verbose=False)
+    results = grade_notebooks([item1, item2], verbose=False, export_csv=False)
 
     assert results[0].learner_autograded_score == 30
     assert results[0].max_total_score == 30
