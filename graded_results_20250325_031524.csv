@@ -1,0 +1,23 @@
+filename,learner_autograded_score,max_autograded_score,max_manually_graded_score,max_total_score,num_autograded_cases,num_passed_cases,num_failed_cases,num_manually_graded_cases,num_total_test_cases,grading_finished_at,grading_duration_in_seconds,submission_notebook_hash,test_cases_hash,grader_python_version,grader_platform,text_summary
+file-copy-test-list.ipynb,30,30,0,30,3,3,0,0,3,2025-03-25 08:15 AM UTC,0.05,93dbcc1148ef7c060d0cfe0dc8863e78,a8a8e60c1217cde4c7faf4ca375f2b7e,3.12.5,Windows-11-10.0.26100-SP0,"File: file-copy-test-list.ipynb
+Autograded Score: 30 out of 30
+Passed 3 out of 3 test cases
+Grading took 0.05 seconds
+
+Test Case Summary
+-----------------
+tc-read-files-01: PASS, 10 out of 10 points
+-----------------
+tc-read-files-02: PASS, 10 out of 10 points
+-----------------
+tc-read-files-03: PASS, 10 out of 10 points"
+file-copy-test-dict.ipynb,20,20,0,20,2,2,0,0,2,2025-03-25 08:15 AM UTC,0.03,028bc4214d1b91bb2571034faf60a569,ba9fdbe9055872d16a9b2c6ff596d51c,3.12.5,Windows-11-10.0.26100-SP0,"File: file-copy-test-dict.ipynb
+Autograded Score: 20 out of 20
+Passed 2 out of 2 test cases
+Grading took 0.03 seconds
+
+Test Case Summary
+-----------------
+tc-read-files-01: PASS, 10 out of 10 points
+-----------------
+tc-read-files-02: PASS, 10 out of 10 points"

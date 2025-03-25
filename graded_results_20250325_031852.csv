@@ -1,0 +1,27 @@
+filename,learner_autograded_score,max_autograded_score,max_manually_graded_score,max_total_score,num_autograded_cases,num_passed_cases,num_failed_cases,num_manually_graded_cases,num_total_test_cases,grading_finished_at,grading_duration_in_seconds,submission_notebook_hash,test_cases_hash,grader_python_version,grader_platform,text_summary
+basic-workflow.ipynb,55,60,10,70,6,5,1,1,7,2025-03-25 08:18 AM UTC,2.72,db27041c56c950cc4d94a81bcc942a76,92bb709b9df7d041c7d99d83ffb75102,3.12.5,Windows-11-10.0.26100-SP0,"File: basic-workflow.ipynb
+Autograded Score: 55 out of 60
+Passed 5 out of 6 test cases
+1 items will be graded manually.
+10 points are available for manually graded items.
+70 total points are available.
+Grading took 2.72 seconds
+
+Test Case Summary
+-----------------
+tc-01: PASS, 5 out of 5 points
+-----------------
+tc-02: PASS, 10 out of 10 points
+-----------------
+tc-03: PASS, 10 out of 10 points
+-----------------
+tc-04: PASS, 15 out of 15 points
+-----------------
+tc-05: FAIL, 0 out of 5 points
+
+[Autograder Output]
+AssertionError: 5.0 != 5.25
+-----------------
+tc-06: PASS, 15 out of 15 points
+-----------------
+tc-07: requires manual grading, 10 points available"

@@ -1,0 +1,7 @@
+filename,learner_autograded_score,max_autograded_score,max_manually_graded_score,max_total_score,num_autograded_cases,num_passed_cases,num_failed_cases,num_manually_graded_cases,num_total_test_cases,grading_finished_at,grading_duration_in_seconds,submission_notebook_hash,test_cases_hash,grader_python_version,grader_platform,text_summary
+no-test-cases-test.ipynb,0,0,0,0,0,0,0,0,0,2025-03-25 08:15 AM UTC,0.01,dd1a6ee9f72bed13ffd40f07d316e35e,d41d8cd98f00b204e9800998ecf8427e,3.12.5,Windows-11-10.0.26100-SP0,"File: no-test-cases-test.ipynb
+Autograded Score: 0 out of 0
+Passed 0 out of 0 test cases
+Grading took 0.01 seconds
+
+Test Case Summary"

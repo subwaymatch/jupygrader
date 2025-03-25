@@ -32,6 +32,21 @@ def _grade_item(
     grading_item: GradingItemConfig,
     verbose: bool = True,
 ) -> GradedResult:
+    """Grade a single notebook based on a GradingItemConfig.
+
+    Internal helper function that performs the actual grading process.
+
+    Args:
+        grading_item: Configuration for the notebook to grade
+        verbose: Whether to print progress information. Defaults to True.
+
+    Returns:
+        GradedResult object containing grading results
+
+    Raises:
+        FileNotFoundError: If the notebook file doesn't exist
+        NotADirectoryError: If output_path is not a directory
+    """
     # Convert notebook_path to an absolute Path object
     notebook_path = Path(grading_item.notebook_path).resolve()
 
@@ -315,15 +330,13 @@ def grade_notebooks(
         # Determine the output path
         if csv_output_path is None:
             csv_path = Path(csv_filename)
-
         else:
             csv_output_path = Path(csv_output_path)
-
-            if csv_output_path.is_dir():
-                csv_path = Path(csv_output_path) / csv_filename
-                csv_path.parent.mkdir(parents=True, exist_ok=True)
-            else:
-                csv_path = Path(csv_output_path)
+            csv_path = (
+                csv_output_path / csv_filename
+                if csv_output_path.is_dir()
+                else csv_output_path
+            )
 
         # Extract main attributes from GradedResult objects
         data = []
