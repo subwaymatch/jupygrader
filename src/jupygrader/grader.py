@@ -101,9 +101,7 @@ def _grade_item(
                     src_path = Path(src).resolve()
 
                     try:
-                        relative_path = src_path.relative_to(
-                            grading_item.notebook_path.parent
-                        )
+                        relative_path = src_path.relative_to(notebook_path.parent)
                     except ValueError:
                         # If the file is not a subpath of the notebook's parent directory, copy it to the same folder as the notebook
                         relative_path = src_path.name
