@@ -81,8 +81,6 @@ def _grade_item(
     original_cwd = os.getcwd()
 
     try:
-        # Change the current working directory to the temporary directory
-        os.chdir(temp_workdir_path)
 
         # Create a temporary path for the notebook
         temp_notebook_path = temp_workdir_path / filename
@@ -101,9 +99,15 @@ def _grade_item(
             if isinstance(grading_item.copy_files, list):
                 for src in grading_item.copy_files:
                     src_path = Path(src).resolve()
-                    relative_path = src_path.relative_to(
-                        grading_item.notebook_path.parent
-                    )
+
+                    try:
+                        relative_path = src_path.relative_to(
+                            grading_item.notebook_path.parent
+                        )
+                    except ValueError:
+                        # If the file is not a subpath of the notebook's parent directory, copy it to the same folder as the notebook
+                        relative_path = src_path.name
+
                     dest = temp_workdir_path / relative_path
                     copy_files_dict[src] = dest
 
@@ -129,6 +133,9 @@ def _grade_item(
 
         if verbose:
             print(f"Grading {temp_notebook_path}")
+
+        # Change the current working directory to the temporary directory
+        os.chdir(temp_workdir_path)
 
         # Create a NotebookClient to execute the notebook
         client = NotebookClient(
