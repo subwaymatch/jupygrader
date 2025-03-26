@@ -26,12 +26,6 @@
   - [Add hidden test cases](#add-hidden-test-cases)
 - [🔧 Utility functions](#-utility-functions)
   - [Replace test cases](#replace-test-cases)
-- [💻 Development](#-development)
-  - [Test project](#test-project)
-  - [Generate a code coverage report](#generate-a-code-coverage-report)
-  - [Build artifact](#build-artifact)
-  - [Install the built package locally](#install-the-built-package-locally)
-  - [Publish to PyPI](#publish-to-pypi)
 - [📄 License](#-license)
 
 ## 📝 Summary
@@ -252,67 +246,6 @@ new_test_cases = {
 
 for tc_name, new_tc_code in new_test_cases.items():
     jupygrader.replace_test_case(nb, tc_name, new_tc_code)
-```
-
-## 💻 Development
-
-### Test project
-
-`hatch` uses `pytest` as the test runner. All tests are defined in the `tests/` directory.
-
-```console
-hatch test
-```
-
-Print a code coverage table by using the `--cover` flag.
-
-```console
-hatch test --cover
-```
-
-### Generate a code coverage report
-
-```console
-hatch run test:cov-html
-
-# Output:
-# Wrote HTML report to htmlcov\index.html
-```
-
-### Build artifact
-
-This creates a distribution package, which can be uploaded to PyPI.
-
-- Source distribution (sdist): `dist\jupygrader-...tar.gz`
-- Wheel distribution (wheel): `dist\jupygrader-...-py3-none-any.whl`
-
-```console
-hatch build
-```
-
-### Install the built package locally
-
-```console
-pip install dist\jupygrader-...-py3-none-any.whl
-```
-
-### Publish to PyPI
-
-```console
-hatch publish
-
-# username: __token__
-# password: [your-token-value]
-```
-
-Alternatively, you can create a `~/.pypirc` file with the token credentials.
-
-`~/.pypirc`
-
-```plaintext
-[pypi]
-username = __token__
-password = [your-token-value]
 ```
 
 ## 📄 License

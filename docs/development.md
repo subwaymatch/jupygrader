@@ -63,11 +63,16 @@ username = __token__
 password = [your-token-value]
 ```
 
-## Updating Documentation
+## Previewing documentation in development mode
 
 ```sh
-hatch run docs-serve # Serve docs
-hatch run docs-build # Build docs
+hatch run docs:serve
+```
+
+## Building documentation
+
+```sh
+hatch run docs:build
 ```
 
 ## Deploy Docs to GitHub Pages
@@ -75,5 +80,5 @@ hatch run docs-build # Build docs
 This is automated by GitHub Actions, but can be used to manually deploy changes without pushing to the main branch.
 
 ```sh
-hatch run mkdocs gh-deploy
+hatch run docs:deploy
 ```

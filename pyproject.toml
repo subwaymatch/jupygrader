@@ -1,15 +1,15 @@
 [build-system]
-requires = ["hatchling", "hatch-requirements-txt"]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "jupygrader"
-dynamic = ["version", "dependencies"]
+dynamic = ["version"]
 description = 'Grade Jupyter notebooks with Python scripts'
 readme = "README.md"
 requires-python = ">=3.8"
 license = "MIT"
-keywords = []
+keywords = ["jupyter", "grading", "autograding", "autograder"]
 authors = [
   { name = "Ye Joo Park", email = "subwaymatch@gmail.com" },
 ]
@@ -22,23 +22,44 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
 ]
+dependencies = [
+    "nbformat",
+    "nbconvert",
+    "nbclient",
+    "ipykernel",
+    "tabulate",
+    "click",
+    "bs4",
+    "pandas",
+    "numpy",
+    "statsmodels",
+    "plotly",
+    "black",
+]
 
+[project.optional-dependencies]
+docs = [
+    "mkdocstrings[python]",
+    "mkdocs-material"
+]
 
 [project.urls]
 Documentation = "https://github.com/subwaymatch/jupygrader#readme"
-Issues = "https://github.com/subwaymatch/jupygrader/issues"
 Source = "https://github.com/subwaymatch/jupygrader"
+
+[project.scripts]
+jupy = "jupygrader.cli:cli"
 
 [tool.hatch.version]
 path = "src/jupygrader/__about__.py"
 
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
+[tool.hatch.envs.docs]
+features = ["docs"]
 
-[tool.hatch.envs.default.scripts]
-docs-serve = "mkdocs serve"
-docs-build = "mkdocs build"
-docs-deploy = "mkdocs gh-deploy --force"
+[tool.hatch.envs.docs.scripts]
+serve = "mkdocs serve"
+build = "mkdocs build"
+deploy = "mkdocs gh-deploy --force"
 
 [tool.hatch.envs.types]
 extra-dependencies = [
