@@ -25,4 +25,4 @@ jobs:
         run: pip install hatch
 
       - name: Deploy MkDocs
-        run: hatch run docs-deploy
+        run: hatch run docs:deploy
