@@ -11,7 +11,8 @@ theme:
 
 nav:
   - Home: index.md
-  - Usage: usage.md
+  - Using as a Python library: usage-library.md
+  - Using the command-line tool: usage-cli.md
   - API Reference: api.md
   - Development: development.md
 

@@ -1,4 +1,4 @@
-# Usage
+# Using `jupygrader` as a library
 
 ## 📦 Installation
 
