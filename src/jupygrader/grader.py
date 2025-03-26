@@ -101,7 +101,9 @@ def _grade_item(
             if isinstance(grading_item.copy_files, list):
                 for src in grading_item.copy_files:
                     src_path = Path(src).resolve()
-                    relative_path = src_path.relative_to(notebook_path.parent)
+                    relative_path = src_path.relative_to(
+                        grading_item.notebook_path.parent
+                    )
                     dest = temp_workdir_path / relative_path
                     copy_files_dict[src] = dest
 
