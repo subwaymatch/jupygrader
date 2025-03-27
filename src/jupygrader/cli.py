@@ -216,7 +216,7 @@ def batch(
         start_time = time.time()
 
         results = grade_notebooks(
-            grading_items=grading_items,
+            items_to_grade=grading_items,
             verbose=not quiet,
             export_csv=export_csv,
             csv_output_path=output_path,
