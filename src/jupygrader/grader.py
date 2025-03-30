@@ -377,6 +377,7 @@ def _export_results_to_csv(
 
 def grade_notebooks(
     items_to_grade: List[Union[str, Path, GradingItemConfig, dict]],
+    *,
     verbose: bool = True,
     export_csv: bool = True,
     csv_output_path: Optional[Union[str, Path]] = None,
@@ -475,6 +476,7 @@ def grade_notebooks(
 
 def grade_single_notebook(
     grading_item: Union[str, Path, GradingItemConfig, dict],
+    *,
     verbose: bool = True,
 ) -> Union[GradedResult, None]:
     """Grade a single Jupyter notebook.
