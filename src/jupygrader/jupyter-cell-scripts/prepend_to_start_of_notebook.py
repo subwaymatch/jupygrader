@@ -1,6 +1,5 @@
 # Jupygrader Before File Code
 # REMOVE_IN_HTML_OUTPUT
-import datetime
 from typing import Union
 from jupygrader.types import GradedResult, TestCaseResult
 

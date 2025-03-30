@@ -1,7 +1,6 @@
 # Jupygrader After File Code
 # REMOVE_IN_HTML_OUTPUT
 import json
-import datetime
 from jupygrader.constants import GRADED_RESULT_JSON_FILENAME
 
 _graded_result.num_total_test_cases = len(_graded_result.test_case_results)
