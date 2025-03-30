@@ -49,6 +49,54 @@ def _validate_paths(
     return notebook_path, output_path
 
 
+def _copy_required_files(
+    grading_item: GradingItemConfig,
+    notebook_path: Path,
+    temp_workdir_path: Path,
+    verbose: bool,
+) -> None:
+    """Copy notebook and any additional required files to the temporary directory."""
+    filename = notebook_path.name
+    temp_notebook_path = temp_workdir_path / filename
+    # Attempt to preserve the metadata using shutil.copy2()
+    shutil.copy2(notebook_path, temp_notebook_path)
+
+    if not grading_item.copy_files:
+        return
+
+    copy_files_dict = (
+        {}
+        if isinstance(grading_item.copy_files, list)
+        else copy.deepcopy(grading_item.copy_files)
+    )
+
+    if isinstance(grading_item.copy_files, list):
+        for src in grading_item.copy_files:
+            src_path = Path(src).resolve()
+            try:
+                relative_path = src_path.relative_to(notebook_path.parent)
+            except ValueError:
+                # If the file is not a subpath of the notebook's parent directory, copy it to the same folder as the notebook
+                relative_path = Path(src_path.name)
+            dest = temp_workdir_path / relative_path
+            copy_files_dict[src_path] = dest
+
+    for src, dest in copy_files_dict.items():
+        src_path = Path(src).resolve()  # Convert back to Path if needed
+        dest = temp_workdir_path / dest
+
+        if verbose:
+            print(f"Copying {src_path} to {dest}...")
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        if src_path.exists():
+            if src_path.is_file():
+                shutil.copy2(src_path, dest)
+            elif src_path.is_dir():
+                shutil.copytree(src_path, dest, dirs_exist_ok=True)
+        else:
+            print(f"Warning: Source file/dir not found, skipping copy: {src_path}")
+
+
 def _grade_item(
     grading_item: GradingItemConfig,
     verbose: bool = True,
@@ -68,29 +116,11 @@ def _grade_item(
         FileNotFoundError: If the notebook file doesn't exist
         NotADirectoryError: If output_path is not a directory
     """
-    # Convert notebook_path to an absolute Path object
-    notebook_path = Path(grading_item.notebook_path).resolve()
-
-    # Ensure the notebook file exists
-    if not notebook_path.exists():
-        raise FileNotFoundError(f"Notebook file not found: {notebook_path}")
-
+    notebook_path, output_path = _validate_paths(
+        grading_item.notebook_path, grading_item.output_path
+    )
     # Extract the filename from the path
     filename = notebook_path.name
-
-    # By default, use the notebook's parent directory as the output path
-    output_path = notebook_path.parent
-
-    # If output_path is provided, use it instead
-    if grading_item.output_path is not None:
-        # Convert output_path to an absolute Path object
-        output_path = Path(grading_item.output_path).resolve()
-
-    # Create the output directory if it does not exist
-    if not output_path.exists():
-        output_path.mkdir(parents=True, exist_ok=True)
-    elif not output_path.is_dir():
-        raise NotADirectoryError(f"Output path is not a directory: {output_path}")
 
     # Create a temporary random directory for grading
     temp_workdir_path = Path(tempfile.gettempdir()) / (
@@ -102,41 +132,10 @@ def _grade_item(
     original_cwd = os.getcwd()
 
     try:
+        # Copy notebook and other files
+        _copy_required_files(grading_item, notebook_path, temp_workdir_path, verbose)
 
-        # Create a temporary path for the notebook
         temp_notebook_path = temp_workdir_path / filename
-
-        # Copy the original notebook to the temporary directory
-        # Attempt to preserve the metadata using shutil.copy2()
-        shutil.copy2(notebook_path, temp_notebook_path)
-
-        # Copy additional files if provided
-        if grading_item.copy_files:
-            copy_files_dict = (
-                {}
-                if type(grading_item.copy_files) is list
-                else copy.deepcopy(grading_item.copy_files)
-            )
-            if isinstance(grading_item.copy_files, list):
-                for src in grading_item.copy_files:
-                    src_path = Path(src).resolve()
-
-                    try:
-                        relative_path = src_path.relative_to(notebook_path.parent)
-                    except ValueError:
-                        # If the file is not a subpath of the notebook's parent directory, copy it to the same folder as the notebook
-                        relative_path = src_path.name
-
-                    dest = temp_workdir_path / relative_path
-                    copy_files_dict[src] = dest
-
-            for src, dest in copy_files_dict.items():
-                src_path = Path(src).resolve()
-                dest_path = temp_workdir_path / dest
-                if verbose:
-                    print(f"Copying {src_path} to {dest_path}...")
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(src_path, dest_path)
 
         # Read the notebook from the temporary path
         nb = nbformat.read(temp_notebook_path, as_version=4)
