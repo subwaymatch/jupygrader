@@ -9,7 +9,7 @@ TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def test_file_copy():
-    item1 = GradingItemConfig(
+    item_copy_list = GradingItemConfig(
         notebook_path=TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-list.ipynb",
         output_path=TEST_OUTPUT_DIR,
         copy_files=[
@@ -23,7 +23,7 @@ def test_file_copy():
         ],
     )
 
-    item2 = GradingItemConfig(
+    item_copy_dict = GradingItemConfig(
         notebook_path=TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-dict.ipynb",
         output_path=TEST_OUTPUT_DIR,
         copy_files={
@@ -37,7 +37,9 @@ def test_file_copy():
         },
     )
 
-    results = grade_notebooks([item1, item2], verbose=False, export_csv=False)
+    results = grade_notebooks(
+        [item_copy_list, item_copy_dict], verbose=False, export_csv=False
+    )
 
     assert results[0].learner_autograded_score == 30
     assert results[0].max_total_score == 30
