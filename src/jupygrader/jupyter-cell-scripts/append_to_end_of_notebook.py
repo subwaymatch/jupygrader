@@ -4,12 +4,6 @@ import json
 import datetime
 from jupygrader.constants import GRADED_RESULT_JSON_FILENAME
 
-grading_end_time = datetime.datetime.now(datetime.timezone.utc)
-
-_graded_result.grading_finished_at = grading_end_time.strftime("%Y-%m-%d %I:%M %p %Z")
-_graded_result.grading_duration_in_seconds = round(
-    (grading_end_time - grading_start_time).total_seconds(), 2
-)
 _graded_result.num_total_test_cases = len(_graded_result.test_case_results)
 
 for test_case_result in _graded_result.test_case_results:

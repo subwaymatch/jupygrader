@@ -4,8 +4,6 @@ import datetime
 from typing import Union
 from jupygrader.types import GradedResult, TestCaseResult
 
-grading_start_time = datetime.datetime.now(datetime.timezone.utc)
-
 _graded_result = GradedResult()
 
 is_jupygrader_env = True

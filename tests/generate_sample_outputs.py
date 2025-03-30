@@ -2,7 +2,7 @@ from jupygrader import grade_notebooks, GradingItemConfig
 from pathlib import Path
 import shutil
 
-TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-notebooks"
+TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
 SAMPLE_OUTPUT_DIR = Path(__file__).resolve().parent.parent / "sample-graded-results"
 
 # Create the output directory if it doesn't exist
