@@ -11,7 +11,7 @@ from datetime import datetime
 from jupygrader import (
     grade_single_notebook,
     grade_notebooks,
-    GradingItemConfig,
+    GradingItem,
     __version__,
 )
 
@@ -74,8 +74,8 @@ def grade(notebook_path, output_path, copy_files, quiet):
     # Create the output directory if it doesn't exist
     Path(output_path).mkdir(parents=True, exist_ok=True)
 
-    # Create GradingItemConfig object
-    item_config = GradingItemConfig(
+    # Create GradingItem object
+    item_config = GradingItem(
         notebook_path=notebook_path,
         output_path=output_path,
         copy_files=list(copy_files) if copy_files else None,
@@ -201,9 +201,9 @@ def batch(
     if no_export_csv:
         export_csv = False
 
-    # Create GradingItemConfig objects for each notebook
+    # Create GradingItem objects for each notebook
     grading_items = [
-        GradingItemConfig(
+        GradingItem(
             notebook_path=path, output_path=output_path, copy_files=copy_files_list
         )
         for path in paths

@@ -8,8 +8,9 @@ from .notebook_operations import (
     extract_user_code_from_notebook,
     save_graded_notebook_to_html,
 )
+from .utils import download_file
 from .constants import GRADED_RESULT_JSON_FILENAME
-from .types import GradingItemConfig, GradedResult
+from .types import GradingItem, GradedResult
 from typing import Union, List, Tuple, Optional, Iterator
 import tempfile
 import nbformat
@@ -52,7 +53,7 @@ def _validate_paths(
 
 
 def _copy_required_files(
-    grading_item: GradingItemConfig,
+    grading_item: GradingItem,
     notebook_path: Path,
     temp_workdir_path: Path,
     verbose: bool,
@@ -84,24 +85,30 @@ def _copy_required_files(
             copy_files_dict[src_path] = dest
 
     for src, dest in copy_files_dict.items():
-        src_path = Path(src).resolve()  # Convert back to Path if needed
         dest = temp_workdir_path / dest
+        dest.parent.mkdir(parents=True, exist_ok=True)
 
         if verbose:
             print(f"Copying {src_path} to {dest}...")
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        if src_path.exists():
-            if src_path.is_file():
-                shutil.copy2(src_path, dest)
-            elif src_path.is_dir():
-                shutil.copytree(src_path, dest, dirs_exist_ok=True)
+
+        if str(src).startswith(("http", "https")):
+            download_file(src, dest)
+
         else:
-            print(f"Warning: Source file/dir not found, skipping copy: {src_path}")
+            src_path = Path(src).resolve()
+
+            if src_path.exists():
+                if src_path.is_file():
+                    shutil.copy2(src_path, dest)
+                elif src_path.is_dir():
+                    shutil.copytree(src_path, dest, dirs_exist_ok=True)
+            else:
+                print(f"Warning: Source file/dir not found, skipping copy: {src_path}")
 
 
 @contextlib.contextmanager
 def _prepare_grading_environment(
-    grading_item: GradingItemConfig, verbose: bool
+    grading_item: GradingItem, verbose: bool
 ) -> Iterator[Tuple[Path, Path]]:
     """Context manager for setting up and cleaning up the grading environment."""
     notebook_path, output_path = _validate_paths(
@@ -213,7 +220,6 @@ def _generate_output_artifacts(
     graded_notebook_path = output_path / graded_notebook_filename
     with open(graded_notebook_path, mode="w", encoding="utf-8") as f:
         nbformat.write(nb, f)
-    # Note: No need to store this path in GradedResult, standard naming convention assumed
 
     # Clean up the notebook by removing grader scripts
     remove_grader_scripts(nb)
@@ -251,14 +257,13 @@ def _generate_output_artifacts(
     graded_result_json_path = output_path / graded_result_json_filename
     with open(graded_result_json_path, "w", encoding="utf-8") as f:
         json.dump(graded_result.to_dict(), f, indent=2)
-    # Note: No need to store this path in GradedResult, standard naming convention assumed
 
 
 def _grade_item(
-    grading_item: GradingItemConfig,
+    grading_item: GradingItem,
     verbose: bool = True,
 ) -> GradedResult:
-    """Grade a single notebook based on a GradingItemConfig. (Orchestrator)"""
+    """Grade a single notebook based on a GradingItem. (Orchestrator)"""
     item_grading_start_time = time.time()
     original_notebook_path = Path(grading_item.notebook_path).resolve()
     filename_base = original_notebook_path.stem  # Name without extension
@@ -295,17 +300,17 @@ def _grade_item(
 
 
 def _normalize_grading_items(
-    items: List[Union[str, Path, GradingItemConfig, dict]],
-) -> List[GradingItemConfig]:
-    """Converts input list items to GradingItemConfig objects."""
-    normalized_items: List[GradingItemConfig] = []
+    items: List[Union[str, Path, GradingItem, dict]],
+) -> List[GradingItem]:
+    """Converts input list items to GradingItem objects."""
+    normalized_items: List[GradingItem] = []
     for item in items:
         if isinstance(item, (str, Path)):
-            normalized_items.append(GradingItemConfig(notebook_path=item))
-        elif isinstance(item, GradingItemConfig):
+            normalized_items.append(GradingItem(notebook_path=item))
+        elif isinstance(item, GradingItem):
             normalized_items.append(item)
         elif isinstance(item, dict):
-            normalized_items.append(GradingItemConfig(**item))
+            normalized_items.append(GradingItem(**item))
         else:
             raise TypeError(f"Unsupported type in grading_items: {type(item)}")
     return normalized_items
@@ -376,8 +381,9 @@ def _export_results_to_csv(
 
 
 def grade_notebooks(
-    items_to_grade: List[Union[str, Path, GradingItemConfig, dict]],
+    items_to_grade: List[Union[str, Path, GradingItem, dict]],
     *,
+    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
     verbose: bool = True,
     export_csv: bool = True,
     csv_output_path: Optional[Union[str, Path]] = None,
@@ -391,8 +397,8 @@ def grade_notebooks(
         grading_items: List of items to grade, which can be a mix of:
             - Strings with paths to notebook files
             - Path objects pointing to notebook files
-            - GradingItemConfig objects with detailed grading configuration
-            - Dictionaries with the same keys as GradingItemConfig
+            - GradingItem objects with detailed grading configuration
+            - Dictionaries with the same keys as GradingItem
         verbose: Whether to print progress and diagnostic information. Defaults to True.
         export_csv: Whether to export results to CSV file. Defaults to True.
         csv_output_path: Optional path  forthe CSV export. If None, uses current directory.
@@ -475,7 +481,7 @@ def grade_notebooks(
 
 
 def grade_single_notebook(
-    grading_item: Union[str, Path, GradingItemConfig, dict],
+    grading_item: Union[str, Path, GradingItem, dict],
     *,
     verbose: bool = True,
 ) -> Union[GradedResult, None]:
@@ -488,7 +494,7 @@ def grade_single_notebook(
         grading_item: The notebook to grade, can be:
             - String with path to a notebook file
             - Path object pointing to a notebook file
-            - GradingItemConfig object with detailed grading configuration
+            - GradingItem object with detailed grading configuration
         verbose: Whether to print progress and diagnostic information. Defaults to True.
 
     Returns:

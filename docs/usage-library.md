@@ -18,7 +18,7 @@ pip install --upgrade jupygrader
 
 ### Grade multiple notebooks
 
-Use the `grade_notebooks` function to grade Jupyter notebooks. You can pass a list of notebook paths or `GradingItemConfig` objects for more detailed configuration.
+Use the `grade_notebooks` function to grade Jupyter notebooks. You can pass a list of notebook paths or `GradingItem` objects for more detailed configuration.
 
 ```python
 from jupygrader import grade_notebooks
@@ -29,20 +29,20 @@ graded_results = grade_notebooks(['path/to/notebook1.ipynb', 'path/to/notebook2.
 
 !!! info "Custom Output Path and File Copying"
 
-    You can specify the output path and copy files to the working directory for each notebook by using a `GradingItemConfig` dataclass.
+    You can specify the output path and copy files to the working directory for each notebook by using a `GradingItem` dataclass.
 
     See the example below.
 
 ```python
-from jupygrader import grade_notebooks, GradingItemConfig
+from jupygrader import grade_notebooks, GradingItem
 
-# Grade with GradingItemConfig for more options
-item1 = GradingItemConfig(
+# Grade with GradingItem for more options
+item1 = GradingItem(
     notebook_path='path/to/notebook1.ipynb',
     output_path='path/to/output1',
     copy_files=['data1.csv']
 )
-item2 = GradingItemConfig(
+item2 = GradingItem(
     notebook_path='path/to/notebook2.ipynb',
     output_path=None, # Will output to the same path as the notebook2.ipynb file
     copy_files=None
@@ -58,16 +58,16 @@ The key is the source file and the value is the destination path.
 The destination path is relative to the working directory of the Jupyter notebook.
 
 ```python
-from jupygrader import grade_notebooks, GradingItemConfig
+from jupygrader import grade_notebooks, GradingItem
 
-item1 = GradingItemConfig(
+item1 = GradingItem(
     notebook_path='path/to/notebook1.ipynb',
     copy_files={
         'my_data.parquet': 'my_data.parquet',
     }
 )
 
-item2 = GradingItemConfig(
+item2 = GradingItem(
     notebook_path='path/to/notebook2.ipynb',
     copy_files={
         'data/population.csv': 'another/path/population.csv',
@@ -103,7 +103,7 @@ You can grade a single notebook using the `grade_single_notebook` function.
     from jupygrader import grade_single_notebook, GradeingItemConfig
 
     # Grade with custom output path and file copying
-    config = GradingItemConfig(
+    config = GradingItem(
         notebook_path='path/to/notebook.ipynb',
         output_path='path/to/output',
         copy_files=['data.csv']

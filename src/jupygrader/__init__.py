@@ -11,7 +11,7 @@ from .notebook_operations import (
     remove_comments,
     get_test_cases_hash,
 )
-from .types import GradingItemConfig
+from .types import GradingItem
 from .grader import grade_notebooks, grade_single_notebook
 
 __all__ = [
@@ -23,7 +23,7 @@ __all__ = [
     "extract_user_code_from_notebook",
     "remove_comments",
     "get_test_cases_hash",
-    "GradingItemConfig",
+    "GradingItem",
     "grade_notebooks",
     "grade_single_notebook",
 ]

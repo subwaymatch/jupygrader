@@ -1,4 +1,4 @@
-from jupygrader import grade_single_notebook, GradingItemConfig
+from jupygrader import grade_single_notebook, GradingItem
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -12,7 +12,7 @@ def test_basic_workflow():
     notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / "basic-workflow.ipynb"
 
     result = grade_single_notebook(
-        GradingItemConfig(
+        GradingItem(
             notebook_path=notebook_path,
             output_path=TEST_OUTPUT_DIR,
         )

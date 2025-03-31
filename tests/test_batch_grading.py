@@ -15,7 +15,7 @@ def test_batch_grader():
     test_notebook_paths = glob.glob(str(notebook_path / "grader-file-[0-9][0-9].ipynb"))
 
     grading_items = [
-        jupygrader.GradingItemConfig(notebook_path=notebook)
+        jupygrader.GradingItem(notebook_path=notebook)
         for notebook in test_notebook_paths
     ]
 

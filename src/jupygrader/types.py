@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 @dataclass
-class GradingItemConfig:
+class GradingItem:
     """Configuration for grading a single Jupyter notebook.
 
     This dataclass holds the configuration needed to grade a notebook,

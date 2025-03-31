@@ -128,16 +128,16 @@ Jupygrader generates multiple output formats for each graded notebook:
 Batch Processing with File Dependencies
 
 ```python
-from jupygrader import grade_notebooks, GradingItemConfig
+from jupygrader import grade_notebooks, GradingItem
 
 # Configure grading with dependencies
 grading_configs = [
-    GradingItemConfig(
+    GradingItem(
         notebook_path="assignments/hw1/student1.ipynb",
         output_path="results/hw1",
         copy_files=["data/dataset.csv", "utility_functions.py"]
     ),
-    GradingItemConfig(
+    GradingItem(
         notebook_path="assignments/hw1/student2.ipynb",
         output_path="results/hw1",
         copy_files=["data/dataset.csv", "utility_functions.py"]

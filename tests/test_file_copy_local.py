@@ -1,4 +1,4 @@
-from jupygrader import grade_notebooks, GradingItemConfig
+from jupygrader import grade_notebooks, GradingItem
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -8,8 +8,8 @@ TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output"
 TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def test_file_copy():
-    item_copy_list = GradingItemConfig(
+def test_file_copy_local():
+    item_copy_list = GradingItem(
         notebook_path=TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-list.ipynb",
         output_path=TEST_OUTPUT_DIR,
         copy_files=[
@@ -23,7 +23,7 @@ def test_file_copy():
         ],
     )
 
-    item_copy_dict = GradingItemConfig(
+    item_copy_dict = GradingItem(
         notebook_path=TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-dict.ipynb",
         output_path=TEST_OUTPUT_DIR,
         copy_files={

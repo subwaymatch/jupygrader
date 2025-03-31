@@ -18,16 +18,16 @@
 === "With Configuration"
 
     ```python
-    from jupygrader import grade_notebooks, GradingItemConfig
+    from jupygrader import grade_notebooks, GradingItem
 
-    # Grade with GradingItemConfig for more options
-    item1 = GradingItemConfig(
+    # Grade with GradingItem for more options
+    item1 = GradingItem(
         notebook_path='path/to/notebook1.ipynb',
         output_path='path/to/output1',
         copy_files=['data1.csv']
     )
 
-    item2 = GradingItemConfig(
+    item2 = GradingItem(
         notebook_path='path/to/notebook2.ipynb',
         output_path=None, # Will output to the same path as the notebook2.ipynb file
         copy_files={
@@ -59,7 +59,7 @@
     from jupygrader import grade_single_notebook, GradeingItemConfig
 
     # Grade with detailed configuration
-    config = GradingItemConfig(
+    config = GradingItem(
         notebook_path='path/to/notebook.ipynb',
         output_path='path/to/output',
         copy_files=['data.csv']
@@ -75,9 +75,9 @@
 
 ---
 
-### `jupygrader.GradingItemConfig`
+### `jupygrader.GradingItem`
 
-::: jupygrader.GradingItemConfig
+::: jupygrader.GradingItem
 
 ---
 
