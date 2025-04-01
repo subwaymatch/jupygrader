@@ -2,25 +2,28 @@ from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Union, Dict, Any
 from pathlib import Path
 
+FilePath = Union[str, Path]
+FileDict = Dict[FilePath, FilePath]
+
 
 @dataclass
 class GradingItem:
     """Configuration for grading a single Jupyter notebook.
 
-    This dataclass holds the configuration needed to grade a notebook,
-    including the notebook path, output directory, and any files that
-    should be copied to the grading environment.
-
     Args:
         notebook_path: Path to the Jupyter notebook to be graded
         output_path: Directory where grading results will be saved. Defaults to None.
         copy_files: Files to be copied to the grading environment.
-            Can be a single file path, a list of file paths, or None. Defaults to None.
+            Can be:
+            - a single file path (str or Path)
+            - a list of file paths
+            - a dictionary mapping source path -> destination path
+            - or None (default)
     """
 
-    notebook_path: Union[str, Path]
-    output_path: Optional[Union[str, Path]] = None
-    copy_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None
+    notebook_path: FilePath
+    output_path: Optional[FilePath] = None
+    copy_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None
 
 
 @dataclass

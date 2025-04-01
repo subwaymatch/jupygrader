@@ -48,7 +48,7 @@ from jupygrader import grade_notebooks
 graded_results = grade_notebooks(['submissions/student1.ipynb'])
 ```
 
-This will return a `GradedResult` object. Below is a the `GradedResult` object in JSON format.
+This will return a `GradedResult` object. Below is a sample output of the `GradedResult` object in JSON format.
 
 ```json
 {

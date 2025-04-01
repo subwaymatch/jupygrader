@@ -52,7 +52,7 @@ def test_file_copy_local():
     results = grade_notebooks(
         [item_copy_list, item_copy_dict],
         base_files=base_files,
-        verbose=False,
+        verbose=True,
         export_csv=False,
     )
 

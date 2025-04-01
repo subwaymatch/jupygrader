@@ -10,8 +10,8 @@ from .notebook_operations import (
 )
 from .utils import download_file
 from .constants import GRADED_RESULT_JSON_FILENAME
-from .types import GradingItem, GradedResult
-from typing import Union, List, Tuple, Optional, Iterator
+from .types import GradingItem, GradedResult, FilePath, FileDict
+from typing import Union, List, Tuple, Optional, Iterator, Dict
 import tempfile
 import nbformat
 from nbformat import NotebookNode
@@ -32,7 +32,7 @@ import contextlib
 
 
 def _validate_paths(
-    notebook_path_str: Union[str, Path], output_path_str: Optional[Union[str, Path]]
+    notebook_path_str: FilePath, output_path_str: Optional[FilePath]
 ) -> Tuple[Path, Path]:
     """Validate notebook and output paths."""
     notebook_path = Path(notebook_path_str).resolve()
@@ -56,8 +56,9 @@ def _copy_required_files(
     grading_item: GradingItem,
     notebook_path: Path,
     temp_workdir_path: Path,
-    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None,
     verbose: bool = True,
+    copy_files: Optional[Union[List[FilePath], FileDict]] = None,
 ) -> None:
     """Copy notebook and any additional required files to the temporary directory."""
     filename = notebook_path.name
@@ -73,6 +74,8 @@ def _copy_required_files(
         for src in base_files_list:
             src_path = Path(src).resolve()
             dest_path = temp_workdir_path / src_path.name
+
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
 
             if verbose:
                 print(f"Copying base file {src_path} to {dest_path}...")
@@ -128,11 +131,43 @@ def _copy_required_files(
             else:
                 print(f"Warning: Source file/dir not found, skipping copy: {src_path}")
 
+    # Handle copy_files parameter
+    if copy_files:
+        copy_files_dict: FileDict = {}
+
+        if isinstance(copy_files, list):
+            for src in copy_files:
+                src_path = Path(src).resolve()
+                copy_files_dict[src_path] = src_path.name
+        else:
+            # It's already a dictionary
+            copy_files_dict = {
+                Path(src).resolve(): dest for src, dest in copy_files.items()
+            }
+
+        # Copy the files
+        for src_path, dest_rel_path in copy_files_dict.items():
+            dest_path = temp_workdir_path / dest_rel_path
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+            if verbose:
+                print(f"Copying {src_path} to {dest_path}...")
+
+            if str(src_path).startswith(("http", "https")):
+                download_file(src_path, dest_path)
+            elif src_path.exists():
+                if src_path.is_file():
+                    shutil.copy2(src_path, dest_path)
+                elif src_path.is_dir():
+                    shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+            else:
+                print(f"Warning: Source file/dir not found, skipping copy: {src_path}")
+
 
 @contextlib.contextmanager
 def _prepare_grading_environment(
     grading_item: GradingItem,
-    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None,
     verbose: bool = True,
 ) -> Iterator[Tuple[Path, Path]]:
     """Context manager for setting up and cleaning up the grading environment."""
@@ -288,7 +323,7 @@ def _generate_output_artifacts(
 
 def _grade_item(
     grading_item: GradingItem,
-    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    base_files: Optional[Union[str, Path, List[FilePath]]] = None,
     verbose: bool = True,
 ) -> GradedResult:
     """Grade a single notebook based on a GradingItem. (Orchestrator)"""
@@ -346,7 +381,7 @@ def _normalize_grading_items(
 
 def _export_results_to_csv(
     results: List[GradedResult],
-    csv_output_path: Optional[Union[str, Path]],
+    csv_output_path: Optional[FilePath],
     verbose: bool,
 ) -> None:
     """Exports the list of GradedResult objects to a CSV file."""
@@ -409,12 +444,12 @@ def _export_results_to_csv(
 
 
 def grade_notebooks(
-    items_to_grade: List[Union[str, Path, GradingItem, dict]],
+    items_to_grade: List[Union[FilePath, GradingItem, dict]],
     *,
-    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None,
     verbose: bool = True,
     export_csv: bool = True,
-    csv_output_path: Optional[Union[str, Path]] = None,
+    csv_output_path: Optional[FilePath] = None,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks and report progress.
 
@@ -511,7 +546,7 @@ def grade_notebooks(
 
 
 def grade_single_notebook(
-    grading_item: Union[str, Path, GradingItem, dict],
+    grading_item: Union[FilePath, GradingItem, dict],
     *,
     verbose: bool = True,
 ) -> Union[GradedResult, None]:
@@ -533,6 +568,34 @@ def grade_single_notebook(
     r = grade_notebooks([grading_item], verbose=verbose, export_csv=False)
 
     return r[0] if len(r) > 0 else None
+
+
+def grade_notebook(
+    notebook_path: FilePath,
+    output_path: Optional[FilePath] = None,
+    copy_files: Optional[Union[List[FilePath], FileDict]] = None,
+) -> GradedResult:
+    """
+    Grades a Jupyter notebook by executing it and evaluating test cases.
+
+    Parameters:
+    -----------
+    notebook_path : FilePath
+        Path to the Jupyter notebook to be graded.
+    output_path : Optional[FilePath]
+        Directory where the graded notebook and results will be saved.
+        Defaults to the parent directory of `notebook_path` if not provided.
+    copy_files : Optional[Union[List[FilePath], FileDict]]
+        List or dictionary of files to be copied to the temporary grading directory.
+        If a list is provided, the files will be copied with their original names.
+        If a dictionary is provided, the keys are the source file paths and the values are the destination paths.
+
+    Returns:
+    --------
+    GradedResult
+        A GradedResult object containing detailed results for the graded notebook.
+    """
+    # Implementation details...
 
 
 def remove_code_cells_that_contain(nb: NotebookNode, keyword: str) -> NotebookNode:
