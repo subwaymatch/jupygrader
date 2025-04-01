@@ -253,6 +253,22 @@ def extract_user_code_from_notebook(nb: NotebookNode) -> str:
     return full_code
 
 
+def remove_code_cells_that_contain(
+    nb: NotebookNode, search_str: Union[str, List[str]]
+) -> NotebookNode:
+    if isinstance(search_str, str):
+        search_list = [search_str]
+    else:
+        search_list = search_str
+
+    nb.cells = [
+        cell
+        for cell in nb.cells
+        if not (cell.cell_type == "code" and any(s in cell.source for s in search_list))
+    ]
+    return nb
+
+
 def replace_test_case(
     nb: NotebookNode, test_case_name: str, new_test_case_code: str
 ) -> NotebookNode:
