@@ -12,24 +12,14 @@
 
 Easily grade Jupyter notebooks using test cases and generate detailed reports.
 
-## Sample Usage
-
-```python
-import glob
-from jupygrader import grade_notebooks
-
-# Select all Jupyter notebooks in the "submissions" folder
-notebooks = glob.glob('submissions/*.ipynb')
-
-# Grade notebooks
-graded_results = grade_notebooks(notebooks)
-```
+## Creating an autogradable notebook
 
 Creating an autogradable item is as simple as adding a cell with a test case name (`_test_case`) and points ( `_points` ) to the notebook.
 
-Assume your student is tasked to calculate the sum of odd numbers in `my_list1` and store it to a new variable named `odd_sum`.
+Assume your student is tasked to add `x` and `y`, and store the result to a new variable named `sum_xy`.
 
 ```python
+# file: submissions/student1.ipynb
 # Task: Calculate the sum of x and y,
 # and store it to a new variable named `sum_xy`
 
@@ -41,7 +31,7 @@ sum_xy = x + y
 # YOUR CODE ENDS
 ```
 
-Add a cell with the following content after the code cell for the student.
+Add a cell with the following content after the code cell.
 
 ```python
 _test_case = "calculate-sum"
@@ -50,19 +40,60 @@ _points = 2
 assert sum_xy == 3
 ```
 
-For each test case, Jupygrader will mark the test case as ==pass== if the test case cell does not throw an exception. Otherwise, it will mark the test case as ==fail==.
+## Grading notebooks
 
-Here is a sample `TestCaseResult` object shown as JSON for the above test case.
+```python
+from jupygrader import grade_notebooks
+
+graded_results = grade_notebooks(['submissions/student1.ipynb'])
+```
+
+This will return a `GradedResult` object. Below is a the `GradedResult` object in JSON format.
 
 ```json
 {
-  "test_case_name": "calculate-sum",
-  "points": 2,
-  "available_points": 2,
-  "did_pass": true,
-  "grade_manually": false,
-  "message": ""
-},
+  "filename": "student1.ipynb",
+  "learner_autograded_score": 2,
+  "max_autograded_score": 2,
+  "max_manually_graded_score": 0,
+  "max_total_score": 2,
+  "num_autograded_cases": 1,
+  "num_passed_cases": 1,
+  "num_failed_cases": 0,
+  "num_manually_graded_cases": 0,
+  "num_total_test_cases": 1,
+  "grading_finished_at": "2025-03-19 06:49 PM UTC",
+  "grading_duration_in_seconds": 0.02,
+  "test_case_results": [
+    {
+      "test_case_name": "sum_xy",
+      "points": 2,
+      "available_points": 2,
+      "did_pass": true,
+      "grade_manually": false,
+      "message": ""
+    }
+  ],
+  "submission_notebook_hash": "c98c747e12a0456033956759c9daf7a0",
+  "test_cases_hash": "ea8037ca2aedc3c33ec7227962cc2464",
+  "grader_python_version": "3.12.5",
+  "grader_platform": "Linux...",
+  "jupygrader_version": "..."
+  // ... more fields here
+}
+```
+
+## Grading Multiple Notebooks
+
+```python
+import glob
+from jupygrader import grade_notebooks
+
+# Select all Jupyter notebooks in the "submissions" folder
+notebooks = glob.glob('submissions/*.ipynb')
+
+# Grade notebooks
+graded_results = grade_notebooks(notebooks)
 ```
 
 ## 📝 Summary

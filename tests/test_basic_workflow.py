@@ -12,10 +12,10 @@ def test_basic_workflow():
     notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / "basic-workflow.ipynb"
 
     result = grade_single_notebook(
-        GradingItem(
-            notebook_path=notebook_path,
-            output_path=TEST_OUTPUT_DIR,
-        )
+        {
+            "notebook_path": notebook_path,
+            "output_path": TEST_OUTPUT_DIR,
+        }
     )
 
     # Check the accuracy of the result object

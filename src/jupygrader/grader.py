@@ -503,3 +503,26 @@ def grade_single_notebook(
     r = grade_notebooks([grading_item], verbose=verbose, export_csv=False)
 
     return r[0] if len(r) > 0 else None
+
+
+def remove_code_cells_that_contain(nb: NotebookNode, keyword: str) -> NotebookNode:
+    """
+    Removes all code cells from a Jupyter notebook that contain a specific keyword.
+
+    Args:
+        nb (NotebookNode): The Jupyter notebook object to process.
+        keyword (str): The keyword to search for in code cells.
+
+    Returns:
+        NotebookNode: The modified Jupyter notebook object with the specified cells removed.
+
+    Example:
+        >>> from nbformat import v4 as nbf
+        >>> nb = nbf.new_notebook()
+        >>> nb.cells.append(nbf.new_code_cell("print('Hello World')"))
+        >>> nb.cells.append(nbf.new_code_cell("# REMOVE_ME"))
+        >>> nb = remove_code_cells_that_contain(nb, "REMOVE_ME")
+        >>> len(nb.cells)
+        1
+    """
+    # ...existing code...

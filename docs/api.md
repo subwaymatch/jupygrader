@@ -131,6 +131,10 @@
 
 ::: jupygrader.extract_user_code_from_notebook
 
+### `jupygrader.remove_code_cells_that_contain()`
+
+::: jupygrader.remove_code_cells_that_contain
+
 ---
 
 ### `jupygrader.remove_comments()`
