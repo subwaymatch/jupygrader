@@ -56,7 +56,8 @@ def _copy_required_files(
     grading_item: GradingItem,
     notebook_path: Path,
     temp_workdir_path: Path,
-    verbose: bool,
+    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    verbose: bool = True,
 ) -> None:
     """Copy notebook and any additional required files to the temporary directory."""
     filename = notebook_path.name
@@ -64,6 +65,29 @@ def _copy_required_files(
     # Attempt to preserve the metadata using shutil.copy2()
     shutil.copy2(notebook_path, temp_notebook_path)
 
+    # Process base_files (files to copy for all notebooks)
+    if base_files:
+        base_files_list = (
+            [base_files] if isinstance(base_files, (str, Path)) else base_files
+        )
+        for src in base_files_list:
+            src_path = Path(src).resolve()
+            dest_path = temp_workdir_path / src_path.name
+
+            if verbose:
+                print(f"Copying base file {src_path} to {dest_path}...")
+
+            if str(src).startswith(("http", "https")):
+                download_file(src, dest_path)
+            elif src_path.exists():
+                if src_path.is_file():
+                    shutil.copy2(src_path, dest_path)
+                elif src_path.is_dir():
+                    shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+            else:
+                print(f"Warning: Base file/dir not found, skipping copy: {src_path}")
+
+    # Process item-specific copy_files
     if not grading_item.copy_files:
         return
 
@@ -89,11 +113,10 @@ def _copy_required_files(
         dest.parent.mkdir(parents=True, exist_ok=True)
 
         if verbose:
-            print(f"Copying {src_path} to {dest}...")
+            print(f"Copying {src} to {dest}...")
 
         if str(src).startswith(("http", "https")):
             download_file(src, dest)
-
         else:
             src_path = Path(src).resolve()
 
@@ -108,7 +131,9 @@ def _copy_required_files(
 
 @contextlib.contextmanager
 def _prepare_grading_environment(
-    grading_item: GradingItem, verbose: bool
+    grading_item: GradingItem,
+    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
+    verbose: bool = True,
 ) -> Iterator[Tuple[Path, Path]]:
     """Context manager for setting up and cleaning up the grading environment."""
     notebook_path, output_path = _validate_paths(
@@ -126,8 +151,10 @@ def _prepare_grading_environment(
     original_cwd = os.getcwd()
 
     try:
-        # Copy notebook and other files
-        _copy_required_files(grading_item, notebook_path, temp_workdir_path, verbose)
+        # Copy notebook and other files, including base_files
+        _copy_required_files(
+            grading_item, notebook_path, temp_workdir_path, base_files, verbose
+        )
 
         # Change the current working directory to the temporary directory
         os.chdir(temp_workdir_path)
@@ -261,6 +288,7 @@ def _generate_output_artifacts(
 
 def _grade_item(
     grading_item: GradingItem,
+    base_files: Optional[Union[str, Path, List[Union[str, Path]]]] = None,
     verbose: bool = True,
 ) -> GradedResult:
     """Grade a single notebook based on a GradingItem. (Orchestrator)"""
@@ -268,7 +296,7 @@ def _grade_item(
     original_notebook_path = Path(grading_item.notebook_path).resolve()
     filename_base = original_notebook_path.stem  # Name without extension
 
-    with _prepare_grading_environment(grading_item, verbose) as (
+    with _prepare_grading_environment(grading_item, base_files, verbose) as (
         temp_notebook_path,
         output_path,
     ):
@@ -394,21 +422,23 @@ def grade_notebooks(
     environment, evaluating test cases, and producing graded outputs.
 
     Args:
-        grading_items: List of items to grade, which can be a mix of:
+        items_to_grade: List of items to grade, which can be a mix of:
             - Strings with paths to notebook files
             - Path objects pointing to notebook files
             - GradingItem objects with detailed grading configuration
             - Dictionaries with the same keys as GradingItem
+        base_files: Files to be copied to every grading environment.
+            Can be a single file path, a list of file paths, or None. Defaults to None.
         verbose: Whether to print progress and diagnostic information. Defaults to True.
         export_csv: Whether to export results to CSV file. Defaults to True.
-        csv_output_path: Optional path  forthe CSV export. If None, uses current directory.
+        csv_output_path: Optional path for the CSV export. If None, uses current directory.
             Defaults to None.
 
     Returns:
         List of GradedResult objects containing detailed results for each notebook.
 
     Raises:
-        TypeError: If an element in grading_items is not a supported type.
+        TypeError: If an element in items_to_grade is not a supported type.
         ImportError: If pandas is not available when export_csv=True.
     """
     try:
@@ -440,7 +470,7 @@ def grade_notebooks(
                 )
 
             # Grade individual notebook using the item's configuration
-            graded_result = _grade_item(item, verbose=verbose)
+            graded_result = _grade_item(item, base_files, verbose=verbose)
 
             # Add to results list
             results.append(graded_result)
@@ -525,4 +555,13 @@ def remove_code_cells_that_contain(nb: NotebookNode, keyword: str) -> NotebookNo
         >>> len(nb.cells)
         1
     """
-    # ...existing code...
+    return nbformat.from_dict(
+        {
+            **nb,
+            "cells": [
+                cell
+                for cell in nb.cells
+                if cell.cell_type != "code" or keyword not in cell.source
+            ],
+        }
+    )
