@@ -10,7 +10,12 @@ from .notebook_operations import (
 )
 from .utils import download_file
 from .constants import GRADED_RESULT_JSON_FILENAME
-from .types import GradingItem, GradedResult, FilePath, FileDict
+from .types import (
+    GradingItem,
+    GradedResult,
+    FilePath,
+    FileDict,
+)
 from typing import Union, List, Tuple, Optional, Iterator, Dict
 import tempfile
 import nbformat
@@ -271,7 +276,7 @@ def _process_grading_results(
 
 
 def _generate_output_artifacts(
-    nb: NotebookNode,
+    nb_executed: NotebookNode,
     graded_result: GradedResult,
     output_path: Path,
     filename_base: str,
@@ -281,15 +286,15 @@ def _generate_output_artifacts(
     graded_notebook_filename = f"{filename_base}-graded.ipynb"
     graded_notebook_path = output_path / graded_notebook_filename
     with open(graded_notebook_path, mode="w", encoding="utf-8") as f:
-        nbformat.write(nb, f)
+        nbformat.write(nb_executed, f)
 
     # Clean up the notebook by removing grader scripts
-    remove_grader_scripts(nb)
+    remove_grader_scripts(nb_executed)
     # Add the graded result summary to the notebook metadata
-    add_graded_result_to_notebook(nb, graded_result)
+    add_graded_result_to_notebook(nb_executed, graded_result)
 
     # --- Extract and Save User Code (.py) ---
-    extracted_user_code = extract_user_code_from_notebook(nb)
+    extracted_user_code = extract_user_code_from_notebook(nb_executed)
     extracted_code_filename = f"{filename_base}_user_code.py"
     extracted_code_path = output_path / extracted_code_filename
     with open(extracted_code_path, "w", encoding="utf-8") as f:
@@ -300,7 +305,7 @@ def _generate_output_artifacts(
     graded_html_filename = f"{filename_base}-graded.html"
     graded_html_path = output_path / graded_html_filename
     save_graded_notebook_to_html(
-        nb,
+        nb_executed,
         html_title=f"{filename_base}.ipynb",  # Use original-like name for title
         output_path=graded_html_path,
         graded_result=graded_result,
@@ -444,7 +449,7 @@ def _export_results_to_csv(
 
 
 def grade_notebooks(
-    items_to_grade: List[Union[FilePath, GradingItem, dict]],
+    grading_items: List[Union[FilePath, GradingItem, dict]],
     *,
     base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None,
     verbose: bool = True,
@@ -477,13 +482,13 @@ def grade_notebooks(
         ImportError: If pandas is not available when export_csv=True.
     """
     try:
-        items_to_grade = _normalize_grading_items(items_to_grade)
+        working_items: List[GradingItem] = _normalize_grading_items(grading_items)
     except TypeError as e:
         print(f"Error processing grading items: {str(e)}")
         return []
 
     results: List[GradedResult] = []
-    num_items = len(items_to_grade)
+    num_items = len(working_items)
     num_failed_grading = 0
 
     if verbose:
@@ -493,7 +498,7 @@ def grade_notebooks(
 
     start_time = time.time()
 
-    for idx, item in enumerate(items_to_grade, start=1):
+    for idx, item in enumerate(working_items, start=1):
         try:
             notebook_path = item.notebook_path
             notebook_name = Path(notebook_path).name

@@ -6,10 +6,16 @@ This page describes how to develop and contribute to `jupygrader`.
 
 ## Test project
 
-`hatch` uses `pytest` as the test runner. All tests are defined in the `tests/` directory.
+All tests are defined in the `tests/` directory. To run all tests, you can use the following command:
 
 ```console
 hatch test
+```
+
+`hatch` uses `pytest` as the test runner. You can parallelize the tests to speed up the testing process by using the `-p` flag (shorthand for `--parallel`), which will distribute the tests across multiple workers.
+
+```console
+hatch test -p
 ```
 
 Print a code coverage table by using the `--cover` flag.

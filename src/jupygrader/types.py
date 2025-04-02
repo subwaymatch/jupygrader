@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Union, Dict, Any
+from typing import List, Optional, Union, Dict, Any, TypedDict
 from pathlib import Path
 
 FilePath = Union[str, Path]
@@ -8,22 +8,17 @@ FileDict = Dict[FilePath, FilePath]
 
 @dataclass
 class GradingItem:
-    """Configuration for grading a single Jupyter notebook.
-
-    Args:
-        notebook_path: Path to the Jupyter notebook to be graded
-        output_path: Directory where grading results will be saved. Defaults to None.
-        copy_files: Files to be copied to the grading environment.
-            Can be:
-            - a single file path (str or Path)
-            - a list of file paths
-            - a dictionary mapping source path -> destination path
-            - or None (default)
-    """
-
     notebook_path: FilePath
     output_path: Optional[FilePath] = None
     copy_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None
+
+
+@dataclass
+class BatchGradingConfig:
+    verbose: bool = False
+    export_csv: bool = True
+    base_files: Optional[Dict[Path, Path]] = None
+    csv_output_path: Optional[str] = None
 
 
 @dataclass

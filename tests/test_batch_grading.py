@@ -14,13 +14,10 @@ def test_batch_grader():
 
     test_notebook_paths = glob.glob(str(notebook_path / "grader-file-[0-9][0-9].ipynb"))
 
-    grading_items = [
-        jupygrader.GradingItem(notebook_path=notebook)
-        for notebook in test_notebook_paths
-    ]
+    grading_items = [{"notebook_path": notebook} for notebook in test_notebook_paths]
 
     results = jupygrader.grade_notebooks(
-        items_to_grade=grading_items,
+        grading_items=grading_items,
         csv_output_path=TEST_OUTPUT_DIR / "batch-test-results.csv",
     )
 
