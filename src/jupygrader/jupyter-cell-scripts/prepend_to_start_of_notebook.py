@@ -1,7 +1,7 @@
 # Jupygrader Before File Code
 # REMOVE_IN_HTML_OUTPUT
 from typing import Union
-from jupygrader.types import GradedResult, TestCaseResult
+from jupygrader.models.grading_dataclasses import GradedResult, TestCaseResult
 
 _graded_result = GradedResult()
 

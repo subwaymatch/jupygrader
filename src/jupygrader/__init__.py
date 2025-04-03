@@ -12,7 +12,7 @@ from .notebook_operations import (
     remove_comments,
     get_test_cases_hash,
 )
-from .types import GradingItem
+from .models.grading_dataclasses import GradingItem
 from .grader import grade_notebooks, grade_single_notebook
 
 __all__ = [
