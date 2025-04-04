@@ -76,7 +76,7 @@ pip install --upgrade jupygrader
 import jupygrader
 
 notebook_file_path = 'path/to/notebook.ipynb'
-jupygrader.grade_notebook(notebook_file_path)
+jupygrader.grade_notebooks(notebook_file_path)
 ```
 
 Supplying a `pathlib.Path()` object is supported.
@@ -86,7 +86,7 @@ import jupygrader
 from pathlib import Path
 
 notebook_path = Path('path/to/notebook.ipynb')
-jupygrader.grade_notebook(notebook_path)
+jupygrader.grade_notebooks(notebook_path)
 ```
 
 If the `output_dir_path` is not specified, the output files will be stored to the same directory as the notebook file.
@@ -96,13 +96,10 @@ If the `output_dir_path` is not specified, the output files will be stored to th
 ```python
 import jupygrader
 
-notebook_path = 'path/to/notebook.ipynb'
-output_path = 'path/to/output'
-
-jupygrader.grade_notebook(
-    notebook_path=notebook_path,
-    output_path=output_path
-)
+jupygrader.grade_notebooks([{
+    "notebook_path": 'path/to/notebook.ipynb',
+    "output_path": 'path/to/output'
+}])
 ```
 
 ## 📒 Create an autogradable notebook

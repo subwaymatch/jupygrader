@@ -22,6 +22,13 @@ class BatchGradingConfig:
 
 
 @dataclass
+class CopyFileItem:
+    src: FilePath
+    dest: FilePath
+    is_url: bool = False
+
+
+@dataclass
 class TestCaseMetadata:
     """Metadata for a test case defined in a notebook.
 

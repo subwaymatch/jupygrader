@@ -2,6 +2,7 @@ from .grading_dataclasses import (
     FilePath,
     FileDict,
     GradingItem,
+    CopyFileItem,
     BatchGradingConfig,
     GradedResult,
 )
@@ -78,113 +79,96 @@ class GradingTask:
         """Copy notebook and any additional required files to the temporary directory."""
         filename = self.notebook_path.name
         temp_notebook_path = self.temp_workdir_path / filename
-        # Attempt to preserve the metadata using shutil.copy2()
+
+        # Copy the notebook itself
         shutil.copy2(self.notebook_path, temp_notebook_path)
 
-        print("inside copy_required_files()")
+        def is_url(path: Union[str, Path]) -> bool:
+            """Check if the path starts with http or https."""
+            return str(path).lower().startswith(("http://", "https://"))
 
-        # Process base_files (files to copy for all notebooks)
-        if self.base_files:
-            base_files_list = (
-                [self.base_files]
-                if isinstance(self.base_files, (str, Path))
-                else self.base_files
-            )
-            for src in base_files_list:
-                src_path = Path(src).resolve()
-                dest_path = self.temp_workdir_path / src_path.name
+        def process_files(
+            files: Optional[Union[FilePath, List[FilePath], FileDict]],
+            label: str = "files",
+        ) -> None:
+            if not files:
+                return
 
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
+            copy_file_items: List[CopyFileItem] = []
 
-                if self.verbose:
-                    print(f"Copying base file {src_path} to {dest_path}...")
+            files = [files] if isinstance(files, (str, Path)) else files
 
-                if str(src).startswith(("http", "https")):
-                    download_file(src, dest_path)
-                elif src_path.exists():
-                    if src_path.is_file():
-                        shutil.copy2(src_path, dest_path)
-                    elif src_path.is_dir():
-                        shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
-                else:
-                    print(
-                        f"Warning: Base file/dir not found, skipping copy: {src_path}"
+            if isinstance(files, list):
+                for src in files:
+                    resolved_src = Path(src).resolve()
+
+                    try:
+                        relative_path = resolved_src.relative_to(
+                            self.notebook_path.parent
+                        )
+                    except ValueError:
+                        relative_path = Path(resolved_src.name)
+
+                    resolved_dest = self.temp_workdir_path / relative_path
+                    resolved_dest.parent.mkdir(parents=True, exist_ok=True)
+
+                    copy_file_items.append(
+                        CopyFileItem(
+                            src=resolved_src,
+                            dest=resolved_dest,
+                            is_url=False,
+                        )
                     )
 
-        # Process item-specific copy_files
-        if not self.copy_files:
-            return
+            elif isinstance(files, dict):
+                for src, dest in files.items():
+                    resolved_dest = self.temp_workdir_path / dest
+                    resolved_dest.parent.mkdir(parents=True, exist_ok=True)
 
-        copy_files_dict = (
-            {} if isinstance(self.copy_files, list) else copy.deepcopy(self.copy_files)
-        )
+                    if is_url(src):
+                        copy_file_items.append(
+                            CopyFileItem(
+                                src=src,
+                                dest=resolved_dest,
+                                is_url=True,
+                            )
+                        )
 
-        if isinstance(self.copy_files, list):
-            for src in self.copy_files:
-                src_path = Path(src).resolve()
-                try:
-                    relative_path = src_path.relative_to(self.notebook_path.parent)
-                except ValueError:
-                    # If the file is not a subpath of the notebook's parent directory, copy it to the same folder as the notebook
-                    relative_path = Path(src_path.name)
-                dest = self.temp_workdir_path / relative_path
-                copy_files_dict[src_path] = dest
+                    else:
+                        resolved_src = Path(src).resolve()
 
-        for src, dest in copy_files_dict.items():
-            dest = self.temp_workdir_path / dest
-            dest.parent.mkdir(parents=True, exist_ok=True)
+                        copy_file_items.append(
+                            CopyFileItem(
+                                src=resolved_src, dest=resolved_dest, is_url=False
+                            )
+                        )
 
-            if self.verbose:
-                print(f"Copying {src} to {dest}...")
-
-            if str(src).startswith(("http", "https")):
-                download_file(src, dest)
             else:
-                src_path = Path(src).resolve()
+                raise ValueError(f"Invalid type for {label}: {type(files)}")
 
-                if src_path.exists():
-                    if src_path.is_file():
-                        shutil.copy2(src_path, dest)
-                    elif src_path.is_dir():
-                        shutil.copytree(src_path, dest, dirs_exist_ok=True)
-                else:
-                    print(
-                        f"Warning: Source file/dir not found, skipping copy: {src_path}"
-                    )
-
-        # Handle copy_files parameter
-        if self.copy_files:
-            copy_files_dict: FileDict = {}
-
-            if isinstance(self.copy_files, list):
-                for src in self.copy_files:
-                    src_path = Path(src).resolve()
-                    copy_files_dict[src_path] = src_path.name
-            else:
-                # It's already a dictionary
-                copy_files_dict = {
-                    Path(src).resolve(): dest for src, dest in self.copy_files.items()
-                }
-
-            # Copy the files
-            for src_path, dest_rel_path in copy_files_dict.items():
-                dest_path = self.temp_workdir_path / dest_rel_path
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
-
+            for copy_item in copy_file_items:
                 if self.verbose:
-                    print(f"Copying {src_path} to {dest_path}...")
+                    print(f"Copying {label}: {copy_item.src} → {copy_item.dest}")
 
-                if str(src_path).startswith(("http", "https")):
-                    download_file(src_path, dest_path)
-                elif src_path.exists():
-                    if src_path.is_file():
-                        shutil.copy2(src_path, dest_path)
-                    elif src_path.is_dir():
-                        shutil.copytree(src_path, dest_path, dirs_exist_ok=True)
+                if copy_item.is_url:
+                    download_file(str(copy_item.src), copy_item.dest)
+                elif copy_item.src.exists():
+                    if copy_item.src.is_file():
+                        shutil.copy2(copy_item.src, copy_item.dest)
+                    elif copy_item.src.is_dir():
+                        shutil.copytree(
+                            copy_item.src, copy_item.dest, dirs_exist_ok=True
+                        )
                 else:
                     print(
-                        f"Warning: Source file/dir not found, skipping copy: {src_path}"
+                        f"Warning: {label} source not found, skipping copy: {copy_item.src}"
                     )
+
+        # First, copy base_files
+        process_files(self.base_files, label="base_file")
+
+        # Then, copy copy_files
+        process_files(self.copy_files, label="copy_file")
 
     @contextlib.contextmanager
     def use_temporary_grading_environment(
@@ -248,7 +232,7 @@ class GradingTask:
         self.graded_result.filename = self.notebook_path.name
         self.graded_result.test_cases_hash = get_test_cases_hash(self.nb)
 
-        with open(self.temp_notebook_path, "rb", encoding="utf-8") as f:
+        with open(self.temp_notebook_path, "rb") as f:
             self.graded_result.submission_notebook_hash = hashlib.md5(
                 f.read()
             ).hexdigest()
@@ -316,12 +300,10 @@ class GradingTask:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
     def grade(self) -> GradedResult:
-        print("start")
         """Grade a single notebook based on a GradingItem. (Orchestrator)"""
         original_notebook_path = Path(self.item.notebook_path).resolve()
 
         with self.use_temporary_grading_environment():
-
             if self.verbose:
                 print(
                     f"Grading {original_notebook_path.name} in {self.temp_notebook_path.parent}"

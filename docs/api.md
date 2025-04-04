@@ -20,20 +20,19 @@
     ```python
     from jupygrader import grade_notebooks, GradingItem
 
-    # Grade with GradingItem for more options
-    item1 = GradingItem(
-        notebook_path='path/to/notebook1.ipynb',
-        output_path='path/to/output1',
-        copy_files=['data1.csv']
-    )
+    item1 = {
+        "notebook_path": "path/to/notebook1.ipynb",
+        "output_path": "path/to/output1",
+        "copy_files": ["data1.csv"],
+    }
 
-    item2 = GradingItem(
-        notebook_path='path/to/notebook2.ipynb',
-        output_path=None, # Will output to the same path as the notebook2.ipynb file
-        copy_files={
-            'data/population.csv': 'another/path/population.csv'
-        }
-    )
+    item2 = {
+        "notebook_path": "path/to/notebook2.ipynb",
+        "output_path": None,  # Will default to the notebook's parent directory
+        "copy_files": {
+            "data/population.csv": "another/path/population.csv",
+        },
+    }
 
     graded_results = grade_notebooks([item1, item2])
     ```
@@ -56,15 +55,15 @@
 === "With Configuration"
 
     ```python
-    from jupygrader import grade_single_notebook, GradeingItemConfig
+    from jupygrader import grade_single_notebook
 
     # Grade with detailed configuration
-    config = GradingItem(
-        notebook_path='path/to/notebook.ipynb',
-        output_path='path/to/output',
-        copy_files=['data.csv']
-    )
-    graded_result = grade_single_notebook(config)
+    item1 = {
+        "notebook_path": "path/to/notebook1.ipynb",
+        "output_path": "path/to/output1",
+        "copy_files": ["data1.csv"],
+    }
+    graded_result = grade_single_notebook(item)
     ```
 
 ::: jupygrader.grade_single_notebook
@@ -75,27 +74,15 @@
 
 ---
 
-### `jupygrader.GradingItem`
+### `jupygrader.TestCaseResult`
 
-::: jupygrader.GradingItem
-
----
-
-### `jupygrader.types.TestCaseMetadata`
-
-::: jupygrader.types.TestCaseMetadata
+::: jupygrader.TestCaseResult
 
 ---
 
-### `jupygrader.types.TestCaseResult`
+### `jupygrader.GradedResult`
 
-::: jupygrader.types.TestCaseResult
-
----
-
-### `jupygrader.types.GradedResult`
-
-::: jupygrader.types.GradedResult
+::: jupygrader.GradedResult
 
 ---
 
