@@ -16,14 +16,11 @@ from .models.grading_dataclasses import GradedResult, TestCaseResult
 from .grader import grade_notebooks, grade_single_notebook
 
 __all__ = [
-    # Version info
     "__version__",
-    # Grading interface
     "grade_notebooks",
     "grade_single_notebook",
     "GradedResult",
     "TestCaseResult",
-    # Notebook/test utilities
     "extract_test_case_metadata_from_code",
     "extract_test_cases_metadata_from_notebook",
     "remove_code_cells_that_contain",
