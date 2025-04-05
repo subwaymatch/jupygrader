@@ -15,7 +15,8 @@ def test_notebook_without_test_cases():
         {
             "notebook_path": notebook_path,
             "output_path": TEST_OUTPUT_DIR,
-        }
+        },
+        regrade_existing=True,
     )
 
     assert result.learner_autograded_score == 0

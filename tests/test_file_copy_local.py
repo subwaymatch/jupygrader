@@ -54,6 +54,7 @@ def test_file_copy_local():
         base_files=base_files,
         verbose=True,
         export_csv=False,
+        regrade_existing=True,
     )
 
     assert results[0].learner_autograded_score == 60

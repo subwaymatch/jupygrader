@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Union, Dict, Any, Tuple, TypedDict
+from typing import List, Optional, Union, Dict, Any
 from pathlib import Path
 
 FilePath = Union[str, Path]
@@ -20,6 +20,7 @@ class BatchGradingConfig:
     export_csv: bool = True
     base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None
     csv_output_path: Optional[str] = None
+    regrade_existing: bool = False
 
 
 @dataclass
@@ -143,6 +144,7 @@ class GradedResult:
     extracted_user_code_file: Optional[str] = None
     graded_html_file: Optional[str] = None
     text_summary_file: Optional[str] = None
+    graded_result_json_file: Optional[str] = None
 
     @property
     def text_summary(self) -> str:

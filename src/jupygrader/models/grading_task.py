@@ -12,8 +12,10 @@ import textwrap
 import time
 import uuid
 from datetime import datetime
+from zoneinfo import ZoneInfo
+from tzlocal import get_localzone_name
 from pathlib import Path
-from typing import Iterator, List, Optional, Union
+from typing import Iterator, List, Tuple, Optional, Union
 
 import nbformat
 import numpy as np
@@ -23,6 +25,7 @@ from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 from nbformat import NotebookNode
 from nbformat.v4 import new_code_cell, new_markdown_cell
+
 
 from ..__about__ import __version__ as jupygrader_version
 from ..constants import GRADED_RESULT_JSON_FILENAME, GRADED_RESULT_ELEMENT_ID
@@ -48,11 +51,14 @@ class GradingTask:
     def __init__(self, item: GradingItem, batch_config: BatchGradingConfig):
         self.item = item
 
-        self.notebook_path = None
-        self.output_path = None
+        self.notebook_path, self.output_path = self.validate_paths(
+            item.notebook_path, item.output_path
+        )
 
-        self.validate_paths()
+        with open(self.notebook_path, "rb") as f:
+            self.submission_notebook_hash = hashlib.md5(f.read()).hexdigest()
 
+        self.filename_base = self.notebook_path.stem
         self.batch_config = batch_config
         self.verbose = batch_config.verbose
         self.copy_files = item.copy_files
@@ -62,6 +68,27 @@ class GradingTask:
         self.nb: NotebookNode = None
         self.graded_result: GradedResult = None
         self.grading_start_time = time.time()
+
+    def get_existing_graded_result(self) -> Optional[GradedResult]:
+        graded_result_json_filename = f"{self.filename_base}-graded-result.json"
+        graded_result_json_path = self.output_path / graded_result_json_filename
+
+        if not graded_result_json_path.exists():
+            return None
+
+        with open(graded_result_json_path, "r", encoding="utf-8") as f:
+            graded_result_data = json.load(f)
+
+        graded_result = GradedResult.from_dict(graded_result_data)
+
+        if (
+            graded_result
+            and graded_result.submission_notebook_hash == self.submission_notebook_hash
+            and graded_result.jupygrader_version == jupygrader_version
+        ):
+            return graded_result
+
+        return None
 
     def add_graded_result_to_notebook(self) -> NotebookNode:
         graded_result = self.graded_result
@@ -222,22 +249,27 @@ class GradingTask:
         self.nb.cells.pop(0)  # first cell (added by Jupygrader)
         self.nb.cells.pop()  # last cell (added by Jupygrader)
 
-    def validate_paths(self) -> None:
-        self.notebook_path = Path(self.item.notebook_path).resolve()
-        if not self.notebook_path.exists():
-            raise FileNotFoundError(f"Notebook file not found: {self.notebook_path}")
-
-        if self.item.output_path is None:
-            self.output_path = self.notebook_path.parent
-        else:
-            self.output_path = Path(self.item.output_path).resolve()
-
-        if not self.output_path.exists():
-            self.output_path.mkdir(parents=True, exist_ok=True)
-        elif not self.output_path.is_dir():
-            raise NotADirectoryError(
-                f"Output path is not a directory: {self.output_path}"
+    @staticmethod
+    def validate_paths(notebook_path, output_path) -> Tuple[Path, Path]:
+        resolved_notebook_path = Path(notebook_path).resolve()
+        if not resolved_notebook_path.exists():
+            raise FileNotFoundError(
+                f"Notebook file not found: {resolved_notebook_path}"
             )
+
+        if output_path is None:
+            resolved_output_path = resolved_notebook_path.parent
+        else:
+            resolved_output_path = Path(output_path).resolve()
+
+        if not resolved_output_path.exists():
+            resolved_output_path.mkdir(parents=True, exist_ok=True)
+        elif not resolved_output_path.is_dir():
+            raise NotADirectoryError(
+                f"Output path is not a directory: {resolved_output_path}"
+            )
+
+        return resolved_notebook_path, resolved_output_path
 
     def copy_required_files(self) -> None:
         """Copy notebook and any additional required files to the temporary directory."""
@@ -396,19 +428,17 @@ class GradingTask:
         self.graded_result.filename = self.notebook_path.name
         self.graded_result.test_cases_hash = get_test_cases_hash(self.nb)
 
-        with open(self.temp_notebook_path, "rb") as f:
-            self.graded_result.submission_notebook_hash = hashlib.md5(
-                f.read()
-            ).hexdigest()
+        self.graded_result.submission_notebook_hash = self.submission_notebook_hash
 
         self.graded_result.grader_python_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         self.graded_result.grader_platform = platform.platform()
         self.graded_result.jupygrader_version = jupygrader_version
 
         item_grading_end_time = time.time()
+        local_zone = ZoneInfo(get_localzone_name())
 
         self.graded_result.grading_finished_at = datetime.fromtimestamp(
-            item_grading_end_time
+            item_grading_end_time, tz=local_zone
         ).strftime("%Y-%m-%d %I:%M %p %Z")
         self.graded_result.grading_duration_in_seconds = round(
             item_grading_end_time - self.grading_start_time, 2
@@ -604,11 +634,9 @@ class GradingTask:
     def generate_output_artifacts(
         self,
     ) -> None:
-        filename_base = self.notebook_path.stem  # Name without extension
-
         """Cleans the notebook and saves all output files."""
         # --- Save Graded Notebook (.ipynb) ---
-        graded_notebook_filename = f"{filename_base}-graded.ipynb"
+        graded_notebook_filename = f"{self.filename_base}-graded.ipynb"
         graded_notebook_path = self.output_path / graded_notebook_filename
         with open(graded_notebook_path, mode="w", encoding="utf-8") as f:
             nbformat.write(self.nb, f)
@@ -620,35 +648,37 @@ class GradingTask:
 
         # --- Extract and Save User Code (.py) ---
         extracted_user_code = extract_user_code_from_notebook(self.nb)
-        extracted_code_filename = f"{filename_base}_user_code.py"
+        extracted_code_filename = f"{self.filename_base}_user_code.py"
         extracted_code_path = self.output_path / extracted_code_filename
         with open(extracted_code_path, "w", encoding="utf-8") as f:
             f.write(extracted_user_code)
         self.graded_result.extracted_user_code_file = str(extracted_code_path.resolve())
 
         # --- Save Graded HTML Report ---
-        graded_html_filename = f"{filename_base}-graded.html"
+        graded_html_filename = f"{self.filename_base}-graded.html"
         graded_html_path = self.output_path / graded_html_filename
         self.save_graded_notebook_to_html(
-            html_title=f"{filename_base}", html_path=graded_html_path
+            html_title=f"{self.filename_base}", html_path=graded_html_path
         )
         self.graded_result.graded_html_file = str(graded_html_path.resolve())
 
         # --- Save Text Summary ---
-        text_summary_filename = f"{filename_base}-graded-result-summary.txt"
+        text_summary_filename = f"{self.filename_base}-graded-result-summary.txt"
         text_summary_file_path = self.output_path / text_summary_filename
         with open(text_summary_file_path, "w", encoding="utf-8") as f:
             f.write(self.graded_result.text_summary)
         self.graded_result.text_summary_file = str(text_summary_file_path.resolve())
 
         # --- Save Final Graded Result JSON ---
-        graded_result_json_filename = f"{filename_base}-graded-result.json"
+        graded_result_json_filename = f"{self.filename_base}-graded-result.json"
         graded_result_json_path = self.output_path / graded_result_json_filename
+        self.graded_result.graded_result_json_file = str(
+            graded_result_json_path.resolve()
+        )
         with open(graded_result_json_path, "w", encoding="utf-8") as f:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
     def grade(self) -> GradedResult:
-        """Grade a single notebook based on a GradingItem. (Orchestrator)"""
         original_notebook_path = Path(self.item.notebook_path).resolve()
 
         with self.use_temporary_grading_environment():

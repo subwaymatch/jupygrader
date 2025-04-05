@@ -23,6 +23,7 @@ class BatchGradingManager:
         ],
         batch_config: BatchGradingConfig,
     ):
+        print(f"regrade_existing = {batch_config.regrade_existing}")
         self.verbose = batch_config.verbose
         self.batch_config: BatchGradingConfig = batch_config
         self.grading_items: List[GradingItem] = self.normalize_grading_items(
@@ -143,7 +144,8 @@ class BatchGradingManager:
         self,
     ) -> List[GradedResult]:
         num_items = len(self.grading_items)
-        num_failed_grading = 0
+        num_skipped_items = 0
+        num_failed_items = 0
 
         if self.verbose:
             print(
@@ -165,16 +167,23 @@ class BatchGradingManager:
                             f"[{idx}/{num_items}] Grading: {notebook_name} ... ",
                         )
 
-                    batch_config = BatchGradingConfig(
-                        base_files=self.batch_config.base_files,
-                        verbose=self.verbose,
-                        export_csv=self.batch_config.export_csv,
-                        csv_output_path=self.batch_config.csv_output_path,
-                    )
+                    grading_task = GradingTask(item, self.batch_config)
 
-                    grading_task = GradingTask(item, batch_config)
+                    if (
+                        grading_task.get_existing_graded_result() is not None
+                        and not self.batch_config.regrade_existing
+                    ):
+                        if self.verbose:
+                            print(
+                                f"Using previously graded results for: {notebook_name}"
+                            )
 
-                    graded_result = grading_task.grade()
+                        num_skipped_items += 1
+                        graded_result = grading_task.get_existing_graded_result()
+
+                    else:
+                        print(f"Grading notebook: {notebook_name} ...")
+                        graded_result = grading_task.grade()
 
                     # Add to results list
                     self.graded_results.append(graded_result)
@@ -185,7 +194,7 @@ class BatchGradingManager:
                         print(f"Done. Score: {score}/{max_score}")
 
                 except Exception as e:
-                    num_failed_grading += 1
+                    num_failed_items += 1
 
                     if self.verbose:
                         print(f"Error: {str(e)}")
@@ -204,9 +213,11 @@ class BatchGradingManager:
                 f"Completed grading {num_items} notebook(s) in {elapsed_time:.2f} seconds"
             )
 
-            print(f"Successfully graded: {num_items - num_failed_grading}/{num_items}")
-            if num_failed_grading > 0:
-                print(f"Failed to grade: {num_failed_grading}/{num_items}")
+            print(f"Successfully graded: {num_items - num_failed_items}/{num_items}")
+            if num_skipped_items > 0:
+                print(f"Skipped: {num_skipped_items}/{num_items} (already graded)")
+            if num_failed_items > 0:
+                print(f"Failed to grade: {num_failed_items}/{num_items}")
 
         # Export results to CSV if requested
         if self.batch_config.export_csv:

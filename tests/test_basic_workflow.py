@@ -9,17 +9,20 @@ TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def test_basic_workflow():
-    notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / "basic-workflow.ipynb"
+    filename = "common-notebook.ipynb"
+    notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / filename
+    filename_base = notebook_path.stem
 
     result = grade_single_notebook(
         {
             "notebook_path": notebook_path,
             "output_path": TEST_OUTPUT_DIR,
-        }
+        },
+        regrade_existing=True,
     )
 
     # Check the accuracy of the result object
-    assert result.filename == "basic-workflow.ipynb"
+    assert result.filename == filename
     assert result.learner_autograded_score == 55
     assert result.max_autograded_score == 60
     assert result.max_manually_graded_score == 10
@@ -53,11 +56,11 @@ def test_basic_workflow():
         assert isinstance(test_result.grade_manually, bool)
         assert isinstance(test_result.message, str)
 
-        graded_html_path = TEST_OUTPUT_DIR / "basic-workflow-graded.html"
-        graded_ipynb_path = TEST_OUTPUT_DIR / "basic-workflow-graded.ipynb"
-        graded_json_path = TEST_OUTPUT_DIR / "basic-workflow-graded-result.json"
+        graded_html_path = TEST_OUTPUT_DIR / f"{filename_base}-graded.html"
+        graded_ipynb_path = TEST_OUTPUT_DIR / f"{filename_base}-graded.ipynb"
+        graded_json_path = TEST_OUTPUT_DIR / f"{filename_base}-graded-result.json"
         graded_summary_path = (
-            TEST_OUTPUT_DIR / "basic-workflow-graded-result-summary.txt"
+            TEST_OUTPUT_DIR / f"{filename_base}-graded-result-summary.txt"
         )
 
         assert (

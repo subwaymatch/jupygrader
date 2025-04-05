@@ -30,7 +30,11 @@ def test_file_copy_https():
     }
 
     results = grade_notebooks(
-        [item_copy_dict], base_files=base_files, verbose=False, export_csv=False
+        [item_copy_dict],
+        base_files=base_files,
+        verbose=False,
+        export_csv=False,
+        regrade_existing=True,
     )
 
     assert results[0].learner_autograded_score == 50

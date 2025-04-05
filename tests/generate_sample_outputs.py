@@ -28,4 +28,5 @@ def generate_sample_outputs_01():
             }
         ],
         csv_output_path=SAMPLE_OUTPUT_DIR / "sample-graded-results.csv",
+        regrade_existing=True,
     )

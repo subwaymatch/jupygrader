@@ -35,6 +35,7 @@ dependencies = [
     "plotly",
     "black",
     "requests",
+    "tzlocal",
 ]
 
 [project.optional-dependencies]

@@ -16,12 +16,14 @@ def grade_notebooks(
     verbose: bool = True,
     export_csv: bool = True,
     csv_output_path: Optional[FilePath] = None,
+    regrade_existing: bool = False,
 ) -> List[GradedResult]:
     batch_config = BatchGradingConfig(
         base_files=base_files,
         verbose=verbose,
         export_csv=export_csv,
         csv_output_path=csv_output_path,
+        regrade_existing=regrade_existing,
     )
 
     manager = BatchGradingManager(
@@ -33,24 +35,10 @@ def grade_notebooks(
 
 def grade_single_notebook(
     grading_item: Union[FilePath, GradingItem, dict],
-    *,
-    verbose: bool = True,
+    **kwargs,
 ) -> Optional[GradedResult]:
-    """Grade a single Jupyter notebook.
+    kwargs["export_csv"] = False
 
-    Convenience function to grade just one notebook. Internally calls `grade_notebooks()`
-    with a single-item list.
-
-    Args:
-        grading_item: The notebook to grade, can be:
-            - String with path to a notebook file
-            - Path object pointing to a notebook file
-            - GradingItem object with detailed grading configuration
-        verbose: Whether to print progress and diagnostic information. Defaults to True.
-
-    Returns:
-        GradedResult object with detailed grading results, or None if grading failed.
-    """
-    r = grade_notebooks([grading_item], verbose=verbose, export_csv=False)
+    r = grade_notebooks([grading_item], **kwargs)
 
     return r[0] if len(r) > 0 else None

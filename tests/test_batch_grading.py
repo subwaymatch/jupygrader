@@ -19,6 +19,7 @@ def test_batch_grader():
     results = jupygrader.grade_notebooks(
         grading_items=grading_items,
         csv_output_path=TEST_OUTPUT_DIR / "batch-test-results.csv",
+        regrade_existing=True,
     )
 
     # Cleanup
