@@ -121,6 +121,7 @@ class GradedResult:
         extracted_user_code_file: Path to file containing extracted user code. Defaults to None.
         graded_html_file: Path to HTML output of graded notebook. Defaults to None.
         text_summary_file: Path to text summary file. Defaults to None.
+        graded_result_json_file: Path to JSON file containing the graded results. Defaults to None.
     """
 
     filename: str = ""

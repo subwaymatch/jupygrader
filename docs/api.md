@@ -74,15 +74,15 @@
 
 ---
 
+### `jupygrader.GradedResult`
+
+::: jupygrader.GradedResult
+
 ### `jupygrader.TestCaseResult`
 
 ::: jupygrader.TestCaseResult
 
 ---
-
-### `jupygrader.GradedResult`
-
-::: jupygrader.GradedResult
 
 ---
 

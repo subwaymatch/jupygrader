@@ -86,9 +86,9 @@ class BatchGradingManager:
                 print("No results to export to CSV.")
             return
 
-        # Create timestamp for CSV filename
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        csv_filename = f"graded_results_{timestamp}.csv"
+        # Create datetime for CSV filename
+        formatted_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+        csv_filename = f"graded_results_{formatted_datetime}.csv"
 
         # Determine the output path
         if self.batch_config.csv_output_path is None:

@@ -18,13 +18,13 @@ pip install --upgrade jupygrader
 
 ### Grade multiple notebooks
 
-Use the `grade_notebooks` function to grade Jupyter notebooks. You can pass a list of notebook paths or `GradingItem` objects for more detailed configuration.
+Use the `grade_notebooks` function to grade Jupyter notebooks. You can pass a list of notebook paths or dictionaries for more detailed configuration.
 
 ```python
 from jupygrader import grade_notebooks
 
 # Grade a list of notebooks
-graded_results = grade_notebooks(['path/to/notebook1.ipynb', 'path/to/notebook2.ipynb'])
+graded_results = grade_notebooks(["path/to/notebook1.ipynb", "path/to/notebook2.ipynb"])
 ```
 
 !!! info "Custom Output Path and File Copying"
@@ -37,13 +37,13 @@ graded_results = grade_notebooks(['path/to/notebook1.ipynb', 'path/to/notebook2.
 from jupygrader import grade_notebooks
 
 item1 = {
-    'notebook_path': 'path/to/notebook1.ipynb',
-    'output_path': 'path/to/output1',
-    'copy_files': ['data1.csv']
+    "notebook_path": "path/to/notebook1.ipynb",
+    "output_path": "path/to/output1",
+    "copy_files": ["data1.csv"],
 }
 item2 = {
-    'notebook_path': 'path/to/notebook2.ipynb'
-    # use default output_path and do not copy files
+    "notebook_path": "path/to/notebook2.ipynb"
+    # Use default output_path and do not copy files
 }
 
 graded_results = grade_notebooks([item1, item2])
@@ -59,21 +59,73 @@ The destination path is relative to the working directory of the Jupyter noteboo
 from jupygrader import grade_notebooks
 
 item1 = {
-    'notebook_path': 'path/to/notebook1.ipynb',
-    'copy_files': {
-        'my_data.parquet': 'my_data.parquet'
-    }
+    "notebook_path": "path/to/notebook1.ipynb",
+    "copy_files": {"my_data.parquet": "my_data.parquet"},
 }
 
 item2 = {
-    'notebook_path': 'path/to/notebook2.ipynb',
-    'copy_files': {
-        'data/population.csv': 'another/path/population.csv',
-        'titanic.db': 'databases/titanic.db'
-    }
+    "notebook_path": "path/to/notebook2.ipynb",
+    "copy_files": {
+        "data/population.csv": "another/path/population.csv",
+        "titanic.db": "databases/titanic.db",
+    },
 }
 
 graded_results = grade_notebooks([item1, item2])
+
+```
+
+If your assignment has base files that should be copied to every notebook's workspace, you can specify them in the `base_files` parameter of the `grade_notebooks` function. This will copy those files to the working directory of each notebook being graded.
+
+```python
+from jupygrader import grade_notebooks
+
+graded_results = grade_notebooks(
+    ["notebook1.ipynb", "notebook2.ipynb"],
+    base_files={
+        # Copy from the URL to data/my_data.csv in the working directory relative to the notebook
+        "https://example.com/path/to/base_file.csv": "data/my_data.csv",
+        # Local files are also supported
+        "local-data/another_file.key": "openai_api_key.key",
+    },
+)
+```
+
+If a notebook has been already graded, it will skip grading and return the cached result. This is useful for large assignments where you want to avoid re-grading notebooks that have not changed.
+
+```python
+from jupygrader import grade_notebooks
+
+graded_results1 = grade_notebooks(
+    ["notebook1.ipynb", "notebook2.ipynb", "notebook3.ipynb"]
+)
+
+# The second call will skip re-grading for all three notebooks if they have not changed, and the jupygrader version is the same
+graded_results2 = grade_notebooks(
+    ["notebook1.ipynb", "notebook2.ipynb", "notebook3.ipynb"]
+)
+
+```
+
+To force a regrade, use `regrade_existing=True` parameter. This will re-grade all specified notebooks regardless of whether they have been previously graded or not.
+
+```python
+graded_results2 = grade_notebooks(
+    ["notebook1.ipynb", "notebook2.ipynb", "notebook3.ipynb"], regrade_existing=True
+)
+```
+
+You can also control the verbosity of the output and whether to export the graded results to a CSV file. By default, verbose output is enabled and the graded results are exported to a CSV file named `graded_results_{%Y%m%d_%H%M%S}.csv` in the current working directory.
+
+```python
+from jupygrader import grade_notebooks
+
+graded_results = grade_notebooks(
+    ["notebook1.ipynb", "notebook2.ipynb", "notebook3.ipynb"],
+    verbose=True,  # Default, set to False to disable verbose output
+    export_csv=True,  # Default, set to False to disable CSV export
+    csv_output_path="path/to/output/graded_results.csv",  # Optional: specify a custom path for the CSV output,
+)
 ```
 
 ---
