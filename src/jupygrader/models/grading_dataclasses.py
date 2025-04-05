@@ -15,6 +15,7 @@ class GradingItem:
 
 @dataclass
 class BatchGradingConfig:
+    grading_items: List[GradingItem] = None
     verbose: bool = False
     export_csv: bool = True
     base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None

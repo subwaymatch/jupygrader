@@ -13,15 +13,12 @@ import time
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Iterator, List, Optional, Tuple, Union
-from importlib.resources import files
+from typing import Iterator, List, Optional, Union
 
-import black
 import nbformat
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
-from dataclasses import dataclass, field, asdict
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 from nbformat import NotebookNode
@@ -44,7 +41,6 @@ from .grading_dataclasses import (
     FilePath,
     GradedResult,
     GradingItem,
-    TestCaseMetadata,
 )
 
 
