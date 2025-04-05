@@ -186,16 +186,10 @@ class BatchGradingManager:
                         graded_result = grading_task.get_existing_graded_result()
 
                     else:
-                        print(f"Grading notebook: {notebook_name} ...")
                         graded_result = grading_task.grade()
 
                     # Add to results list
                     self.graded_results.append(graded_result)
-
-                    if self.verbose:
-                        score = graded_result.learner_autograded_score
-                        max_score = graded_result.max_autograded_score
-                        print(f"Done. Score: {score}/{max_score}")
 
                 except Exception as e:
                     num_failed_items += 1
@@ -203,10 +197,6 @@ class BatchGradingManager:
                     if self.verbose:
                         print(f"Error: {str(e)}")
                         print(f"Failed to grade notebook: {item.notebook_path}")
-
-                finally:
-                    if self.verbose:
-                        print(f"Progress: {round(idx / num_items * 100, 1)}%")
 
         # The code below continues outside the context manager
         elapsed_time = time.time() - start_time

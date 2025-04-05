@@ -693,7 +693,4 @@ class GradingTask:
             # 3. Generate output files (cleaned .ipynb, .html, .py, .txt, final .json)
             self.generate_output_artifacts()
 
-            if self.verbose:
-                print(f"Finished grading {self.notebook_path.name}")
-
         return self.graded_result
