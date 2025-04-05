@@ -1,4 +1,4 @@
-from jupygrader import grade_single_notebook, GradingItem
+from jupygrader import grade_single_notebook
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -12,10 +12,10 @@ def test_notebook_without_test_cases():
     notebook_path = TEST_NOTEBOOKS_DIR / "no-test-cases" / "no-test-cases-test.ipynb"
 
     result = grade_single_notebook(
-        GradingItem(
-            notebook_path=notebook_path,
-            output_path=TEST_OUTPUT_DIR,
-        )
+        {
+            "notebook_path": notebook_path,
+            "output_path": TEST_OUTPUT_DIR,
+        }
     )
 
     assert result.learner_autograded_score == 0

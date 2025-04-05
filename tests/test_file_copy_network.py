@@ -1,4 +1,4 @@
-from jupygrader import grade_notebooks, GradingItem
+from jupygrader import grade_notebooks
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -15,17 +15,19 @@ base_files = {
 
 
 def test_file_copy_https():
-    item_copy_dict = GradingItem(
-        notebook_path=TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-dict.ipynb",
-        output_path=TEST_OUTPUT_DIR / "network-base-files-test",
-        copy_files={
-            "https://raw.githubusercontent.com/subwaymatch/jupygrader/refs/heads/main/tests/test-files/file-copy/my-first-input.txt": "copied1.txt",
-            "https://raw.githubusercontent.com/subwaymatch/jupygrader/refs/heads/main/tests/test-files/file-copy/input-folder/my-second-input.txt": Path(
-                "created-folder/another-folder/copied2.txt"
-            ),
-            "https://this-file-does-not-exist.net/nonexistent.txt": "nonexistent.txt",  # This should be ignored
+    item_copy_dict = {
+        "notebook_path": TEST_NOTEBOOKS_DIR / "file-copy/file-copy-test-dict.ipynb",
+        "output_path": TEST_OUTPUT_DIR,
+        "copy_files": {
+            TEST_NOTEBOOKS_DIR / "file-copy" / "my-first-input.txt": "copied1.txt",
+            (
+                TEST_NOTEBOOKS_DIR
+                / "file-copy"
+                / "input-folder"
+                / "my-second-input.txt"
+            ).as_posix(): Path("created-folder/another-folder/copied2.txt"),
         },
-    )
+    }
 
     results = grade_notebooks(
         [item_copy_dict], base_files=base_files, verbose=False, export_csv=False

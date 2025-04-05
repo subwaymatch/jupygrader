@@ -2,6 +2,15 @@ import requests
 from pathlib import Path
 import socket
 from requests.exceptions import RequestException
+from importlib.resources import files
+
+
+def get_jupyter_cell_script(filename: str) -> str:
+    template_path = files("jupygrader.resources.jupyter_cell_scripts").joinpath(
+        filename
+    )
+
+    return template_path.read_text()
 
 
 def download_file(url, destination: Path, timeout=30, max_retries=2) -> bool:

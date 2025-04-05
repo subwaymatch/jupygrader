@@ -1,4 +1,4 @@
-from jupygrader import grade_notebooks, GradingItem
+from jupygrader import grade_notebooks
 from pathlib import Path
 import shutil
 
@@ -22,9 +22,9 @@ def generate_sample_outputs_01():
 
     grade_notebooks(
         [
-            GradingItem(
-                notebook_path=notebook_path,
-                output_path=SAMPLE_OUTPUT_DIR,
-            )
+            {
+                "notebook_path": notebook_path,
+                "output_path": SAMPLE_OUTPUT_DIR,
+            }
         ]
     )

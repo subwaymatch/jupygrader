@@ -1,4 +1,4 @@
-from jupygrader import grade_single_notebook, GradingItem
+from jupygrader import grade_single_notebook
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -52,3 +52,23 @@ def test_basic_workflow():
         assert isinstance(test_result.did_pass, bool) or test_result.did_pass is None
         assert isinstance(test_result.grade_manually, bool)
         assert isinstance(test_result.message, str)
+
+        graded_html_path = TEST_OUTPUT_DIR / "basic-workflow-graded.html"
+        graded_ipynb_path = TEST_OUTPUT_DIR / "basic-workflow-graded.ipynb"
+        graded_json_path = TEST_OUTPUT_DIR / "basic-workflow-graded-result.json"
+        graded_summary_path = (
+            TEST_OUTPUT_DIR / "basic-workflow-graded-result-summary.txt"
+        )
+
+        assert (
+            graded_html_path.exists()
+        ), f"Expected HTML file not found: {graded_html_path}"
+        assert (
+            graded_ipynb_path.exists()
+        ), f"Expected graded notebook not found: {graded_ipynb_path}"
+        assert (
+            graded_json_path.exists()
+        ), f"Expected result JSON file not found: {graded_json_path}"
+        assert (
+            graded_summary_path.exists()
+        ), f"Expected text summary file not found: {graded_summary_path}"
