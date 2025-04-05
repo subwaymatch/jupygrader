@@ -1,4 +1,5 @@
 import requests
+from typing import Union
 from pathlib import Path
 import socket
 from requests.exceptions import RequestException
@@ -13,7 +14,12 @@ def get_jupyter_cell_script(filename: str) -> str:
     return template_path.read_text()
 
 
-def download_file(url, destination: Path, timeout=30, max_retries=2) -> bool:
+def is_url(path: Union[str, Path]) -> bool:
+    """Check if the path starts with http or https."""
+    return str(path).lower().startswith(("http://", "https://"))
+
+
+def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> bool:
     """Download a file from a URL to a specified destination path.
 
     Args:

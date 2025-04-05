@@ -33,7 +33,7 @@ from ..notebook_operations import (
     get_test_cases_hash,
     is_manually_graded_test_case,
 )
-from ..utils import get_jupyter_cell_script, download_file
+from ..utils import get_jupyter_cell_script, is_url, download_file
 from .grading_dataclasses import (
     BatchGradingConfig,
     CopyFileItem,
@@ -247,10 +247,6 @@ class GradingTask:
         # Copy the notebook itself
         shutil.copy2(self.notebook_path, temp_notebook_path)
 
-        def is_url(path: Union[str, Path]) -> bool:
-            """Check if the path starts with http or https."""
-            return str(path).lower().startswith(("http://", "https://"))
-
         def process_files(
             files: Optional[Union[FilePath, List[FilePath], FileDict]],
             label: str = "files",
@@ -260,7 +256,11 @@ class GradingTask:
 
             copy_file_items: List[CopyFileItem] = []
 
-            files = [files] if isinstance(files, (str, Path)) else files
+            files = (
+                [files]
+                if isinstance(files, (str, Path)) and not is_url(files)
+                else files
+            )
 
             if isinstance(files, list):
                 for src in files:
@@ -343,7 +343,7 @@ class GradingTask:
 
         # Create a temporary random directory for grading
         self.temp_workdir_path = Path(tempfile.gettempdir()) / (
-            "jupygrader_" + str(uuid.uuid4())[:8]
+            "jupygrader_" + str(uuid.uuid4())[:6]
         )
         self.temp_workdir_path.mkdir(parents=True, exist_ok=False)
         self.temp_notebook_path = self.temp_workdir_path / filename

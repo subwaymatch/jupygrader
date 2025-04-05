@@ -1,37 +1,18 @@
 from .grading_dataclasses import (
     FilePath,
-    FileDict,
     GradingItem,
-    CopyFileItem,
     BatchGradingConfig,
     GradedResult,
 )
-from ..__about__ import __version__ as jupygrader_version
-from ..constants import GRADED_RESULT_JSON_FILENAME
 from .grading_task import GradingTask
-from ..notebook_operations import (
-    get_test_cases_hash,
-    extract_user_code_from_notebook,
-)
-from ..utils import download_file
-from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Union, Dict, Any, Tuple, TypedDict, Iterator
+from ..utils import is_url, download_file
+from typing import List, Union, Iterator
 from pathlib import Path
-import nbformat
-from nbformat import NotebookNode
-from nbclient import NotebookClient
-import shutil
-import json
-import os
 import tempfile
 import pandas as pd
 import contextlib
-import hashlib
-import sys
 from datetime import datetime
 import time
-import uuid
-import platform
 
 
 class BatchGradingManager:
@@ -65,6 +46,35 @@ class BatchGradingManager:
             else:
                 raise TypeError(f"Unsupported type in grading_items: {type(item)}")
         return normalized_items
+
+    @contextlib.contextmanager
+    def cache_remote_base_files(
+        self,
+    ) -> Iterator[None]:
+        cached_files: List[Path] = []
+
+        try:
+            if isinstance(self.batch_config.base_files, dict):
+                for src in list(self.batch_config.base_files.keys()):
+                    if is_url(src):
+                        temp_path = Path(tempfile.NamedTemporaryFile(delete=False).name)
+
+                        download_file(src, temp_path)
+                        cached_files.append(temp_path)
+
+                        # Replace the original URL with the local cached path
+                        self.batch_config.base_files[temp_path] = (
+                            self.batch_config.base_files.pop(src)
+                        )
+
+            yield
+
+        except Exception as e:
+            print(f"[Error in cache_remote_base_files()]: {e}")
+
+        finally:
+            for file_path in cached_files:
+                file_path.unlink(missing_ok=True)
 
     def export_results_to_csv(
         self,
@@ -142,47 +152,50 @@ class BatchGradingManager:
 
         start_time = time.time()
 
-        for idx, item in enumerate(self.grading_items, start=1):
-            try:
-                notebook_path = item.notebook_path
-                notebook_name = Path(notebook_path).name
+        # Use the context manager to handle remote base files
+        with self.cache_remote_base_files():
+            for idx, item in enumerate(self.grading_items, start=1):
+                try:
+                    notebook_path = item.notebook_path
+                    notebook_name = Path(notebook_path).name
 
-                if self.verbose:
-                    print("-" * 70)
-                    print(
-                        f"[{idx}/{num_items}] Grading: {notebook_name} ... ",
+                    if self.verbose:
+                        print("-" * 70)
+                        print(
+                            f"[{idx}/{num_items}] Grading: {notebook_name} ... ",
+                        )
+
+                    batch_config = BatchGradingConfig(
+                        base_files=self.batch_config.base_files,
+                        verbose=self.verbose,
+                        export_csv=self.batch_config.export_csv,
+                        csv_output_path=self.batch_config.csv_output_path,
                     )
 
-                batch_config = BatchGradingConfig(
-                    base_files=self.batch_config.base_files,
-                    verbose=self.verbose,
-                    export_csv=self.batch_config.export_csv,
-                    csv_output_path=self.batch_config.csv_output_path,
-                )
+                    grading_task = GradingTask(item, batch_config)
 
-                grading_task = GradingTask(item, batch_config)
+                    graded_result = grading_task.grade()
 
-                graded_result = grading_task.grade()
+                    # Add to results list
+                    self.graded_results.append(graded_result)
 
-                # Add to results list
-                self.graded_results.append(graded_result)
+                    if self.verbose:
+                        score = graded_result.learner_autograded_score
+                        max_score = graded_result.max_autograded_score
+                        print(f"Done. Score: {score}/{max_score}")
 
-                if self.verbose:
-                    score = graded_result.learner_autograded_score
-                    max_score = graded_result.max_autograded_score
-                    print(f"Done. Score: {score}/{max_score}")
+                except Exception as e:
+                    num_failed_grading += 1
 
-            except Exception as e:
-                num_failed_grading += 1
+                    if self.verbose:
+                        print(f"Error: {str(e)}")
+                        print(f"Failed to grade notebook: {item.notebook_path}")
 
-                if self.verbose:
-                    print(f"Error: {str(e)}")
-                    print(f"Failed to grade notebook: {item.notebook_path}")
+                finally:
+                    if self.verbose:
+                        print(f"Progress: {round(idx / num_items * 100, 1)}%")
 
-            finally:
-                if self.verbose:
-                    print(f"Progress: {round(idx / num_items * 100, 1)}%")
-
+        # The code below continues outside the context manager
         elapsed_time = time.time() - start_time
 
         if self.verbose:
