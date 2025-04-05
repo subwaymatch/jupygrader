@@ -679,11 +679,6 @@ class GradingTask:
         original_notebook_path = Path(self.item.notebook_path).resolve()
 
         with self.use_temporary_grading_environment():
-            if self.verbose:
-                print(
-                    f"Grading {original_notebook_path.name} in {self.temp_notebook_path.parent}"
-                )
-
             # 1. Prepare and execute the notebook (read, preprocess, inject scripts)
             self.prepare_and_execute_notebook()
 
