@@ -1,0 +1,16 @@
+filename,learner_autograded_score,max_autograded_score,max_manually_graded_score,max_total_score,num_autograded_cases,num_passed_cases,num_failed_cases,num_manually_graded_cases,num_total_test_cases,grading_finished_at,grading_duration_in_seconds,submission_notebook_hash,test_cases_hash,grader_python_version,grader_platform,text_summary
+sample-submission-01.ipynb,5,5,5,10,2,2,0,1,3,2025-04-04 07:42 PM ,2.65,0b41888ca4121f2ddd9824369d5e8776,406ec253731104e60ea382be8df6fc47,3.12.5,Windows-11-10.0.26100-SP0,"File: sample-submission-01.ipynb
+Autograded Score: 5 out of 5
+Passed 2 out of 2 test cases
+1 items will be graded manually.
+5 points are available for manually graded items.
+10 total points are available.
+Grading took 2.65 seconds
+
+Test Case Summary
+-----------------
+calculate-odd-sum: PASS, 2 out of 2 points
+-----------------
+calculate-odd-product: PASS, 3 out of 3 points
+-----------------
+free-response-question: requires manual grading, 5 points available"

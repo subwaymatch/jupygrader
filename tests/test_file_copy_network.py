@@ -2,7 +2,7 @@ from jupygrader import grade_notebooks
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
-TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output"
+TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output" / "file-copy-network"
 
 # Create the output directory if it doesn't exist
 TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

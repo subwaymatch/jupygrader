@@ -10,7 +10,7 @@ SAMPLE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # Generate sample outputs for documentation
-def generate_sample_outputs_01():
+def test_generate_sample_outputs_01():
     notebook_path = (
         TEST_NOTEBOOKS_DIR / "sample-notebooks" / "sample-submission-01.ipynb"
     )
@@ -26,5 +26,6 @@ def generate_sample_outputs_01():
                 "notebook_path": notebook_path,
                 "output_path": SAMPLE_OUTPUT_DIR,
             }
-        ]
+        ],
+        csv_output_path=SAMPLE_OUTPUT_DIR / "sample-graded-results.csv",
     )
