@@ -13,6 +13,7 @@ import pandas as pd
 import contextlib
 from datetime import datetime
 import time
+from tqdm.auto import tqdm
 
 
 class BatchGradingManager:
@@ -147,16 +148,19 @@ class BatchGradingManager:
         num_skipped_items = 0
         num_failed_items = 0
 
-        if self.verbose:
-            print(
-                f"Starting grading of {num_items} notebook(s) at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            )
-
         start_time = time.time()
 
         # Use the context manager to handle remote base files
         with self.cache_remote_base_files():
-            for idx, item in enumerate(self.grading_items, start=1):
+            loop = enumerate(
+                tqdm(
+                    self.grading_items,
+                    desc=f"Grading {num_items} notebook{"s" if num_items > 1 else ""}",
+                    unit="notebook",
+                ),
+                start=1,
+            )
+            for idx, item in loop:
                 try:
                     notebook_path = item.notebook_path
                     notebook_name = Path(notebook_path).name

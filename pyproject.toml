@@ -36,6 +36,7 @@ dependencies = [
     "black",
     "requests",
     "tzlocal",
+    "tqdm",
 ]
 
 [project.optional-dependencies]

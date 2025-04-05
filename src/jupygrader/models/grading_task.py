@@ -343,9 +343,6 @@ class GradingTask:
                 raise ValueError(f"Invalid type for {label}: {type(files)}")
 
             for copy_item in copy_file_items:
-                if self.verbose:
-                    print(f"Copying {label}: {copy_item.src} → {copy_item.dest}")
-
                 if copy_item.is_url:
                     download_file(str(copy_item.src), copy_item.dest)
                 elif copy_item.src.exists():
