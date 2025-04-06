@@ -148,7 +148,6 @@ class GradingTask:
             )
 
             tc_counts = {}
-
             test_case_links = []
 
             for o in graded_result.test_case_results:
@@ -187,7 +186,14 @@ class GradingTask:
                 },
                 inplace=True,
             )
-            df_r["learner_score"] = df_r["learner_score"].astype(str).fillna("")
+            df_r["learner_score"] = df_r["learner_score"].apply(
+                lambda x: (
+                    "Pending"
+                    if pd.isna(x)
+                    else str(int(x)) if float(x).is_integer() else str(x)
+                )
+            )
+
             df_r.drop(columns=["grade_manually"], inplace=True)
 
             gr_cells.append(new_markdown_cell(df_r.to_markdown()))
@@ -460,10 +466,6 @@ class GradingTask:
         soup = BeautifulSoup(r[0], "html.parser")
         elements = soup.find_all("div", class_="jp-CodeCell")
 
-        back_to_top_link_el = soup.new_tag("a")
-        back_to_top_link_el["href"] = f"#{GRADED_RESULT_ELEMENT_ID}"
-        back_to_top_link_el.string = "↑ Scroll to Graded Results Summary"
-
         tc_counts = {}
 
         for el in elements:
@@ -480,15 +482,12 @@ class GradingTask:
                 # set div's ID so that we can create internal anchors
                 el["id"] = anchor_id
 
-                # add "back to top" link
-                el.append(copy.copy(back_to_top_link_el))
-
         jupygrader_sidebar_container_el = soup.new_tag("div")
         jupygrader_sidebar_container_el["class"] = "jupygrader-sidebar-container"
         soup.body.append(jupygrader_sidebar_container_el)
 
         back_to_top_el = BeautifulSoup(
-            "<a class='graded-item-link back-to-top' data-text='Jupygrader Test Case Results' href='#_graded_result'>📑</a>",
+            "<a class='graded-item-link back-to-top' data-text='Scroll to Test Case Results Summary' href='#_graded_result'>•</a>",
             "html.parser",
         ).find("a")
         jupygrader_sidebar_container_el.append(back_to_top_el)
@@ -502,7 +501,6 @@ class GradingTask:
             tc_counts[tc_name_cleaned] += 1
 
             anchor_id = f"{tc_name_cleaned}_id{tc_counts[tc_name_cleaned]}"
-            item_icon = "⌛" if o.grade_manually else "✔️" if o.did_pass else "❌"
             item_status_classname = (
                 "manual-grading-required"
                 if o.grade_manually
@@ -510,16 +508,16 @@ class GradingTask:
             )
 
             item_el = soup.new_tag("a")
-            item_el.string = item_icon
+            item_el.string = ""
             item_el["class"] = f"graded-item-link {item_status_classname}"
             item_el["href"] = f"#{anchor_id}"
             item_el["data-text"] = (
-                o.test_case_name
-                + " "
+                ("Passed " if o.did_pass else "" if o.grade_manually else "Failed ")
+                + o.test_case_name
                 + (
-                    "(manual grading required)"
+                    " (manual grading required)"
                     if o.grade_manually
-                    else f"({o.points} out of {o.available_points})"
+                    else f" ({o.points} out of {o.available_points})"
                 )
             )
             jupygrader_sidebar_container_el.append(item_el)
@@ -528,57 +526,64 @@ class GradingTask:
         head = soup.head
 
         jupygrader_sidebar_css = """
-    html {
+   html {
     scroll-behavior: smooth;
     }
     .jupygrader-sidebar-container {
-    background-color: #f5f5f5;
+    font-family: var(--jp-content-font-family);
     position: fixed;
     top: 0;
     left: 0;
-    width: 36px;
-    height: 100%;
+    width: 24px;
+    height: calc(100% - 8px);
     display: flex;
     flex-direction: column;
+    gap: 3px;
     z-index: 999;
+    padding: 4px 0;
     }
     .graded-item-link {
     flex: 1;
     position: relative;
-    margin-bottom: 1px;
-    color: #777;
+    color: white;
     background-color: #000;
     display: flex;
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    font-size: 12px;
+    font-size: 14px;
+    border-radius: 3px;
+    margin: 0 4px;
     }
     .graded-item-link:hover {
-    color: #fff;
     position: relative;
     z-index: 1;
     }
     .graded-item-link.back-to-top {
-    background-color: #2196f3;
+    flex-grow: 0;
+    padding: 4px 0;
+    }
+    .graded-item-link.back-to-top:hover {
+    color: #ddd;
+    background-color: #222;
     }
     .graded-item-link.pass {
-    border-right: 8px solid #4caf50;
-    }
-    .graded-item-link.pass:hover {
     background-color: #4caf50;
     }
-    .graded-item-link.fail {
-    border-right: 8px solid #f44336;
+    .graded-item-link.pass:hover {
+    background-color: #388e3c;
     }
-    .graded-item-link.fail:hover {
+    .graded-item-link.fail {
     background-color: #f44336;
     }
+    .graded-item-link.fail:hover {
+    background-color: #d32f2f;
+    }
     .graded-item-link.manual-grading-required {
-    border-right: 8px solid #ffeb3b;
+    background-color: #ffeb3b;
     }
     .graded-item-link.manual-grading-required:hover {
-    background-color: #ffeb3b;
+    background-color: #fdd835;
     }
     /* tooltip */
     .graded-item-link:before {
@@ -593,7 +598,7 @@ class GradingTask:
     left: 100%;
     /* basic styles */
     width: 300px;
-    padding: 10px;
+    padding: 8px 10px 10px 10px;
     background: #fff;
     color: #000;
     border: 4px solid #000;
@@ -602,15 +607,18 @@ class GradingTask:
     /* hide by default */
     }
     .graded-item-link.back-to-top:before {
-    border-color: #2196f3;
+    border-color: #000000;
     }
     .graded-item-link.pass:before {
+    color: #4caf50;
     border-color: #4caf50;
     }
     .graded-item-link.fail:before {
+    color: #f44336;
     border-color: #f44336;
     }
     .graded-item-link.manual-grading-required:before {
+    color: #777;
     border-color: #ffeb3b;
     }
     .graded-item-link:hover:before {

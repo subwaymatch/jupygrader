@@ -9,8 +9,8 @@
   "num_failed_cases": 0,
   "num_manually_graded_cases": 1,
   "num_total_test_cases": 3,
-  "grading_finished_at": "2025-04-04 07:42 PM ",
-  "grading_duration_in_seconds": 2.65,
+  "grading_finished_at": "2025-04-06 03:46 AM CDT",
+  "grading_duration_in_seconds": 2.68,
   "test_case_results": [
     {
       "test_case_name": "calculate-odd-sum",
@@ -41,9 +41,10 @@
   "test_cases_hash": "406ec253731104e60ea382be8df6fc47",
   "grader_python_version": "3.12.5",
   "grader_platform": "Windows-11-10.0.26100-SP0",
-  "jupygrader_version": "0.1.15",
+  "jupygrader_version": "0.2.8",
   "extracted_user_code_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01_user_code.py",
   "graded_html_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01-graded.html",
   "text_summary_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01-graded-result-summary.txt",
-  "text_summary": "File: sample-submission-01.ipynb\nAutograded Score: 5 out of 5\nPassed 2 out of 2 test cases\n1 items will be graded manually.\n5 points are available for manually graded items.\n10 total points are available.\nGrading took 2.65 seconds\n\nTest Case Summary\n-----------------\ncalculate-odd-sum: PASS, 2 out of 2 points\n-----------------\ncalculate-odd-product: PASS, 3 out of 3 points\n-----------------\nfree-response-question: requires manual grading, 5 points available"
+  "graded_result_json_file": "C:\\Users\\Park\\Documents\\python-projects\\jupygrader\\sample-graded-results\\sample-submission-01-graded-result.json",
+  "text_summary": "File: sample-submission-01.ipynb\nAutograded Score: 5 out of 5\nPassed 2 out of 2 test cases\n1 items will be graded manually.\n5 points are available for manually graded items.\n10 total points are available.\nGrading took 2.68 seconds\n\nTest Case Summary\n-----------------\ncalculate-odd-sum: PASS, 2 out of 2 points\n-----------------\ncalculate-odd-product: PASS, 3 out of 3 points\n-----------------\nfree-response-question: requires manual grading, 5 points available"
 }

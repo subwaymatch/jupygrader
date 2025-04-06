@@ -10,7 +10,7 @@ SAMPLE_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # Generate sample outputs for documentation
-def generate_sample_outputs_01():
+def test_generate_sample_outputs_01():
     notebook_path = (
         TEST_NOTEBOOKS_DIR / "sample-notebooks" / "sample-submission-01.ipynb"
     )
