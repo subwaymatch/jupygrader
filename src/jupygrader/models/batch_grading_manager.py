@@ -14,6 +14,7 @@ import contextlib
 from datetime import datetime
 import time
 from tqdm.auto import tqdm
+import copy
 
 
 class BatchGradingManager:
@@ -25,7 +26,7 @@ class BatchGradingManager:
         batch_config: BatchGradingConfig,
     ):
         self.verbose = batch_config.verbose
-        self.batch_config: BatchGradingConfig = batch_config
+        self.batch_config: BatchGradingConfig = copy.deepcopy(batch_config)
         self.grading_items: List[GradingItem] = self.normalize_grading_items(
             grading_items
         )
