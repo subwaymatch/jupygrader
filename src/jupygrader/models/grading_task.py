@@ -90,7 +90,7 @@ class GradingTask:
 
         return None
 
-    def add_graded_result_to_notebook(self) -> NotebookNode:
+    def add_graded_result_to_notebook(self) -> None:
         graded_result = self.graded_result
 
         gr_cells = []
@@ -195,9 +195,7 @@ class GradingTask:
 
         self.nb.cells = gr_cells + self.nb.cells
 
-        return self.nb
-
-    def convert_test_case_using_grader_template(self, cell: NotebookNode) -> str:
+    def convert_test_case_using_grader_template(self, cell: NotebookNode) -> None:
         """Convert a test case cell to use the grader template.
 
         Transforms a test case cell by wrapping it with the appropriate grader template
@@ -635,6 +633,13 @@ class GradingTask:
         # --- Save Graded Notebook (.ipynb) ---
         graded_notebook_filename = f"{self.filename_base}-graded.ipynb"
         graded_notebook_path = self.output_path / graded_notebook_filename
+
+        self.nb.metadata["jupygrader"] = {
+            "graded": True,
+            "version": jupygrader_version,
+            "grading_finished_at": self.graded_result.grading_finished_at,
+        }
+
         with open(graded_notebook_path, mode="w", encoding="utf-8") as f:
             nbformat.write(self.nb, f)
 

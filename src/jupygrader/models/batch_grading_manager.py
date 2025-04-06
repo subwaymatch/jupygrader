@@ -6,6 +6,7 @@ from .grading_dataclasses import (
 )
 from .grading_task import GradingTask
 from ..utils import is_url, download_file
+from ..notebook_operations import is_notebook_graded
 from typing import List, Union, Iterator
 from pathlib import Path
 import tempfile
@@ -163,6 +164,7 @@ class BatchGradingManager:
             for idx, item in loop:
                 try:
                     notebook_path = item.notebook_path
+
                     notebook_name = Path(notebook_path).name
 
                     if self.verbose:
@@ -183,6 +185,13 @@ class BatchGradingManager:
 
                         num_skipped_items += 1
                         graded_result = grading_task.get_existing_graded_result()
+                    
+                    elif is_notebook_graded(item.notebook_path):
+                        if self.verbose:
+                            print(
+                                f"Skipping already graded notebook: {notebook_path}"
+                            )
+                        continue
 
                     else:
                         graded_result = grading_task.grade()

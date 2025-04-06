@@ -6,6 +6,7 @@ import hashlib
 from jupygrader.models.grading_dataclasses import TestCaseMetadata
 from pathlib import Path
 from typing import Union, List, Optional
+import nbformat
 
 test_case_name_pattern = r'^\s*_test_case\s*=\s*[\'"](.*)[\'"]'
 test_case_points_pattern = r"^\s*_points\s*=\s*(.*)[\s#]*.*[\r\n]"
@@ -240,3 +241,23 @@ def get_test_cases_hash(nb: NotebookNode) -> str:
     # generate an MD5 hash
     hash_str = hashlib.md5(test_cases_code.encode("utf-8")).hexdigest()
     return hash_str
+
+
+def is_notebook_graded(notebook_path: Union[str, Path]) -> bool:
+    """
+    Checks whether the given notebook has been graded by Jupygrader.
+
+    Args:
+        notebook_path (str or Path): Path to the .ipynb notebook file.
+
+    Returns:
+        bool: True if the notebook has `"jupygrader": {"graded": True}` in its metadata.
+    """
+    path = Path(notebook_path).resolve()
+    if not path.exists():
+        raise FileNotFoundError(f"Notebook not found: {path}")
+
+    with path.open("r", encoding="utf-8") as f:
+        nb = nbformat.read(f, as_version=4)
+
+    return nb.metadata.get("jupygrader", {}).get("graded", False) is True
