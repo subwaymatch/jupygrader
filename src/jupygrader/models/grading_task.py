@@ -490,7 +490,7 @@ class GradingTask:
         soup.body.append(jupygrader_sidebar_container_el)
 
         back_to_top_el = BeautifulSoup(
-            "<a class='graded-item-link back-to-top' data-text='Jupygrader Test Case Results' href='#_graded_results'>📑</a>",
+            "<a class='graded-item-link back-to-top' data-text='Jupygrader Test Case Results' href='#_graded_result'>📑</a>",
             "html.parser",
         ).find("a")
         jupygrader_sidebar_container_el.append(back_to_top_el)
