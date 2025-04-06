@@ -143,7 +143,7 @@ class GradingTask:
         else:
             gr_cells.append(
                 new_markdown_cell(
-                    f'<h2 id="{GRADED_RESULT_ELEMENT_ID}">Test cases result</h2>'
+                    f'<h2 id="{GRADED_RESULT_ELEMENT_ID}">Test Case Results</h2>'
                 )
             )
 
