@@ -166,7 +166,7 @@ class BatchGradingManager:
 
                     if self.verbose:
                         print(
-                            f"[{idx}/{num_items}] Grading: {notebook_name} ... ",
+                            f"[{idx}/{num_items}] Grading: {notebook_name}",
                         )
 
                     grading_task = GradingTask(item, self.batch_config)
