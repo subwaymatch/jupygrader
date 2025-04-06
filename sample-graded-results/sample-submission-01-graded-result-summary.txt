@@ -4,7 +4,7 @@ Passed 2 out of 2 test cases
 1 items will be graded manually.
 5 points are available for manually graded items.
 10 total points are available.
-Grading took 2.68 seconds
+Grading took 2.19 seconds
 
 Test Case Summary
 -----------------

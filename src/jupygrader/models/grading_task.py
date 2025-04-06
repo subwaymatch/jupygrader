@@ -551,9 +551,9 @@ class GradingTask:
     flex-direction: column;
     justify-content: center;
     text-align: center;
-    font-size: 14px;
+    font-size: 12px;
     border-radius: 3px;
-    margin: 0 4px;
+    margin: 0 4px 0 2px;
     }
     .graded-item-link:hover {
     position: relative;
@@ -561,7 +561,7 @@ class GradingTask:
     }
     .graded-item-link.back-to-top {
     flex-grow: 0;
-    padding: 4px 0;
+    padding: 2px 0;
     }
     .graded-item-link.back-to-top:hover {
     color: #ddd;
@@ -590,7 +590,6 @@ class GradingTask:
     content: attr(data-text);
     /* here's the magic */
     position: absolute;
-    font-size: 14px;
     /* vertically center */
     top: 50%;
     transform: translateY(-50%);
