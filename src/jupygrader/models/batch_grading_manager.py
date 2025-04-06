@@ -24,7 +24,6 @@ class BatchGradingManager:
         ],
         batch_config: BatchGradingConfig,
     ):
-        print(f"regrade_existing = {batch_config.regrade_existing}")
         self.verbose = batch_config.verbose
         self.batch_config: BatchGradingConfig = batch_config
         self.grading_items: List[GradingItem] = self.normalize_grading_items(
@@ -166,7 +165,6 @@ class BatchGradingManager:
                     notebook_name = Path(notebook_path).name
 
                     if self.verbose:
-                        print("-" * 70)
                         print(
                             f"[{idx}/{num_items}] Grading: {notebook_name} ... ",
                         )
