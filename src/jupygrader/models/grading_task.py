@@ -1,5 +1,4 @@
 import contextlib
-import copy
 import hashlib
 import json
 import os
@@ -688,8 +687,6 @@ class GradingTask:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
     def grade(self) -> GradedResult:
-        original_notebook_path = Path(self.item.notebook_path).resolve()
-
         with self.use_temporary_grading_environment():
             # 1. Prepare and execute the notebook (read, preprocess, inject scripts)
             self.prepare_and_execute_notebook()
