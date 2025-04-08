@@ -156,7 +156,7 @@ class BatchGradingManager:
             loop = enumerate(
                 tqdm(
                     self.grading_items,
-                    desc=f"Grading {num_items} notebook{"s" if num_items > 1 else ""}",
+                    desc=f"Grading {num_items} notebook{'s' if num_items > 1 else ''}",
                     unit="notebook",
                 ),
                 start=1,
@@ -185,12 +185,10 @@ class BatchGradingManager:
 
                         num_skipped_items += 1
                         graded_result = grading_task.get_existing_graded_result()
-                    
+
                     elif is_notebook_graded(item.notebook_path):
                         if self.verbose:
-                            print(
-                                f"Skipping already graded notebook: {notebook_path}"
-                            )
+                            print(f"Skipping already graded notebook: {notebook_path}")
                         continue
 
                     else:
