@@ -1,4 +1,4 @@
-# Using `jupygrader` as a library
+# Using `jupygrader` as a Python Library
 
 ## 📦 Installation
 

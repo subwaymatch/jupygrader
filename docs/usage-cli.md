@@ -1,4 +1,4 @@
-# Using `jupygrader` as a command-line tool (CLI)
+# Using `jupygrader` as a CLI Tool
 
 The CLI tool is work-in-progress.
 
