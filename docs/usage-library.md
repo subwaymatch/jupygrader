@@ -18,7 +18,7 @@ pip install --upgrade jupygrader
 
 ### Grade multiple notebooks
 
-Use the `grade_notebooks` function to grade Jupyter notebooks. You can pass a list of notebook paths or dictionaries for more detailed configuration.
+Use the `grade_notebooks()` function to grade Jupyter notebooks. You can pass a list of notebook paths or a list of dictionaries for a more detailed configuration.
 
 ```python
 from jupygrader import grade_notebooks
@@ -29,7 +29,7 @@ graded_results = grade_notebooks(["path/to/notebook1.ipynb", "path/to/notebook2.
 
 !!! info "Custom Output Path and File Copying"
 
-    You can specify the output path and copy files to the working directory for each notebook by using a `GradingItem` dataclass.
+    You can specify the output path and copy files to the working directory for each notebook by passing a dictionary for each notebook.
 
     See the example below.
 
