@@ -82,8 +82,8 @@ def grade(notebook_path, verbose, export_csv, csv_output_path, regrade_existing)
 
 
 @cli.command()
-@cli.argument('notebook_path', nargs=-1, required=True)
-def strip():
+@click.argument('notebook_path', nargs=-1, required=True)
+def strip(notebook_path):
     pass
 
 if __name__ == "__main__":
