@@ -1,4 +1,3 @@
-import os
 from nbformat.notebooknode import NotebookNode
 import re
 import black

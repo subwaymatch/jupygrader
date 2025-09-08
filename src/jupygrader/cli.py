@@ -62,8 +62,8 @@ def grade(notebook_path, verbose, export_csv, csv_output_path, regrade_existing)
             # Non-recursive: only look at top-level .ipynb files
             pattern = os.path.join(os.path.abspath(path), '*.ipynb')
             found = glob.glob(pattern)
-            print(f"Found {len(found)} notebooks in directory {path}")
-            print(found)
+            click.echo(f"Found {len(found)} notebooks in directory {path}")
+            click.echo(found)
             notebook_paths.extend(found)
         # Otherwise, treat as glob pattern
         else:
@@ -80,6 +80,11 @@ def grade(notebook_path, verbose, export_csv, csv_output_path, regrade_existing)
 
     grade_notebooks(notebook_paths, verbose=verbose, export_csv=export_csv, csv_output_path=csv_output_path, regrade_existing=regrade_existing)
 
+
+@cli.command()
+@cli.argument('notebook_path', nargs=-1, required=True)
+def strip():
+    pass
 
 if __name__ == "__main__":
     cli()
