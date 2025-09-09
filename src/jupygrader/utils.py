@@ -4,6 +4,10 @@ from pathlib import Path
 import socket
 from requests.exceptions import RequestException
 from importlib.resources import files
+import click
+from functools import wraps
+import os
+import glob
 
 
 def get_jupyter_cell_script(filename: str) -> str:
@@ -78,3 +82,46 @@ def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> boo
             # Catch any other unexpected errors
             print(f"Unexpected error downloading{url} to {destination}: {e}")
             return False
+
+
+def process_notebook_paths(func):
+    """
+    A decorator that processes the `notebook_paths` argument.
+
+    It takes the tuple of user-provided paths and glob patterns, resolves them
+    into a flat list of existing .ipynb files, and replaces the original
+    argument before calling the decorated command function.
+    """
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        resolved_paths = []
+        # The 'notebook_paths' argument from click is passed in kwargs
+        for path in kwargs["notebook_paths"]:
+            if os.path.isfile(path) and path.endswith(".ipynb"):
+                resolved_paths.append(os.path.abspath(path))
+            elif os.path.isdir(path):
+                pattern = os.path.join(os.path.abspath(path), "*.ipynb")
+                found = glob.glob(pattern)
+                if found:
+                    click.echo(f"Found {len(found)} notebooks in directory: {path}")
+                resolved_paths.extend(found)
+            else:
+                found = glob.glob(path, recursive=True)
+                ipynb_files = [
+                    os.path.abspath(f) for f in found if f.endswith(".ipynb")
+                ]
+                resolved_paths.extend(ipynb_files)
+
+        if not resolved_paths:
+            click.echo(
+                "Error: No notebook files found matching the provided paths.", err=True
+            )
+            raise click.Abort()
+
+        # Overwrite the original `notebook_paths` tuple with the new, sorted, unique list of files
+        kwargs["notebook_paths"] = sorted(list(set(resolved_paths)))
+
+        return func(*args, **kwargs)
+
+    return wrapper

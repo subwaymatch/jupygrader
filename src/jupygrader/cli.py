@@ -1,90 +1,133 @@
 #!/usr/bin/env python
 import click
 import os
-import glob
+import nbformat
+from jupygrader import __version__, grade_notebooks, strip_solution_codes_from_notebook
+from jupygrader.utils import process_notebook_paths
 
-from jupygrader import (
-    __version__,
-)
+notebook_path_argument = click.argument("notebook_paths", nargs=-1, required=True)
 
-from jupygrader import grade_single_notebook, grade_notebooks
 
 # Define the main CLI group
 @click.group()
-@click.version_option(__version__, '--version', '-v', message='jupygrader %(version)s')
-
+@click.version_option(__version__, "--version", "-v", message="jupygrader %(version)s")
 def cli():
     """Jupygrader CLI"""
     pass
 
-# Add hello command
-@cli.command()
-def hello():
-    """Print Hello World"""
-    click.echo("Hello World")
-
-# Add bye command
-@cli.command()
-def bye():
-    """Print Bye World"""
-    click.echo("Bye World")
 
 @cli.command()
-@click.argument('notebook_path', nargs=-1, required=True)
-@click.option('--verbose', is_flag=True, default=False, help='Enable verbose output.')
+@notebook_path_argument
+@click.option("--verbose", is_flag=True, default=False, help="Enable verbose output.")
 @click.option(
-    '--export-csv/--no-export-csv',
+    "--export-csv/--no-export-csv",
     default=True,
-    help='Export results to CSV (default: enabled).'
+    help="Export results to CSV (default: enabled).",
 )
 @click.option(
-    '--csv-output-path',
+    "--csv-output-path",
     type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
     default=None,
-    help='Directory to write CSV output into (does not need to exist yet).'
+    help="Directory to write CSV output into (does not need to exist yet).",
 )
-@click.option('--regrade-existing', is_flag=True, default=False, help='Regrade even if results already exist.')
-def grade(notebook_path, verbose, export_csv, csv_output_path, regrade_existing):
+@click.option(
+    "--regrade-existing",
+    is_flag=True,
+    default=False,
+    help="Regrade even if results already exist.",
+)
+@process_notebook_paths
+def grade(notebook_paths, verbose, export_csv, csv_output_path, regrade_existing):
     """Grade one or more notebooks or patterns."""
 
     # Just resolve paths; don't require directory existence
     if csv_output_path is not None and os.path.isfile(csv_output_path):
-        click.echo(f"Error: --csv-output-path must be a directory, not a file: {csv_output_path}", err=True)
-        raise click.Abort() 
-
-    notebook_paths = []
-    for path in notebook_path:
-        # If it's a file and ends with .ipynb
-        if os.path.isfile(path) and path.endswith('.ipynb'):
-            notebook_paths.append(os.path.abspath(path))
-        # If it's a directory, convert to glob for all .ipynb recursively
-        elif os.path.isdir(path):
-            # Non-recursive: only look at top-level .ipynb files
-            pattern = os.path.join(os.path.abspath(path), '*.ipynb')
-            found = glob.glob(pattern)
-            click.echo(f"Found {len(found)} notebooks in directory {path}")
-            click.echo(found)
-            notebook_paths.extend(found)
-        # Otherwise, treat as glob pattern
-        else:
-            found = glob.glob(path, recursive=True)
-            notebook_paths.extend([os.path.abspath(f) for f in found if f.endswith('.ipynb')])
-
-    if not notebook_paths:
-        click.echo("No notebooks found to grade.", err=True)
+        click.echo(
+            f"Error: --csv-output-path must be a directory, not a file: {csv_output_path}",
+            err=True,
+        )
         raise click.Abort()
 
     # For now, just show what would happen (no grading yet)
     click.echo(f"Notebooks to grade: {notebook_paths}")
-    click.echo(f"verbose={verbose}, export_csv={export_csv}, csv_output_path={csv_output_path}, regrade_existing={regrade_existing}")
+    click.echo(
+        f"verbose={verbose}, export_csv={export_csv}, csv_output_path={csv_output_path}, regrade_existing={regrade_existing}"
+    )
 
-    grade_notebooks(notebook_paths, verbose=verbose, export_csv=export_csv, csv_output_path=csv_output_path, regrade_existing=regrade_existing)
+    grade_notebooks(
+        notebook_paths,
+        verbose=verbose,
+        export_csv=export_csv,
+        csv_output_path=csv_output_path,
+        regrade_existing=regrade_existing,
+    )
 
 
 @cli.command()
-@click.argument('notebook_path', nargs=-1, required=True)
-def strip(notebook_path):
-    pass
+@click.argument(
+    "notebook_path",
+    type=click.Path(exists=True, dir_okay=False, readable=True, resolve_path=True),
+    required=True,
+)
+@click.option(
+    "--output",
+    "-o",
+    "output_path",
+    type=click.Path(dir_okay=False, writable=True, resolve_path=True),
+    default=None,
+    help="Path to save the stripped notebook. Defaults to '[input]-stripped.ipynb'.",
+)
+@click.option(
+    "--clear-output/--no-clear-output",  # Changed to singular
+    default=True,
+    help="Also clear cell outputs and execution counts. Enabled by default.",
+)
+def strip(notebook_path, output_path, clear_output):  # Changed to singular
+    """Strip solution code and optionally outputs from a Jupyter Notebook."""
+
+    if not notebook_path.endswith(".ipynb"):
+        click.echo(
+            f"Error: The input file must be a Jupyter Notebook (.ipynb): {notebook_path}",
+            err=True,
+        )
+        raise click.Abort()
+
+    # Determine the final output path
+    if output_path is None:
+        base, ext = os.path.splitext(notebook_path)
+        write_path = f"{base}-stripped{ext}"
+    else:
+        write_path = output_path
+        if not write_path.endswith(".ipynb"):
+            click.echo(
+                f"Error: The output file must be a Jupyter Notebook (.ipynb): {write_path}",
+                err=True,
+            )
+            raise click.Abort()
+
+    click.echo(f"Stripping notebook: {os.path.basename(notebook_path)}")
+    if not clear_output:  # Changed to singular
+        click.echo("Preserving cell outputs.")
+
+    try:
+        # Read the source notebook
+        nb = nbformat.read(notebook_path, as_version=4)
+
+        # Pass the value of the new flag to the processing function
+        nb_stripped = strip_solution_codes_from_notebook(nb, clear_output=clear_output)
+
+        # Write the modified notebook to the new path
+        nbformat.write(nb_stripped, write_path)
+
+        click.secho(
+            f"Successfully created stripped notebook at: {os.path.basename(write_path)}",
+            fg="green",
+        )
+
+    except Exception as e:
+        click.echo(f"An error occurred while processing the notebook: {e}", err=True)
+        raise click.Abort()
+
 
 if __name__ == "__main__":
     cli()
