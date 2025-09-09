@@ -8,7 +8,6 @@ from jupygrader.utils import process_notebook_paths
 notebook_path_argument = click.argument("notebook_paths", nargs=-1, required=True)
 
 
-# Define the main CLI group
 @click.group()
 @click.version_option(__version__, "--version", "-v", message="jupygrader %(version)s")
 def cli():
@@ -40,7 +39,6 @@ def cli():
 def grade(notebook_paths, verbose, export_csv, csv_output_path, regrade_existing):
     """Grade one or more notebooks or patterns."""
 
-    # Just resolve paths; don't require directory existence
     if csv_output_path is not None and os.path.isfile(csv_output_path):
         click.echo(
             f"Error: --csv-output-path must be a directory, not a file: {csv_output_path}",
@@ -48,8 +46,7 @@ def grade(notebook_paths, verbose, export_csv, csv_output_path, regrade_existing
         )
         raise click.Abort()
 
-    # For now, just show what would happen (no grading yet)
-    click.echo(f"Notebooks to grade: {notebook_paths}")
+    click.echo(f"{len(notebook_paths)} notebook(s) to grade.")
     click.echo(
         f"verbose={verbose}, export_csv={export_csv}, csv_output_path={csv_output_path}, regrade_existing={regrade_existing}"
     )
@@ -78,11 +75,11 @@ def grade(notebook_paths, verbose, export_csv, csv_output_path, regrade_existing
     help="Path to save the stripped notebook. Defaults to '[input]-stripped.ipynb'.",
 )
 @click.option(
-    "--clear-output/--no-clear-output",  # Changed to singular
+    "--clear-output/--no-clear-output",
     default=True,
     help="Also clear cell outputs and execution counts. Enabled by default.",
 )
-def strip(notebook_path, output_path, clear_output):  # Changed to singular
+def strip(notebook_path, output_path, clear_output):
     """Strip solution code and optionally outputs from a Jupyter Notebook."""
 
     if not notebook_path.endswith(".ipynb"):
@@ -92,7 +89,6 @@ def strip(notebook_path, output_path, clear_output):  # Changed to singular
         )
         raise click.Abort()
 
-    # Determine the final output path
     if output_path is None:
         base, ext = os.path.splitext(notebook_path)
         write_path = f"{base}-stripped{ext}"
@@ -106,17 +102,12 @@ def strip(notebook_path, output_path, clear_output):  # Changed to singular
             raise click.Abort()
 
     click.echo(f"Stripping notebook: {os.path.basename(notebook_path)}")
-    if not clear_output:  # Changed to singular
+    if not clear_output:
         click.echo("Preserving cell outputs.")
 
     try:
-        # Read the source notebook
         nb = nbformat.read(notebook_path, as_version=4)
-
-        # Pass the value of the new flag to the processing function
         nb_stripped = strip_solution_codes_from_notebook(nb, clear_output=clear_output)
-
-        # Write the modified notebook to the new path
         nbformat.write(nb_stripped, write_path)
 
         click.secho(
