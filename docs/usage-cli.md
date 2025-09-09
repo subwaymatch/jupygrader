@@ -21,6 +21,38 @@ jupy grade NOTEBOOK_PATH... [OPTIONS]
   - If a directory is given, all top-level `.ipynb` files inside are included.
   - Otherwise, the argument is treated as a glob pattern and expanded recursively.
 
+### Examples
+
+#### Example 1: Grade a single notebook
+
+```bash
+jupygrader grade path/to/notebook.ipynb
+```
+
+#### Example 2: Grade multiple specific notebooks
+
+```bash
+jupygrader grade notebook1.ipynb notebook2.ipynb
+```
+
+#### Example 3: Grade all notebooks in a directory
+
+```bash
+jupygrader grade path/to/assignments/
+```
+
+#### Example 4: Grade notebooks using a glob pattern and save results to a specific folder
+
+```bash
+jupygrader grade "final-project/**/*.ipynb" --csv-output-path ./grading-results
+```
+
+#### Example 5: Regrade all notebooks, even if already graded, without creating a CSV:
+
+```bash
+jupygrader grade path/to/assignments/ --regrade-existing --no-export-csv
+```
+
 ### Options
 
 - `--verbose`  
@@ -42,18 +74,42 @@ jupy grade NOTEBOOK_PATH... [OPTIONS]
 - Displays the effective option values.
 - Calls the `grade_notebooks` function to run grading logic.
 
+---
+
 ## jupy strip
 
 Strip solution code and optionally outputs from a Jupyter Notebook.
 
 ### Usage
 
-```
+```bash
 jupy strip NOTEBOOK_PATH [OPTIONS]
 ```
 
 - `NOTEBOOK_PATH` (required): Path to a single Jupyter Notebook (`.ipynb` file).  
   Must exist and be readable.
+
+### Examples
+
+#### Example 1: Strip a notebook and a new default output file
+
+This will create `assignment-1-stripped.ipynb`.
+
+```bash
+jupygrader strip assignment-1.ipynb
+```
+
+#### Example 2: Strip a notebook and specify the exact output file path:
+
+```bash
+jupygrader strip student-submission.ipynb -o student-version-for-release.ipynb
+```
+
+#### Example 3: Strip solution code but keep all cell outputs
+
+```bash
+jupygrader strip instructor-notebook.ipynb --no-clear-output -o student-notebook.ipynb
+```
 
 ### Options
 
