@@ -12,6 +12,7 @@ from .notebook_operations import (
     remove_comments,
     get_test_cases_hash,
 )
+from .strip import strip_solution_codes_from_notebook
 from .models.grading_dataclasses import GradedResult, TestCaseResult
 from .grader import grade_notebooks, grade_single_notebook
 
@@ -29,4 +30,5 @@ __all__ = [
     "extract_user_code_from_notebook",
     "remove_comments",
     "get_test_cases_hash",
+    "strip_solution_codes_from_notebook",
 ]
