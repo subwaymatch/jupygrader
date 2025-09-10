@@ -83,11 +83,13 @@ Strip solution code and optionally outputs from a Jupyter Notebook.
 ### Usage
 
 ```bash
-jupy strip NOTEBOOK_PATH [OPTIONS]
+jupy strip NOTEBOOK_PATH OUTPUT_PATH
 ```
 
 - `NOTEBOOK_PATH` (required): Path to a single Jupyter Notebook (`.ipynb` file).  
   Must exist and be readable.
+- `OUTPUT_PATH` (optional): Path to save the stripped notebook.  
+  Defaults to `[input]-stripped.ipynb`.
 
 ### Examples
 
@@ -102,30 +104,13 @@ jupy strip assignment-1.ipynb
 #### Example 2: Strip a notebook and specify the exact output file path:
 
 ```bash
-jupy strip student-submission.ipynb -o student-version-for-release.ipynb
+jupy strip student-submission.ipynb student-version-for-release.ipynb
 ```
-
-#### Example 3: Strip solution code but keep all cell outputs
-
-```bash
-jupy strip instructor-notebook.ipynb --no-clear-output -o student-notebook.ipynb
-```
-
-### Options
-
-- `--output, -o PATH`  
-  Path to save the stripped notebook.  
-  Defaults to `[input]-stripped.ipynb`.  
-  Must end with `.ipynb` if provided.
-
-- `--clear-output / --no-clear-output`  
-  Whether to also clear cell outputs and execution counts.  
-  Enabled by default (`--clear-output`).
 
 ### Behavior
 
 - Validates that both input and output files are `.ipynb`.
 - Determines an output path (default or user-specified).
-- Reads the notebook, removes solution code, and optionally clears outputs.
+- Reads the notebook, removes solution code, and clears outputs.
 - Writes the processed notebook to the output path.
 - Displays success or error messages.

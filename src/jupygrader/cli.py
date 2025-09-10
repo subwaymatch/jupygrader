@@ -66,20 +66,12 @@ def grade(notebook_paths, verbose, export_csv, csv_output_path, regrade_existing
     type=click.Path(exists=True, dir_okay=False, readable=True, resolve_path=True),
     required=True,
 )
-@click.option(
-    "--output",
-    "-o",
+@click.argument(
     "output_path",
     type=click.Path(dir_okay=False, writable=True, resolve_path=True),
-    default=None,
-    help="Path to save the stripped notebook. Defaults to '[input]-stripped.ipynb'.",
+    required=False,
 )
-@click.option(
-    "--clear-output/--no-clear-output",
-    default=True,
-    help="Also clear cell outputs and execution counts. Enabled by default.",
-)
-def strip(notebook_path, output_path, clear_output):
+def strip(notebook_path, output_path):
     """Strip solution code and optionally outputs from a Jupyter Notebook."""
 
     if not notebook_path.endswith(".ipynb"):
@@ -102,12 +94,10 @@ def strip(notebook_path, output_path, clear_output):
             raise click.Abort()
 
     click.echo(f"Stripping notebook: {os.path.basename(notebook_path)}")
-    if not clear_output:
-        click.echo("Preserving cell outputs.")
 
     try:
         nb = nbformat.read(notebook_path, as_version=4)
-        nb_stripped = strip_solution_codes_from_notebook(nb, clear_output=clear_output)
+        nb_stripped = strip_solution_codes_from_notebook(nb)
         nbformat.write(nb_stripped, write_path)
 
         click.secho(
