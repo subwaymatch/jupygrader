@@ -640,10 +640,28 @@ class GradingTask:
         graded_notebook_filename = f"{self.filename_base}-graded.ipynb"
         graded_notebook_path = self.output_path / graded_notebook_filename
 
+        # Add graded result metadata to notebook metadata
         self.nb.metadata["jupygrader"] = {
             "graded": True,
             "version": jupygrader_version,
             "grading_finished_at": self.graded_result.grading_finished_at,
+            "grading_duration_in_seconds": self.graded_result.grading_duration_in_seconds,
+            "learner_autograded_score": self.graded_result.learner_autograded_score,
+            "max_autograded_score": self.graded_result.max_autograded_score,
+            "max_manually_graded_score": self.graded_result.max_manually_graded_score,
+            "max_total_score": self.graded_result.max_total_score,
+            "num_autograded_cases": self.graded_result.num_autograded_cases,
+            "num_passed_cases": self.graded_result.num_passed_cases,
+            "num_failed_cases": self.graded_result.num_failed_cases,
+            "num_manually_graded_cases": self.graded_result.num_manually_graded_cases,
+            "num_total_test_cases": self.graded_result.num_total_test_cases,
+            "submission_notebook_hash": self.graded_result.submission_notebook_hash,
+            "test_cases_hash": self.graded_result.test_cases_hash,
+            "grader_python_version": self.graded_result.grader_python_version,
+            "grader_platform": self.graded_result.grader_platform,
+            "test_case_results": [
+                tc.__dict__ for tc in self.graded_result.test_case_results
+            ],
         }
 
         with open(graded_notebook_path, mode="w", encoding="utf-8") as f:
