@@ -7,10 +7,6 @@ _graded_result = GradedResult()
 
 is_jupygrader_env = True
 
-# For legacy compatibility
-# Should deprecate in the future
-is_lambdagrader_env = True
-
 
 def _record_test_case(
     test_case_name: str,

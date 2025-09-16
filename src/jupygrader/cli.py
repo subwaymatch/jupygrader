@@ -2,7 +2,7 @@
 import click
 import os
 import nbformat
-from jupygrader import __version__, grade_notebooks, strip_solution_codes_from_notebook
+from jupygrader import __version__, grade_notebooks, generate_assignment
 from jupygrader.utils import process_notebook_paths
 
 notebook_path_argument = click.argument("notebook_paths", nargs=-1, required=True)
@@ -97,7 +97,7 @@ def strip(notebook_path, output_path):
 
     try:
         nb = nbformat.read(notebook_path, as_version=4)
-        nb_stripped = strip_solution_codes_from_notebook(nb)
+        nb_stripped = generate_assignment(nb)
         nbformat.write(nb_stripped, write_path)
 
         click.secho(

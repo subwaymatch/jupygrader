@@ -1,4 +1,4 @@
-from jupygrader import strip_solution_codes_from_notebook
+from jupygrader import generate_assignment
 from pathlib import Path
 import nbformat
 
@@ -10,11 +10,13 @@ TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def test_strip_and_obfuscate():
-    notebook_path = TEST_NOTEBOOKS_DIR / "strip-and-obfuscate" / "strip-and-obfuscate.ipynb"
+    notebook_path = (
+        TEST_NOTEBOOKS_DIR / "generate-assignment" / "generate-assignment.ipynb"
+    )
 
     nb = nbformat.read(notebook_path, as_version=4)
 
-    stripped_nb = strip_solution_codes_from_notebook(nb)
+    processed_nb = generate_assignment(nb)
 
-    output_path = TEST_OUTPUT_DIR / "strip-and-obfuscate-stripped.ipynb"
-    nbformat.write(stripped_nb, output_path)
+    output_path = TEST_OUTPUT_DIR / "generated-assignment.ipynb"
+    nbformat.write(processed_nb, output_path)
