@@ -6,7 +6,7 @@ from jupygrader.models.grading_dataclasses import GradedResult, TestCaseResult
 _graded_result = GradedResult()
 
 is_jupygrader_env = True
-is_lamdagrader_env = True  # To ensure compatibility with legacy LambdaGrader notebooks
+is_lambdagrader_env = True  # To ensure compatibility with legacy LambdaGrader notebooks
 
 
 def _record_test_case(
