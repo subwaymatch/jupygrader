@@ -11,7 +11,6 @@ SOLUTION_STRIP_PATTERN = re.compile(
 )
 SOLUTION_REPLACEMENT = "# YOUR CODE BEGINS\n\n# YOUR CODE ENDS"
 
-OBFUSCATE_PATTERN = re.compile(r"^\s*_obfuscate\s*=\s*True", re.MULTILINE)
 POINTS_PATTERN = re.compile(r"^_points\s*=\s*([\d\.]*).*$", re.MULTILINE)
 TEST_CASE_NAME_PATTERN = re.compile(
     r"^_test_case\s*=\s*[\'\"](.*)[\'\"].*$", re.MULTILINE
@@ -71,25 +70,67 @@ def obfuscate_hidden_test_cases(nb: NotebookNode) -> NotebookNode:
 
         if hidden_test_matches:
             for match in hidden_test_matches:
-                # In TS: matchText = `${match}`. In Python, it's just the string itself.
                 match_text = match.strip()
-                # In TS: matchText.replace(/^/gm, "    ") -> indent every line
                 indented_match_text = textwrap.indent(match_text, "    ")
 
-                # In TS: hiddenTestTemplate.split(...).join(...) -> string.replace()
                 code = HIDDEN_TEST_TEMPLATE.replace(
                     "# TEST_CASE_REPLACE_HERE", indented_match_text
                 )
-
-                # If the cell is not configured for full obfuscation,
-                # obfuscate just the hidden test case block.
-                if not re.search(OBFUSCATE_PATTERN, cell["source"]):
-                    code = obfuscate_python_code(code)
-
-                # Replace the original hidden test block with the new processed code
+                code = obfuscate_python_code(code)
                 source = source.replace(match, code)
 
             cell.source = HIDDEN_TEST_MESSAGE + source
+
+    return nb
+
+
+import re
+import textwrap
+from nbformat.notebooknode import NotebookNode
+from .obfuscate import obfuscate_python_code
+
+# (Assuming HIDDEN_TEST_PATTERN, HIDDEN_TEST_TEMPLATE,
+# and HIDDEN_TEST_MESSAGE are defined elsewhere in the file)
+
+
+def obfuscate_hidden_test_cases(nb: NotebookNode) -> NotebookNode:
+    """
+    Finds and unconditionally obfuscates all hidden test cases in a notebook.
+
+    This function searches for blocks marked with "### BEGIN HIDDEN TESTS"
+    and "### END HIDDEN TESTS", wraps them in a conditional execution block,
+    obfuscates the result, and adds a warning message to the cell. This
+    process is applied to all found hidden tests.
+
+    Args:
+        nb: The notebook to process.
+
+    Returns:
+        The notebook with hidden test cases obfuscated.
+    """
+    cells_to_process = [
+        cell
+        for cell in nb.cells
+        if cell.cell_type == "code" and re.search(HIDDEN_TEST_PATTERN, cell.source)
+    ]
+
+    for cell in cells_to_process:
+        source = cell.source
+        hidden_test_matches = [m.group(0) for m in HIDDEN_TEST_PATTERN.finditer(source)]
+
+        if hidden_test_matches:
+            for match in hidden_test_matches:
+                match_text = match.strip()
+                indented_match_text = textwrap.indent(match_text, "    ")
+
+                code = HIDDEN_TEST_TEMPLATE.replace(
+                    "# TEST_CASE_REPLACE_HERE", indented_match_text
+                )
+                code = obfuscate_python_code(code)
+
+                source = source.replace(match, code)
+
+            cell.source = HIDDEN_TEST_MESSAGE.strip() + "\n" + source
 
     return nb
 

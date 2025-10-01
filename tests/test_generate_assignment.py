@@ -1,4 +1,4 @@
-from jupygrader import generate_assignment
+from jupygrader import generate_assignment, grade_single_notebook
 from pathlib import Path
 import nbformat
 
