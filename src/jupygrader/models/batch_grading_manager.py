@@ -108,6 +108,10 @@ class BatchGradingManager:
         # Extract main attributes from GradedResult objects
         data = []
         for result in self.graded_results:
+            # Skip None results (failed grading tasks)
+            if result is None:
+                continue
+
             # Create a dictionary with selected attributes
             result_dict = {
                 "filename": result.filename,
@@ -194,8 +198,11 @@ class BatchGradingManager:
                     else:
                         graded_result = grading_task.grade()
 
-                    # Add to results list
-                    self.graded_results.append(graded_result)
+                    # Add to results list only if grading succeeded
+                    if graded_result is not None:
+                        self.graded_results.append(graded_result)
+                    else:
+                        num_failed_items += 1
 
                 except Exception as e:
                     num_failed_items += 1

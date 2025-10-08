@@ -6,5 +6,7 @@ htmlcov
 
 tests/**/test-output
 
+tests_temp/
+
 # MkDocs site
 site/

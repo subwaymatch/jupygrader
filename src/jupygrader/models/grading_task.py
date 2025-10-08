@@ -704,15 +704,19 @@ class GradingTask:
         with open(graded_result_json_path, "w", encoding="utf-8") as f:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
-    def grade(self) -> GradedResult:
-        with self.use_temporary_grading_environment():
-            # 1. Prepare and execute the notebook (read, preprocess, inject scripts)
-            self.prepare_and_execute_notebook()
+    def grade(self) -> Optional[GradedResult]:
+        try:
+            with self.use_temporary_grading_environment():
+                # 1. Prepare and execute the notebook (read, preprocess, inject scripts)
+                self.prepare_and_execute_notebook()
 
-            # 2. Process results (read JSON, parse, add metadata)
-            self.process_grading_results()
+                # 2. Process results (read JSON, parse, add metadata)
+                self.process_grading_results()
 
-            # 3. Generate output files (cleaned .ipynb, .html, .py, .txt, final .json)
-            self.generate_output_artifacts()
+                # 3. Generate output files (cleaned .ipynb, .html, .py, .txt, final .json)
+                self.generate_output_artifacts()
 
-        return self.graded_result
+            return self.graded_result
+        except Exception as e:
+            print(f"[Error in GradingTask.grade()]: {e}")
+            return None
