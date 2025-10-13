@@ -67,6 +67,8 @@ class GradingTask:
         self.nb: NotebookNode = None
         self.graded_result: GradedResult = None
         self.grading_start_time = time.time()
+        self.execution_timeout = batch_config.execution_timeout
+        self.error_message: Optional[str] = None
 
     def get_existing_graded_result(self) -> Optional[GradedResult]:
         graded_result_json_filename = f"{self.filename_base}-graded-result.json"
@@ -407,9 +409,15 @@ class GradingTask:
         self.preprocess_test_case_cells()
         self.add_grader_scripts()
 
-        client = NotebookClient(
-            self.nb, timeout=600, kernel_name="python3", allow_errors=True
-        )
+        client_kwargs = {
+            "kernel_name": "python3",
+            "allow_errors": True,
+        }
+
+        if self.execution_timeout is not None:
+            client_kwargs["timeout"] = self.execution_timeout
+
+        client = NotebookClient(self.nb, **client_kwargs)
         client.execute()
 
     def process_grading_results(self) -> None:
@@ -705,6 +713,7 @@ class GradingTask:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
     def grade(self) -> Optional[GradedResult]:
+        self.error_message = None
         try:
             with self.use_temporary_grading_environment():
                 # 1. Prepare and execute the notebook (read, preprocess, inject scripts)
@@ -719,4 +728,5 @@ class GradingTask:
             return self.graded_result
         except Exception as e:
             print(f"[Error in GradingTask.grade()]: {e}")
+            self.error_message = str(e)
             return None

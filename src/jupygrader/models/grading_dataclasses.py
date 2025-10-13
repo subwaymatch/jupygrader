@@ -21,6 +21,7 @@ class BatchGradingConfig:
     base_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None
     csv_output_path: Optional[str] = None
     regrade_existing: bool = False
+    execution_timeout: Optional[int] = 600
 
 
 @dataclass

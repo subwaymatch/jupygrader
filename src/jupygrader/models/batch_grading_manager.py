@@ -32,6 +32,72 @@ class BatchGradingManager:
             grading_items
         )
         self.graded_results: List[GradedResult] = []
+        self._csv_rows: List[dict] = []
+
+    @staticmethod
+    def _initialize_csv_row() -> dict:
+        return {
+            "filename": None,
+            "learner_autograded_score": None,
+            "max_autograded_score": None,
+            "max_manually_graded_score": None,
+            "max_total_score": None,
+            "num_autograded_cases": None,
+            "num_passed_cases": None,
+            "num_failed_cases": None,
+            "num_manually_graded_cases": None,
+            "num_total_test_cases": None,
+            "grading_finished_at": None,
+            "grading_duration_in_seconds": None,
+            "submission_notebook_hash": None,
+            "test_cases_hash": None,
+            "grader_python_version": None,
+            "grader_platform": None,
+            "text_summary": None,
+            "is_success": None,
+        }
+
+    def _record_success(self, result: GradedResult) -> None:
+        row = self._initialize_csv_row()
+        row.update(
+            {
+                "filename": result.filename,
+                "learner_autograded_score": result.learner_autograded_score,
+                "max_autograded_score": result.max_autograded_score,
+                "max_manually_graded_score": result.max_manually_graded_score,
+                "max_total_score": result.max_total_score,
+                "num_autograded_cases": result.num_autograded_cases,
+                "num_passed_cases": result.num_passed_cases,
+                "num_failed_cases": result.num_failed_cases,
+                "num_manually_graded_cases": result.num_manually_graded_cases,
+                "num_total_test_cases": result.num_total_test_cases,
+                "grading_finished_at": result.grading_finished_at,
+                "grading_duration_in_seconds": result.grading_duration_in_seconds,
+                "submission_notebook_hash": result.submission_notebook_hash,
+                "test_cases_hash": result.test_cases_hash,
+                "grader_python_version": result.grader_python_version,
+                "grader_platform": result.grader_platform,
+                "text_summary": result.text_summary,
+                "is_success": True,
+            }
+        )
+        self._csv_rows.append(row)
+
+    def _record_failure(self, notebook_path: FilePath, error_message: str) -> None:
+        row = self._initialize_csv_row()
+        try:
+            filename = Path(notebook_path).name
+        except Exception:
+            filename = str(notebook_path)
+
+        row.update(
+            {
+                "filename": filename,
+                "text_summary": error_message,
+                "is_success": False,
+            }
+        )
+        self._csv_rows.append(row)
 
     @staticmethod
     def normalize_grading_items(
@@ -83,7 +149,7 @@ class BatchGradingManager:
         self,
     ) -> None:
         """Exports the list of GradedResult objects to a CSV file."""
-        if not self.graded_results:
+        if not self._csv_rows:
             if self.verbose:
                 print("No results to export to CSV.")
             return
@@ -107,32 +173,8 @@ class BatchGradingManager:
 
         # Extract main attributes from GradedResult objects
         data = []
-        for result in self.graded_results:
-            # Skip None results (failed grading tasks)
-            if result is None:
-                continue
-
-            # Create a dictionary with selected attributes
-            result_dict = {
-                "filename": result.filename,
-                "learner_autograded_score": result.learner_autograded_score,
-                "max_autograded_score": result.max_autograded_score,
-                "max_manually_graded_score": result.max_manually_graded_score,
-                "max_total_score": result.max_total_score,
-                "num_autograded_cases": result.num_autograded_cases,
-                "num_passed_cases": result.num_passed_cases,
-                "num_failed_cases": result.num_failed_cases,
-                "num_manually_graded_cases": result.num_manually_graded_cases,
-                "num_total_test_cases": result.num_total_test_cases,
-                "grading_finished_at": result.grading_finished_at,
-                "grading_duration_in_seconds": result.grading_duration_in_seconds,
-                "submission_notebook_hash": result.submission_notebook_hash,
-                "test_cases_hash": result.test_cases_hash,
-                "grader_python_version": result.grader_python_version,
-                "grader_platform": result.grader_platform,
-                "text_summary": result.text_summary,
-            }
-            data.append(result_dict)
+        for row in self._csv_rows:
+            data.append(row)
 
         # Create DataFrame and export to CSV
         try:
@@ -201,8 +243,18 @@ class BatchGradingManager:
                     # Add to results list only if grading succeeded
                     if graded_result is not None:
                         self.graded_results.append(graded_result)
+                        self._record_success(graded_result)
                     else:
                         num_failed_items += 1
+                        error_message = (
+                            grading_task.error_message
+                            if grading_task.error_message
+                            else "Unknown grading error"
+                        )
+                        self._record_failure(
+                            item.notebook_path,
+                            error_message,
+                        )
 
                 except Exception as e:
                     num_failed_items += 1
@@ -210,6 +262,8 @@ class BatchGradingManager:
                     if self.verbose:
                         print(f"Error: {str(e)}")
                         print(f"Failed to grade notebook: {item.notebook_path}")
+
+                    self._record_failure(item.notebook_path, str(e))
 
         # The code below continues outside the context manager
         elapsed_time = time.time() - start_time
