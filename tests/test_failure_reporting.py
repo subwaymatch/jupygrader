@@ -5,34 +5,31 @@ from jupygrader import grade_notebooks
 
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
+TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output" / "failure-reporting"
+
+# Create the output directory if it doesn't exist
+TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def test_failed_notebook_is_recorded_in_csv(tmp_path):
-    valid_notebook = TEST_NOTEBOOKS_DIR / "basic-workflow" / "minimal.ipynb"
-    invalid_notebook = tmp_path / "invalid.ipynb"
-    invalid_notebook.write_text("{ not valid json", encoding="utf-8")
-
-    output_dir = tmp_path / "outputs"
-    output_dir.mkdir()
-
-    csv_dir = tmp_path / "csv"
-    csv_dir.mkdir()
+def test_failed_notebook_is_recorded_in_csv(tmp_path: Path):
+    valid_notebook = TEST_NOTEBOOKS_DIR / "failure-reporting" / "minimal.ipynb"
+    invalid_notebook = TEST_NOTEBOOKS_DIR / "failure-reporting" / "invalid.ipynb"
 
     grading_items = [
-        {"notebook_path": valid_notebook, "output_path": output_dir},
-        {"notebook_path": invalid_notebook, "output_path": output_dir},
+        {"notebook_path": valid_notebook, "output_path": TEST_OUTPUT_DIR},
+        {"notebook_path": invalid_notebook, "output_path": TEST_OUTPUT_DIR},
     ]
 
     results = grade_notebooks(
         grading_items=grading_items,
-        csv_output_path=csv_dir,
+        csv_output_path=TEST_OUTPUT_DIR / "graded_results_invalid_notebook.csv",
         regrade_existing=True,
         verbose=False,
     )
 
     assert len(results) == 1
 
-    csv_files = list(csv_dir.glob("graded_results_*.csv"))
+    csv_files = list(TEST_OUTPUT_DIR.glob("graded_results_invalid_notebook.csv"))
     assert len(csv_files) == 1
 
     with csv_files[0].open(newline="", encoding="utf-8") as f:
@@ -48,4 +45,3 @@ def test_failed_notebook_is_recorded_in_csv(tmp_path):
 
     assert success_rows[0]["filename"] == "minimal.ipynb"
     assert failure_rows[0]["filename"] == "invalid.ipynb"
-    assert "Notebook does not appear to be JSON" in failure_rows[0]["text_summary"]

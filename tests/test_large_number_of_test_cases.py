@@ -3,7 +3,9 @@ from pathlib import Path
 import nbformat
 from nbformat.v4 import new_notebook, new_code_cell
 
-TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output"
+TEST_OUTPUT_DIR = (
+    Path(__file__).resolve().parent / "test-output" / "large-number-of-test-cases"
+)
 
 # Create the output directory if it doesn't exist
 TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

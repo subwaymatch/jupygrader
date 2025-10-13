@@ -4,7 +4,7 @@ import glob
 import shutil
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
-TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output"
+TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output" / "batch"
 
 
 # use this file to run only a single test function
