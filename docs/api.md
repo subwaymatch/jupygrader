@@ -34,7 +34,10 @@
         },
     }
 
-    graded_results = grade_notebooks([item1, item2])
+    graded_results = grade_notebooks(
+        [item1, item2],
+        execution_timeout=300  # Set execution timeout to 300 seconds (5 minutes)
+    )
     ```
 
 ::: jupygrader.grade_notebooks

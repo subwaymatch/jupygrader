@@ -11,7 +11,7 @@ TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output" / "failure-rep
 TEST_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
-def test_failed_notebook_is_recorded_in_csv(tmp_path: Path):
+def test_failed_notebook_is_recorded_in_csv():
     valid_notebook = TEST_NOTEBOOKS_DIR / "failure-reporting" / "minimal.ipynb"
     invalid_notebook = TEST_NOTEBOOKS_DIR / "failure-reporting" / "invalid.ipynb"
 
@@ -45,3 +45,21 @@ def test_failed_notebook_is_recorded_in_csv(tmp_path: Path):
 
     assert success_rows[0]["filename"] == "minimal.ipynb"
     assert failure_rows[0]["filename"] == "invalid.ipynb"
+
+
+def test_timeout():
+    notebook_path = TEST_NOTEBOOKS_DIR / "failure-reporting" / "timeout.ipynb"
+
+    grading_items = [
+        {"notebook_path": notebook_path, "output_path": TEST_OUTPUT_DIR},
+    ]
+
+    results = grade_notebooks(
+        grading_items=grading_items,
+        csv_output_path=TEST_OUTPUT_DIR / "graded_results_timeout.csv",
+        regrade_existing=True,
+        execution_timeout=1,  # 1 second timeout to trigger the timeout test case
+        verbose=False,
+    )
+
+    print(results)
