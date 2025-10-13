@@ -19,6 +19,7 @@ def test_basic_workflow():
             "output_path": TEST_OUTPUT_DIR,
         },
         regrade_existing=True,
+        execution_timeout=120,
     )
 
     # Check the accuracy of the result object

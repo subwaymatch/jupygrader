@@ -17,6 +17,7 @@ def grade_notebooks(
     export_csv: bool = True,
     csv_output_path: Optional[FilePath] = None,
     regrade_existing: bool = False,
+    execution_timeout: Optional[int] = 600,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks with test cases.
 
@@ -39,6 +40,8 @@ def grade_notebooks(
             output directories. Defaults to None.
         regrade_existing: Whether to regrade notebooks even if results already exist.
             Defaults to False.
+        execution_timeout: Maximum time (in seconds) allowed for notebook execution.
+            Set to None to disable the timeout. Defaults to 600 seconds.
 
     Returns:
         List of GradedResult objects containing detailed results for each notebook.
@@ -63,6 +66,7 @@ def grade_notebooks(
         export_csv=export_csv,
         csv_output_path=csv_output_path,
         regrade_existing=regrade_existing,
+        execution_timeout=execution_timeout,
     )
 
     manager = BatchGradingManager(
@@ -91,6 +95,8 @@ def grade_single_notebook(
             - verbose: Whether to print progress information
             - regrade_existing: Whether to regrade if results exist
             - csv_output_path: Path for CSV output (if needed)
+            - execution_timeout: Maximum time (in seconds) allowed for notebook
+              execution. Set to None to disable the timeout.
 
     Returns:
         GradedResult object containing detailed results, or None if grading failed.
