@@ -128,6 +128,7 @@ class BatchGradingManager:
                     if is_url(src):
                         temp_path = Path(tempfile.NamedTemporaryFile(delete=False).name)
 
+                        print(f"Caching remote base file: {src}")
                         download_file(src, temp_path)
                         cached_files.append(temp_path)
 
