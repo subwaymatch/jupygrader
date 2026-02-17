@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025-present Ye Joo Park <subwaymatch@gmail.com>
+# SPDX-FileCopyrightText: 2026-present Ye Joo Park <subwaymatch@gmail.com>
 #
 # SPDX-License-Identifier: MIT
-__version__ = "0.3.0"
+__version__ = "0.3.2"
