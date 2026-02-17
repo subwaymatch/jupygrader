@@ -144,6 +144,28 @@ def extract_user_code_from_notebook(nb: NotebookNode) -> str:
     return full_code
 
 
+def comment_out_magic_commands(nb: NotebookNode) -> NotebookNode:
+    """Comment out IPython magic/shell command lines in code cells.
+
+    Converts code lines that start with ``!`` or ``%`` (after optional leading
+    whitespace) into Python comments so notebook execution and downstream Python
+    processing can continue without syntax errors.
+
+    Args:
+        nb: Notebook to process
+
+    Returns:
+        The same notebook object with transformed code cell sources
+    """
+    pattern = re.compile(r"^(\s*)([!%].*)$", re.MULTILINE)
+
+    for cell in nb.cells:
+        if cell.cell_type == "code" and cell.source:
+            cell.source = pattern.sub(r"\1# \2", cell.source)
+
+    return nb
+
+
 def remove_code_cells_that_contain(
     nb: NotebookNode, search_str: Union[str, List[str]]
 ) -> NotebookNode:

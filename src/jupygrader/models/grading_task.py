@@ -29,6 +29,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell
 from ..__about__ import __version__ as jupygrader_version
 from ..constants import GRADED_RESULT_JSON_FILENAME, GRADED_RESULT_ELEMENT_ID
 from ..notebook_operations import (
+    comment_out_magic_commands,
     does_cell_contain_test_case,
     extract_user_code_from_notebook,
     extract_test_case_metadata_from_code,
@@ -406,6 +407,7 @@ class GradingTask:
 
     def prepare_and_execute_notebook(self) -> None:
         self.nb = nbformat.read(self.temp_notebook_path, as_version=4)
+        comment_out_magic_commands(self.nb)
         self.preprocess_test_case_cells()
         self.add_grader_scripts()
 
