@@ -91,6 +91,8 @@ jupygrader.grade_notebooks(notebook_path)
 
 If the `output_dir_path` is not specified, the output files will be stored to the same directory as the notebook file.
 
+During grading, Jupygrader preprocesses code cells and comments out lines that start with IPython shell/magic prefixes (`!` and `%`). This prevents notebook-only commands from causing syntax errors in the Python-based grading pipeline.
+
 ### Specify the output directory
 
 ```python

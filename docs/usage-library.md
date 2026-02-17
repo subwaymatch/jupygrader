@@ -20,6 +20,8 @@ pip install --upgrade jupygrader
 
 Use the `grade_notebooks()` function to grade Jupyter notebooks. You can pass a list of notebook paths or a list of dictionaries for a more detailed configuration.
 
+Before execution, Jupygrader preprocesses code cells and comments out lines beginning with `!` or `%` so IPython shell/magic commands do not break Python-based grading.
+
 ```python
 from jupygrader import grade_notebooks
 
