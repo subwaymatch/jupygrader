@@ -146,6 +146,15 @@ import pandas as pd
 print(sample_series)
 ```
 
+### Grader-only cells
+
+To keep setup notes or helper code in the instructor notebook only, start any cell with one of the following markers. The full cell will be removed in the generated student version:
+
+- `# GRADER_ONLY` (case-insensitive)
+- `# grader_only` (case-insensitive)
+- `! grader_only` (case-insensitive)
+- `_grader_only = True` (case-sensitive; whitespace is ignored)
+
 ### Graded test cases
 
 A graded test case requires a test case name and an assigned point value.
