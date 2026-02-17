@@ -8,6 +8,21 @@ from jupygrader.utils import process_notebook_paths
 notebook_path_argument = click.argument("notebook_paths", nargs=-1, required=True)
 
 
+def _get_unique_default_strip_output_path(notebook_path: str) -> str:
+    base, ext = os.path.splitext(notebook_path)
+    default_path = f"{base}-stripped{ext}"
+
+    if not os.path.exists(default_path):
+        return default_path
+
+    suffix = 1
+    while True:
+        candidate_path = f"{base}-stripped({suffix}){ext}"
+        if not os.path.exists(candidate_path):
+            return candidate_path
+        suffix += 1
+
+
 @click.group()
 @click.version_option(__version__, "--version", "-v", message="jupygrader %(version)s")
 def cli():
@@ -82,8 +97,7 @@ def strip(notebook_path, output_path):
         raise click.Abort()
 
     if output_path is None:
-        base, ext = os.path.splitext(notebook_path)
-        write_path = f"{base}-stripped{ext}"
+        write_path = _get_unique_default_strip_output_path(notebook_path)
     else:
         write_path = output_path
         if not write_path.endswith(".ipynb"):
