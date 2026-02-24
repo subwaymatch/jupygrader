@@ -1,4 +1,5 @@
 from nbformat.notebooknode import NotebookNode
+import ast
 import re
 import black
 import hashlib
@@ -10,6 +11,27 @@ import nbformat
 test_case_name_pattern = r'^\s*_test_case\s*=\s*[\'"](.*)[\'"]'
 test_case_points_pattern = r"^\s*_points\s*=\s*(.*)[\s#]*.*[\r\n]"
 manual_grading_pattern = r"^\s*_grade_manually\s*=\s*(True|False)"
+
+
+def _extract_assignment_literal_value(code_str: str, variable_name: str) -> Optional[object]:
+    """Extract literal value assigned to a variable in Python source code."""
+    try:
+        parsed = ast.parse(code_str)
+    except SyntaxError:
+        return None
+
+    for node in parsed.body:
+        if not isinstance(node, ast.Assign):
+            continue
+
+        for target in node.targets:
+            if isinstance(target, ast.Name) and target.id == variable_name:
+                try:
+                    return ast.literal_eval(node.value)
+                except (ValueError, SyntaxError):
+                    return None
+
+    return None
 
 
 def extract_test_case_metadata_from_code(code_str: str) -> Optional[TestCaseMetadata]:
@@ -30,30 +52,23 @@ def extract_test_case_metadata_from_code(code_str: str) -> Optional[TestCaseMeta
         A TestCaseMetadata object with extracted values if a test case is found,
         None if a test case is not found
     """
-    tc_result = re.search(test_case_name_pattern, code_str, flags=re.MULTILINE)
-
-    if not tc_result or len(tc_result.groups()) == 0:
+    test_case_name = _extract_assignment_literal_value(code_str, "_test_case")
+    if not isinstance(test_case_name, str):
         return None
 
     metadata = TestCaseMetadata(
-        test_case_name=tc_result.groups()[0],
+        test_case_name=test_case_name,
         points=0,
         grade_manually=False,
     )
 
-    points_result = re.search(test_case_points_pattern, code_str, flags=re.MULTILINE)
+    points = _extract_assignment_literal_value(code_str, "_points")
+    if isinstance(points, (int, float)):
+        metadata.points = float(points)
 
-    # if the test case code cell does not include _points
-    # no points will be assigned (default of zero)
-    if points_result and len(tc_result.groups()) > 0:
-        metadata.points = float(points_result.groups()[0])
-
-    manual_grading_result = re.search(
-        manual_grading_pattern, code_str, flags=re.MULTILINE
-    )
-
-    if manual_grading_result and len(manual_grading_result.groups()) > 0:
-        metadata.grade_manually = bool(manual_grading_result.groups()[0])
+    manual_grading = _extract_assignment_literal_value(code_str, "_grade_manually")
+    if isinstance(manual_grading, bool):
+        metadata.grade_manually = manual_grading
 
     return metadata
 
@@ -97,9 +112,10 @@ def does_cell_contain_test_case(cell: NotebookNode) -> bool:
     Returns:
         True if the cell contains a test case pattern, False otherwise
     """
-    search_result = re.search(test_case_name_pattern, cell.source, flags=re.MULTILINE)
-
-    return search_result and (len(search_result.groups()) > 0)
+    return isinstance(
+        _extract_assignment_literal_value(cell.source, "_test_case"),
+        str,
+    )
 
 
 def is_manually_graded_test_case(cell: NotebookNode) -> bool:
@@ -115,9 +131,10 @@ def is_manually_graded_test_case(cell: NotebookNode) -> bool:
     Returns:
         True if the cell is a manually graded test case, False otherwise
     """
-    search_result = re.search(manual_grading_pattern, cell.source, flags=re.MULTILINE)
-
-    return search_result and (len(search_result.groups()) > 0)
+    return isinstance(
+        _extract_assignment_literal_value(cell.source, "_grade_manually"),
+        bool,
+    )
 
 
 def extract_user_code_from_notebook(nb: NotebookNode) -> str:
