@@ -44,35 +44,6 @@
 
 ---
 
-### `jupygrader.grade_single_notebook()`
-
-=== "Basic"
-
-    ```python
-    from jupygrader import grade_single_notebook
-
-    # Grade a single notebook by path
-    graded_result = grade_single_notebook('path/to/notebook.ipynb')
-    ```
-
-=== "With Configuration"
-
-    ```python
-    from jupygrader import grade_single_notebook
-
-    # Grade with detailed configuration
-    item1 = {
-        "notebook_path": "path/to/notebook1.ipynb",
-        "output_path": "path/to/output1",
-        "copy_files": ["data1.csv"],
-    }
-    graded_result = grade_single_notebook(item)
-    ```
-
-::: jupygrader.grade_single_notebook
-
----
-
 ## 📦 @dataclasses
 
 ---

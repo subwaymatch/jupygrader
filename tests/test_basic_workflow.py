@@ -1,4 +1,4 @@
-from jupygrader import grade_single_notebook
+from jupygrader import grade_notebooks
 from pathlib import Path
 
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
@@ -13,14 +13,16 @@ def test_basic_workflow():
     notebook_path = TEST_NOTEBOOKS_DIR / "basic-workflow" / filename
     filename_base = notebook_path.stem
 
-    result = grade_single_notebook(
-        {
-            "notebook_path": notebook_path,
-            "output_path": TEST_OUTPUT_DIR,
-        },
+    result = grade_notebooks(
+        [
+            {
+                "notebook_path": notebook_path,
+                "output_path": TEST_OUTPUT_DIR,
+            }
+        ],
         regrade_existing=True,
         execution_timeout=120,
-    )
+    )[0]
 
     # Check the accuracy of the result object
     assert result.filename == filename

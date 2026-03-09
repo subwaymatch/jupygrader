@@ -1,4 +1,5 @@
 from .models.grading_dataclasses import (
+    AIGradingMode,
     BatchGradingConfig,
     GradingItem,
     GradedResult,
@@ -18,6 +19,10 @@ def grade_notebooks(
     csv_output_path: Optional[FilePath] = None,
     regrade_existing: bool = False,
     execution_timeout: Optional[int] = 600,
+    ai_mode: AIGradingMode = AIGradingMode.OFF,
+    openai_base_url: Optional[str] = None,
+    openai_api_key: Optional[str] = None,
+    openai_model: Optional[str] = None,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks with test cases.
 
@@ -42,6 +47,10 @@ def grade_notebooks(
             Defaults to False.
         execution_timeout: Maximum time (in seconds) allowed for notebook execution.
             Set to None to disable the timeout. Defaults to 600 seconds.
+        ai_mode: Mode for AI grading. Defaults to AIGradingMode.OFF.
+        openai_base_url: Base URL for OpenAI API (optional).
+        openai_api_key: API key for OpenAI API (optional).
+        openai_model: Model name for OpenAI API (optional).
 
     Returns:
         List of GradedResult objects containing detailed results for each notebook.
@@ -67,6 +76,10 @@ def grade_notebooks(
         csv_output_path=csv_output_path,
         regrade_existing=regrade_existing,
         execution_timeout=execution_timeout,
+        ai_mode=ai_mode,
+        openai_base_url=openai_base_url,
+        openai_api_key=openai_api_key,
+        openai_model=openai_model,
     )
 
     manager = BatchGradingManager(
@@ -74,54 +87,3 @@ def grade_notebooks(
     )
 
     return manager.grade()
-
-
-def grade_single_notebook(
-    grading_item: Union[FilePath, GradingItem, dict],
-    **kwargs,
-) -> Optional[GradedResult]:
-    """Grade a single Jupyter notebook with test cases.
-
-    Executes a notebook in a clean environment, evaluates test cases, and produces
-    graded outputs. A convenience wrapper around grade_notebooks() for single notebook grading.
-
-    Args:
-        grading_item: The notebook to grade, which can be:
-            - A string or Path object with path to notebook file
-            - A GradingItem object with detailed grading configuration
-            - A dictionary that can be converted to a GradingItem object
-        **kwargs: Additional keyword arguments passed to grade_notebooks():
-            - base_files: Files to include in grading environment
-            - verbose: Whether to print progress information
-            - regrade_existing: Whether to regrade if results exist
-            - csv_output_path: Path for CSV output (if needed)
-            - execution_timeout: Maximum time (in seconds) allowed for notebook
-              execution. Set to None to disable the timeout.
-
-    Returns:
-        GradedResult object containing detailed results, or None if grading failed.
-
-    Raises:
-        TypeError: If grading_item has an unsupported type.
-        ValueError: If a required path doesn't exist or has invalid configuration.
-
-    Examples:
-        >>> # Grade a notebook with default settings
-        >>> result = grade_single_notebook("student1.ipynb")
-        >>> print(f"Score: {result.learner_autograded_score}/{result.max_total_score}")
-        >>>
-        >>> # With custom configuration
-        >>> result = grade_single_notebook(
-        ...     GradingItem(
-        ...         notebook_path="student1.ipynb",
-        ...         output_path="results",
-        ...         copy_files=["data.csv"]
-        ...     ),
-        ...     verbose=True
-        ... )
-    """
-    kwargs["export_csv"] = False
-
-    r = grade_notebooks([grading_item], **kwargs)
-
-    return r[0] if len(r) > 0 else None

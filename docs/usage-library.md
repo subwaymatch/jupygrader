@@ -130,40 +130,6 @@ graded_results = grade_notebooks(
 )
 ```
 
----
-
-### Grade a single notebook
-
-You can grade a single notebook using the `grade_single_notebook` function.
-
-!!! note
-
-    The `grade_single_notebook` function is a wrapper around the `grade_notebooks` function. It is provided for convenience.
-
-=== "Basic"
-
-    ```python
-    from jupygrader import grade_single_notebook
-
-    # Grade a single notebook by path
-    graded_result = grade_single_notebook('path/to/notebook.ipynb')
-    ```
-
-=== "With Custom Output Path and File Copying"
-
-    ```python
-    from jupygrader import grade_single_notebook
-
-    # Grade with custom output path and file copying
-    item = {
-        'notebook_path': 'path/to/notebook.ipynb',
-        'output_path': 'path/to/output',
-        'copy_files': ['data.csv']
-    }
-
-    graded_result = grade_single_notebook(item)
-    ```
-
 ## 📒 Create an autogradable notebook
 
 The instructor authors only one "solution" notebook, which contains both the solution code and test cases for all graded parts.

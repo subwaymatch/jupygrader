@@ -8,5 +8,10 @@ tests/**/test-output
 
 tests_temp/
 
+graded_results_*.csv
+
+.env
+.env.test
+
 # MkDocs site
 site/

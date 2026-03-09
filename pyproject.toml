@@ -37,6 +37,7 @@ dependencies = [
     "requests",
     "tzlocal",
     "tqdm",
+    "openai",
 ]
 
 [project.optional-dependencies]
@@ -75,6 +76,7 @@ check = "mypy --install-types --non-interactive {args:src/jupygrader tests}"
 # without this option, pytest will only print stdout for failing tests, but not for passing tests
 [tool.hatch.envs.hatch-test]
 extra-args = ["-v", "-s", "--capture=no"]
+extra-dependencies = ["python-dotenv"]
 
 [tool.hatch.envs.test]
 dependencies = [
@@ -85,6 +87,12 @@ dependencies = [
 
 [tool.hatch.envs.test.scripts]
 cov-html = "coverage html && pip freeze > htmlcov/requirements-test.txt"
+
+[tool.pytest.ini_options]
+addopts = "-m 'not ai'"
+markers = [
+  "ai: Tests that require OpenAI API key and may incur costs. Not run by default.",
+]
 
 [tool.coverage.run]
 source_pkgs = ["jupygrader", "tests"]

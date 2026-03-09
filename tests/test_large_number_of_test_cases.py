@@ -1,4 +1,4 @@
-from jupygrader import grade_single_notebook
+from jupygrader import grade_notebooks
 from pathlib import Path
 import nbformat
 from nbformat.v4 import new_notebook, new_code_cell
@@ -44,12 +44,14 @@ def test_large_number_of_test_cases():
     with generated_notebook_path.open("w", encoding="utf-8") as f:
         nbformat.write(nb, f)
 
-    result = grade_single_notebook(
-        {
-            "notebook_path": generated_notebook_path,
-            "output_path": TEST_OUTPUT_DIR,
-        },
+    result = grade_notebooks(
+        [
+            {
+                "notebook_path": generated_notebook_path,
+                "output_path": TEST_OUTPUT_DIR,
+            }
+        ],
         regrade_existing=True,
-    )
+    )[0]
 
     assert result.num_total_test_cases == 100

@@ -20,7 +20,7 @@ def _extract_assignment_literal_value(code_str: str, variable_name: str) -> Opti
     except SyntaxError:
         return None
 
-    for node in parsed.body:
+    for node in ast.walk(parsed):
         if not isinstance(node, ast.Assign):
             continue
 

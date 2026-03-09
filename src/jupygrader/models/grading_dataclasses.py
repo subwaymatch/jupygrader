@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Union, Dict, Any
 from pathlib import Path
+from enum import Enum
 
 FilePath = Union[str, Path]
 FileDict = Dict[FilePath, FilePath]
@@ -12,6 +13,12 @@ class GradingItem:
     output_path: Optional[FilePath] = None
     copy_files: Optional[Union[FilePath, List[FilePath], FileDict]] = None
 
+class AIGradingMode(str, Enum):
+    OFF = "off"                     # default: no AI
+    MANUAL_ONLY = "manual_only"     # grade manual items only
+    REVIEW_FAILED = "review_failed" # review failed autograded tests
+    MANUAL_AND_FAILED = "manual_and_failed"
+    FULL = "full"                   # LLM grades everything
 
 @dataclass
 class BatchGradingConfig:
@@ -22,6 +29,10 @@ class BatchGradingConfig:
     csv_output_path: Optional[str] = None
     regrade_existing: bool = False
     execution_timeout: Optional[int] = 600
+    ai_mode: AIGradingMode = AIGradingMode.OFF
+    openai_base_url: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    openai_model: Optional[str] = None
 
 
 @dataclass
