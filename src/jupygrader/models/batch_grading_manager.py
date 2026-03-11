@@ -7,7 +7,7 @@ from .grading_dataclasses import (
 from .grading_task import GradingTask
 from ..utils import is_url, download_file
 from ..notebook_operations import is_notebook_graded
-from typing import List, Union, Iterator
+from typing import Optional, List, Union, Iterator
 from pathlib import Path
 import tempfile
 import pandas as pd
@@ -16,6 +16,7 @@ from datetime import datetime
 import time
 from tqdm.auto import tqdm
 import copy
+import openai
 
 
 class BatchGradingManager:
@@ -25,6 +26,7 @@ class BatchGradingManager:
             FilePath, GradingItem, List[Union[FilePath, GradingItem, dict]]
         ],
         batch_config: BatchGradingConfig,
+        openai_client: Optional[openai.OpenAI] = None
     ):
         self.verbose = batch_config.verbose
         self.batch_config: BatchGradingConfig = copy.deepcopy(batch_config)
@@ -33,6 +35,7 @@ class BatchGradingManager:
         )
         self.graded_results: List[GradedResult] = []
         self._csv_rows: List[dict] = []
+        self.openai_client: Optional[openai.OpenAI] = openai_client
 
     @staticmethod
     def _initialize_csv_row() -> dict:
@@ -219,7 +222,7 @@ class BatchGradingManager:
                             f"[{idx}/{num_items}] Grading: {notebook_name}",
                         )
 
-                    grading_task = GradingTask(item, self.batch_config)
+                    grading_task = GradingTask(item, self.batch_config, self.openai_client)
 
                     if (
                         grading_task.get_existing_graded_result() is not None

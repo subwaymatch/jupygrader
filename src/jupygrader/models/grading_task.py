@@ -11,34 +11,35 @@ import textwrap
 import time
 import uuid
 from datetime import datetime
-from zoneinfo import ZoneInfo
-from tzlocal import get_localzone_name
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Tuple, Optional, Union
+from typing import Iterator, List, Optional, Tuple, Union
+from zoneinfo import ZoneInfo
 
 import nbformat
 import numpy as np
+import openai
 import pandas as pd
 from bs4 import BeautifulSoup
 from nbclient import NotebookClient
 from nbconvert import HTMLExporter
 from nbformat import NotebookNode
 from nbformat.v4 import new_code_cell, new_markdown_cell
-
+from tzlocal import get_localzone_name
 
 from ..__about__ import __version__ as jupygrader_version
-from ..constants import GRADED_RESULT_JSON_FILENAME, GRADED_RESULT_ELEMENT_ID
+from ..constants import GRADED_RESULT_ELEMENT_ID, GRADED_RESULT_JSON_FILENAME
 from ..notebook_operations import (
     comment_out_magic_commands,
     does_cell_contain_test_case,
-    extract_user_code_from_notebook,
     extract_test_case_metadata_from_code,
+    extract_user_code_from_notebook,
     get_test_cases_hash,
     is_manually_graded_test_case,
 )
-from ..utils import get_jupyter_cell_script, is_url, download_file
+from ..utils import download_file, get_jupyter_cell_script, is_url
 from .grading_dataclasses import (
     AIGradingMode,
+    AIParsedResult,
     BatchGradingConfig,
     CopyFileItem,
     FileDict,
@@ -49,7 +50,12 @@ from .grading_dataclasses import (
 
 
 class GradingTask:
-    def __init__(self, item: GradingItem, batch_config: BatchGradingConfig):
+    def __init__(
+        self,
+        item: GradingItem,
+        batch_config: BatchGradingConfig,
+        openai_client: Optional[openai.OpenAI] = None,
+    ):
         self.item = item
 
         self.notebook_path, self.output_path = self.validate_paths(
@@ -71,6 +77,8 @@ class GradingTask:
         self.grading_start_time = time.time()
         self.execution_timeout = batch_config.execution_timeout
         self.error_message: Optional[str] = None
+
+        self.openai_client = openai_client
 
     def get_existing_graded_result(self) -> Optional[GradedResult]:
         graded_result_json_filename = f"{self.filename_base}-graded-result.json"
@@ -193,7 +201,9 @@ class GradingTask:
                 lambda x: (
                     "Pending"
                     if pd.isna(x)
-                    else str(int(x)) if float(x).is_integer() else str(x)
+                    else str(int(x))
+                    if float(x).is_integer()
+                    else str(x)
                 )
             )
 
@@ -455,14 +465,123 @@ class GradingTask:
             item_grading_end_time - self.grading_start_time, 2
         )
 
-        # Apply OpenAI feedback if configured
+    def apply_partial_ai_grading(self) -> None:
+        """
+        Perform partial AI grading in a single request using the full notebook JSON.
+        Uses responses.parse() for structured output.
+        """
         if (
-            self.batch_config.ai_mode != AIGradingMode.OFF
-            and self.batch_config.openai_api_key
-        ):
-            has_openai_adjusted_scores = self._apply_ai_grading()
-            if has_openai_adjusted_scores:
-                self._recalculate_scores()
+            self.batch_config.ai_mode == AIGradingMode.OFF
+            or self.batch_config.ai_mode == AIGradingMode.FULL
+        ) or self.openai_client is None:
+            return
+
+        mode = self.batch_config.ai_mode
+
+        client = self.openai_client
+        model = self.batch_config.openai_model or "gpt-5-mini"
+
+        notebook_json = self.nb
+
+        test_case_result_dicts = [
+            tc.__dict__ for tc in self.graded_result.test_case_results
+        ]
+
+        test_cases_to_review = []
+
+        MANUAL_GRADING_INSTRUCTION = (
+            "Grade this part manually. Assign points and provide feedback."
+        )
+        FAILED_TC_REVIEW_INSTRUCTION = "Review this failed test case based on the error message. Explain why it failed. Provide partial points if the code was close to passing."
+
+        for tc in self.graded_result.test_case_results:
+            if mode == AIGradingMode.MANUAL_ONLY and tc.grade_manually:
+                test_cases_to_review.append(
+                    {
+                        "test_case_name": tc.test_case_name,
+                        "instruction": MANUAL_GRADING_INSTRUCTION,
+                    }
+                )
+
+            elif mode == AIGradingMode.REVIEW_FAILED and tc.did_pass is False:
+                test_cases_to_review.append(
+                    {
+                        "test_case_name": tc.test_case_name,
+                        "instruction": FAILED_TC_REVIEW_INSTRUCTION,
+                    }
+                )
+
+            elif mode == AIGradingMode.MANUAL_AND_FAILED and (
+                tc.grade_manually or tc.did_pass is False
+            ):
+                if tc.grade_manually:
+                    instruction = MANUAL_GRADING_INSTRUCTION
+                elif tc.did_pass is False:
+                    instruction = FAILED_TC_REVIEW_INSTRUCTION
+
+                test_cases_to_review.append(
+                    {
+                        "test_case_name": tc.test_case_name,
+                        "instruction": instruction,
+                    }
+                )
+
+        if not test_cases_to_review:
+            return False
+
+        payload = {
+            "notebook": notebook_json,
+            "test_cases": test_case_result_dicts,
+            "cases_to_review": test_cases_to_review,
+        }
+
+        try:
+            response = client.responses.parse(
+                model=model,
+                input=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are grading a student's Jupyter notebook submission. "
+                            'Evaluate only the requested test cases in "test_cases_to_review" and return results.'
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps(payload),
+                    },
+                ],
+                text_format=AIParsedResult,
+            )
+        except Exception as e:
+            print(f"[AI grading error]: {e}")
+            return False
+
+        parsed: AIParsedResult = response.output_parsed
+        print(parsed)
+
+        has_modified_scores = False
+
+        for result in parsed.results:
+            tc = next(
+                (
+                    t
+                    for t in self.graded_result.test_case_results
+                    if t.test_case_name == result.test_case_name
+                ),
+                None,
+            )
+
+            if tc is None:
+                continue
+
+            tc.points = result.points
+            tc.ai_feedback = result.feedback
+
+            has_modified_scores = True
+
+        if has_modified_scores:
+            self._recalculate_scores()
 
     def save_graded_notebook_to_html(self, html_title: str, html_path: str):
         """Save a graded notebook as HTML with enhanced navigation.
@@ -523,7 +642,9 @@ class GradingTask:
             item_status_classname = (
                 "manual-grading-required"
                 if o.grade_manually
-                else "pass" if o.did_pass else "fail"
+                else "pass"
+                if o.did_pass
+                else "fail"
             )
 
             item_el = soup.new_tag("a")
@@ -723,201 +844,41 @@ class GradingTask:
         with open(graded_result_json_path, "w", encoding="utf-8") as f:
             json.dump(self.graded_result.to_dict(), f, indent=2)
 
-    @staticmethod
-    def _get_openai_response_format(grade_manually: bool) -> Dict[str, Any]:
-        if grade_manually:
-            schema_name = "manual_grade_feedback"
-            schema = {
-                "type": "object",
-                "properties": {
-                    "score": {"type": "number"},
-                    "comment": {"type": "string"},
-                },
-                "required": ["score", "comment"],
-                "additionalProperties": False,
-            }
-        else:
-            schema_name = "autograded_feedback"
-            schema = {
-                "type": "object",
-                "properties": {
-                    "passed": {"type": "boolean"},
-                    "comment": {"type": "string"},
-                },
-                "required": ["passed", "comment"],
-                "additionalProperties": False,
-            }
-
-        return {
-            "type": "json_schema",
-            "json_schema": {
-                "name": schema_name,
-                "strict": True,
-                "schema": schema,
-            },
-        }
-
-    @staticmethod
-    def _extract_openai_message_content(message_content: Any) -> str:
-        if isinstance(message_content, str):
-            return message_content
-
-        if isinstance(message_content, list):
-            for part in message_content:
-                if isinstance(part, dict):
-                    if part.get("type") == "text" and isinstance(part.get("text"), str):
-                        return part["text"]
-                    continue
-
-                if getattr(part, "type", None) == "text" and isinstance(
-                    getattr(part, "text", None), str
-                ):
-                    return part.text
-
-        raise ValueError("OpenAI response did not include structured JSON content")
-
-    @classmethod
-    def _parse_openai_feedback_payload(cls, response: Any) -> Dict[str, Any]:
-        message = response.choices[0].message
-        refusal = getattr(message, "refusal", None)
-        if refusal:
-            raise ValueError(f"OpenAI refused grading request: {refusal}")
-
-        feedback = json.loads(
-            cls._extract_openai_message_content(getattr(message, "content", None))
-        )
-        if not isinstance(feedback, dict):
-            raise ValueError("OpenAI response payload must be a JSON object")
-
-        return feedback
-
-    @staticmethod
-    def _parse_manual_openai_feedback(feedback: Dict[str, Any]) -> Tuple[float, str]:
-        score = feedback.get("score")
-        commentary = feedback.get("comment")
-
-        if isinstance(score, bool) or not isinstance(score, (int, float)):
-            raise ValueError("OpenAI manual grading response is missing a numeric score")
-        if not isinstance(commentary, str):
-            raise ValueError("OpenAI manual grading response is missing a comment")
-
-        return float(score), commentary.strip()
-
-    @staticmethod
-    def _parse_autograded_openai_feedback(feedback: Dict[str, Any]) -> Tuple[bool, str]:
-        passed = feedback.get("passed")
-        commentary = feedback.get("comment")
-
-        if not isinstance(passed, bool):
-            raise ValueError(
-                "OpenAI autograded response is missing a boolean pass indicator"
-            )
-        if not isinstance(commentary, str):
-            raise ValueError("OpenAI autograded response is missing a comment")
-
-        return passed, commentary.strip()
-
-    
-    def _apply_ai_grading(self) -> bool:
-        """
-        Apply AI grading using OpenAI Chat Completions API with Structured Outputs.
-        """
-        import openai
-
-        mode = self.batch_config.ai_mode
-        base_url = self.batch_config.openai_base_url or "https://api.openai.com/v1"
-        client = openai.OpenAI(base_url=base_url, api_key=self.batch_config.openai_api_key)
-
-        # Using the model specified in config, or defaulting to a reliable standard
-        model = self.batch_config.openai_model or "gpt-5-mini"
-
-        user_code = extract_user_code_from_notebook(self.nb)
-        has_modified_scores = False
-
-        for tc in self.graded_result.test_case_results:
-            should_grade = False
-
-            if mode == AIGradingMode.MANUAL_ONLY:
-                should_grade = tc.grade_manually
-            elif mode == AIGradingMode.REVIEW_FAILED:
-                should_grade = (tc.did_pass is False) and not tc.grade_manually
-            elif mode == AIGradingMode.MANUAL_AND_FAILED:
-                should_grade = tc.grade_manually or (tc.did_pass is False)
-            elif mode == AIGradingMode.FULL:
-                should_grade = True
-
-            if not should_grade:
-                continue
-
-            try:
-                prompt = f"""
-Student code:
-
-```python
-{user_code}
-```
-
-Test case: {tc.test_case_name}
-
-Observed output:
-{tc.message}
-
-Available points: {tc.available_points}
-Manual grading required: {tc.grade_manually}
-"""
-
-                response = client.chat.completions.create(
-                    model=model,
-                    messages=[
-                        {"role": "system", "content": "You are an AI assistant helping grade Python code. Return JSON matching the required schema."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    response_format=self._get_openai_response_format(tc.grade_manually),
-                )
-
-                # Use your existing helper to parse the ChatCompletion object
-                feedback = self._parse_openai_feedback_payload(response)
-
-                if tc.grade_manually or mode == AIGradingMode.FULL:
-                    # Logic for manual grading or full overrides
-                    score, comment = self._parse_manual_openai_feedback(feedback)
-                    
-                    tc.points = min(score, tc.available_points)
-                    tc.message = comment
-                    tc.grade_manually = False
-                    tc.did_pass = tc.points == tc.available_points
-                    has_modified_scores = True
-                else:
-                    # Logic for reviewing failed autograded cases
-                    passed, comment = self._parse_autograded_openai_feedback(feedback)
-
-                    if tc.did_pass != passed:
-                        tc.did_pass = passed
-                        tc.points = tc.available_points if passed else 0
-                        tc.message = comment
-                        has_modified_scores = True
-                    elif tc.message != comment:
-                        tc.message = comment
-                        has_modified_scores = True
-
-            except Exception as e:
-                print(f"AI grading error for test case '{tc.test_case_name}': {e}")
-                tc.message = f"AI grading error: {e}. Original message: {tc.message}"
-
-        return has_modified_scores
-
-
     def _recalculate_scores(self) -> None:
         """Recalculates overall scores based on potentially updated test case results."""
-        self.graded_result.num_passed_cases = sum(1 for tc in self.graded_result.test_case_results if tc.did_pass and not tc.grade_manually)
-        self.graded_result.num_failed_cases = sum(1 for tc in self.graded_result.test_case_results if not tc.did_pass and not tc.grade_manually)
-        self.graded_result.num_manually_graded_cases = sum(1 for tc in self.graded_result.test_case_results if tc.grade_manually)
+        self.graded_result.num_passed_cases = sum(
+            1
+            for tc in self.graded_result.test_case_results
+            if tc.did_pass and not tc.grade_manually
+        )
+        self.graded_result.num_failed_cases = sum(
+            1
+            for tc in self.graded_result.test_case_results
+            if not tc.did_pass and not tc.grade_manually
+        )
+        self.graded_result.num_manually_graded_cases = sum(
+            1 for tc in self.graded_result.test_case_results if tc.grade_manually
+        )
 
-        self.graded_result.learner_autograded_score = sum(tc.points for tc in self.graded_result.test_case_results if not tc.grade_manually)
-        self.graded_result.max_autograded_score = sum(tc.available_points for tc in self.graded_result.test_case_results if not tc.grade_manually)
-        self.graded_result.max_manually_graded_score = sum(tc.available_points for tc in self.graded_result.test_case_results if tc.grade_manually)
-        self.graded_result.max_total_score = self.graded_result.max_autograded_score + self.graded_result.max_manually_graded_score
-
+        self.graded_result.learner_autograded_score = sum(
+            tc.points
+            for tc in self.graded_result.test_case_results
+            if not tc.grade_manually
+        )
+        self.graded_result.max_autograded_score = sum(
+            tc.available_points
+            for tc in self.graded_result.test_case_results
+            if not tc.grade_manually
+        )
+        self.graded_result.max_manually_graded_score = sum(
+            tc.available_points
+            for tc in self.graded_result.test_case_results
+            if tc.grade_manually
+        )
+        self.graded_result.max_total_score = (
+            self.graded_result.max_autograded_score
+            + self.graded_result.max_manually_graded_score
+        )
 
     def grade(self) -> Optional[GradedResult]:
         self.error_message = None
@@ -929,7 +890,10 @@ Manual grading required: {tc.grade_manually}
                 # 2. Process results (read JSON, parse, add metadata)
                 self.process_grading_results()
 
-                # 3. Generate output files (cleaned .ipynb, .html, .py, .txt, final .json)
+                # 3. Apply partial AI grading if enabled and recalculate scores if needed
+                self.apply_partial_ai_grading()
+
+                # 4. Generate output files (cleaned .ipynb, .html, .py, .txt, final .json)
                 self.generate_output_artifacts()
 
             return self.graded_result

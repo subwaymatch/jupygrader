@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from dotenv import load_dotenv
+import openai
 
 from jupygrader import AIGradingMode, grade_notebooks
 
@@ -38,11 +39,14 @@ def test_ai_integration_workflow():
                 "output_path": TEST_OUTPUT_DIR,
             }
         ],
+        export_csv=False,
         regrade_existing=True,
         execution_timeout=120,
         ai_mode=AIGradingMode.MANUAL_AND_FAILED,
-        openai_base_url=OPENAI_BASE_URL,
-        openai_api_key=OPENAI_API_KEY,
+        openai_client=openai.OpenAI(
+            base_url=OPENAI_BASE_URL,
+            api_key=OPENAI_API_KEY
+        ),
         openai_model="gpt-5-mini",
     )[0]
 

@@ -13,7 +13,7 @@ def _record_test_case(
     test_case_name: str,
     did_pass: bool,
     available_points: Union[int, float],
-    message: str = "",
+    error_message: str = "",
     grade_manually: bool = False,
 ):
     global _graded_result
@@ -31,6 +31,6 @@ def _record_test_case(
             available_points=available_points,
             did_pass=did_pass,
             grade_manually=grade_manually,
-            message=warning_message + message,
+            error_message=warning_message + error_message,
         )
     )

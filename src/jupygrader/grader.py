@@ -7,7 +7,10 @@ from .models.grading_dataclasses import (
     FileDict,
 )
 from .models.batch_grading_manager import BatchGradingManager
-from typing import Union, List, Optional
+from typing import Union, List, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import openai
 
 
 def grade_notebooks(
@@ -20,8 +23,7 @@ def grade_notebooks(
     regrade_existing: bool = False,
     execution_timeout: Optional[int] = 600,
     ai_mode: AIGradingMode = AIGradingMode.OFF,
-    openai_base_url: Optional[str] = None,
-    openai_api_key: Optional[str] = None,
+    openai_client: Optional["openai.OpenAI"] = None,
     openai_model: Optional[str] = None,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks with test cases.
@@ -48,8 +50,7 @@ def grade_notebooks(
         execution_timeout: Maximum time (in seconds) allowed for notebook execution.
             Set to None to disable the timeout. Defaults to 600 seconds.
         ai_mode: Mode for AI grading. Defaults to AIGradingMode.OFF.
-        openai_base_url: Base URL for OpenAI API (optional).
-        openai_api_key: API key for OpenAI API (optional).
+        openai_client: OpenAI client instance (optional).
         openai_model: Model name for OpenAI API (optional).
 
     Returns:
@@ -77,13 +78,15 @@ def grade_notebooks(
         regrade_existing=regrade_existing,
         execution_timeout=execution_timeout,
         ai_mode=ai_mode,
-        openai_base_url=openai_base_url,
-        openai_api_key=openai_api_key,
         openai_model=openai_model,
     )
 
+    print(f"Batch grading configuration: {batch_config}")
+
     manager = BatchGradingManager(
-        grading_items=grading_items, batch_config=batch_config
+        grading_items=grading_items, batch_config=batch_config, openai_client=openai_client
     )
+
+    print(f"BatchGradingManager: {manager}")
 
     return manager.grade()

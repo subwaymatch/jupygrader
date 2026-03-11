@@ -49,7 +49,7 @@ def test_mixed_workflow():
         assert hasattr(test_result, "available_points")
         assert hasattr(test_result, "did_pass")
         assert hasattr(test_result, "grade_manually")
-        assert hasattr(test_result, "message")
+        assert hasattr(test_result, "error_message")
 
         # Check types of values
         assert isinstance(test_result.test_case_name, str)
@@ -57,7 +57,7 @@ def test_mixed_workflow():
         assert isinstance(test_result.available_points, (int, float))
         assert isinstance(test_result.did_pass, bool) or test_result.did_pass is None
         assert isinstance(test_result.grade_manually, bool)
-        assert isinstance(test_result.message, str)
+        assert isinstance(test_result.error_message, str) or test_result.error_message is None
 
     graded_html_path = TEST_OUTPUT_DIR / f"{filename_base}-graded.html"
     graded_ipynb_path = TEST_OUTPUT_DIR / f"{filename_base}-graded.ipynb"
