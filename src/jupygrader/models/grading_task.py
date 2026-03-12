@@ -178,12 +178,12 @@ class GradingTask:
             # replace test_case_name column with linked texts
             df_r["test_case_name"] = test_case_links
 
-            df_r.loc[df_r["grade_manually"], "points"] = np.nan
+            df_r.loc[~df_r["is_graded"], "points"] = np.nan
             df_r["available_points"] = df_r["available_points"].astype(str)
 
             # inner function to generate a human-readable result
             def get_human_readable_result(row):
-                if row["grade_manually"]:
+                if not row["is_graded"]:
                     return "⌛ Requires manual grading"
                 else:
                     return "✔️ Pass" if row["did_pass"] else "❌ Fail"
@@ -207,7 +207,7 @@ class GradingTask:
                 )
             )
 
-            df_r.drop(columns=["grade_manually"], inplace=True)
+            df_r.drop(columns=["grade_manually", "is_graded"], inplace=True)
 
             gr_cells.append(new_markdown_cell(df_r.to_markdown()))
             gr_cells.append(new_markdown_cell("\n---\n"))
@@ -489,10 +489,8 @@ class GradingTask:
 
         test_cases_to_review = []
 
-        MANUAL_GRADING_INSTRUCTION = (
-            "Grade this part manually. Assign points and provide feedback."
-        )
-        FAILED_TC_REVIEW_INSTRUCTION = "Review this failed test case based on the error message. Explain why it failed. Provide partial points if the code was close to passing."
+        MANUAL_GRADING_INSTRUCTION = 'Grade this part manually. Assign points and provide feedback. If the student\'s code or response is close to correct, assign `True` to "did_pass".'
+        FAILED_TC_REVIEW_INSTRUCTION = 'Review this failed test case based on the error message. Explain why it failed. Provide partial points if the code was close to passing. But leave the "did_pass" field as `False`.'
 
         for tc in self.graded_result.test_case_results:
             if mode == AIGradingMode.MANUAL_ONLY and tc.grade_manually:
@@ -576,6 +574,8 @@ class GradingTask:
                 continue
 
             tc.points = result.points
+            tc.did_pass = result.did_pass
+            tc.is_graded = True
             tc.ai_feedback = result.feedback
 
             has_modified_scores = True
@@ -849,31 +849,33 @@ class GradingTask:
         self.graded_result.num_passed_cases = sum(
             1
             for tc in self.graded_result.test_case_results
-            if tc.did_pass and not tc.grade_manually
+            if tc.is_graded and tc.did_pass
         )
         self.graded_result.num_failed_cases = sum(
             1
             for tc in self.graded_result.test_case_results
-            if not tc.did_pass and not tc.grade_manually
+            if tc.is_graded and tc.did_pass is False
+        )
+        self.graded_result.num_autograded_cases = sum(
+            1 for tc in self.graded_result.test_case_results if tc.is_graded
         )
         self.graded_result.num_manually_graded_cases = sum(
-            1 for tc in self.graded_result.test_case_results if tc.grade_manually
+            1 for tc in self.graded_result.test_case_results if not tc.is_graded
         )
 
         self.graded_result.learner_autograded_score = sum(
-            tc.points
-            for tc in self.graded_result.test_case_results
-            if not tc.grade_manually
+            tc.points for tc in self.graded_result.test_case_results if tc.is_graded
         )
+
         self.graded_result.max_autograded_score = sum(
             tc.available_points
             for tc in self.graded_result.test_case_results
-            if not tc.grade_manually
+            if tc.is_graded
         )
         self.graded_result.max_manually_graded_score = sum(
             tc.available_points
             for tc in self.graded_result.test_case_results
-            if tc.grade_manually
+            if not tc.is_graded
         )
         self.graded_result.max_total_score = (
             self.graded_result.max_autograded_score

@@ -91,7 +91,7 @@ cov-html = "coverage html && pip freeze > htmlcov/requirements-test.txt"
 [tool.pytest.ini_options]
 addopts = "-m 'not ai'"
 markers = [
-  "ai: Tests that require OpenAI API key and may incur costs. Not run by default.",
+  "ai: Tests that require an OpenAI API key and may incur costs. Not run by default.",
 ]
 
 [tool.coverage.run]

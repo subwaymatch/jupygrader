@@ -1,6 +1,7 @@
 # Jupygrader Before File Code
 # REMOVE_IN_HTML_OUTPUT
 from typing import Union
+
 from jupygrader.models.grading_dataclasses import GradedResult, TestCaseResult
 
 _graded_result = GradedResult()
@@ -32,5 +33,6 @@ def _record_test_case(
             did_pass=did_pass,
             grade_manually=grade_manually,
             error_message=warning_message + error_message,
+            is_graded=not grade_manually,
         )
     )

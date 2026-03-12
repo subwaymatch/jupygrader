@@ -24,7 +24,7 @@ Print a code coverage table by using the `--cover` flag.
 hatch test --cover
 ```
 
-### Tests that require OpenAI API key
+### Tests that require an OpenAI API key
 
 Test cases that require OpenAI API key and may incur costs are marked with the `@pytest.mark.ai` marker. By default, these tests are not run when you execute `hatch test`. To include these tests in the test run, use the `-m ai` option with `hatch run pytest`.
 
