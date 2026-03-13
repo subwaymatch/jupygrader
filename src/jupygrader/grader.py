@@ -1,13 +1,14 @@
+from typing import TYPE_CHECKING, List, Optional, Union
+
+from .models.batch_grading_manager import BatchGradingManager
 from .models.grading_dataclasses import (
     AIGradingMode,
     BatchGradingConfig,
-    GradingItem,
-    GradedResult,
-    FilePath,
     FileDict,
+    FilePath,
+    GradedResult,
+    GradingItem,
 )
-from .models.batch_grading_manager import BatchGradingManager
-from typing import Union, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     import openai
@@ -81,12 +82,10 @@ def grade_notebooks(
         openai_model=openai_model,
     )
 
-    print(f"Batch grading configuration: {batch_config}")
-
     manager = BatchGradingManager(
-        grading_items=grading_items, batch_config=batch_config, openai_client=openai_client
+        grading_items=grading_items,
+        batch_config=batch_config,
+        openai_client=openai_client,
     )
-
-    print(f"BatchGradingManager: {manager}")
 
     return manager.grade()
