@@ -1,4 +1,5 @@
 import contextlib
+import copy
 import hashlib
 import json
 import os
@@ -21,7 +22,7 @@ import openai
 import pandas as pd
 from bs4 import BeautifulSoup
 from nbclient import NotebookClient
-from nbconvert import HTMLExporter
+from nbconvert import HTMLExporter, MarkdownExporter
 from nbformat import NotebookNode
 from nbformat.v4 import new_code_cell, new_markdown_cell
 from tzlocal import get_localzone_name
@@ -467,7 +468,9 @@ class GradingTask:
 
     def apply_partial_ai_grading(self) -> None:
         """
-        Perform partial AI grading in a single request using the full notebook JSON.
+        Perform partial AI grading in a single request using a Markdown representation
+        of the notebook. Converts the notebook to Markdown (stripping base64 images)
+        before sending to reduce token usage.
         Uses responses.parse() for structured output.
         """
         if (
@@ -481,7 +484,20 @@ class GradingTask:
         client = self.openai_client
         model = self.batch_config.openai_model or "gpt-5-mini"
 
-        notebook_json = self.nb
+        # Copy the notebook so the original is not modified
+        nb_copy = copy.deepcopy(self.nb)
+
+        # Remove base64 images from all cell outputs to reduce token usage
+        IMAGE_MIME_TYPES = {"image/png", "image/jpeg", "image/gif", "image/svg+xml"}
+        for cell in nb_copy.get("cells", []):
+            for output in cell.get("outputs", []):
+                data = output.get("data", {})
+                for mime_type in IMAGE_MIME_TYPES:
+                    data.pop(mime_type, None)
+
+        # Convert notebook to Markdown for a compact, token-efficient representation
+        md_exporter = MarkdownExporter()
+        notebook_markdown, _ = md_exporter.from_notebook_node(nb_copy)
 
         test_case_result_dicts = [
             tc.__dict__ for tc in self.graded_result.test_case_results
@@ -528,7 +544,7 @@ class GradingTask:
             return False
 
         payload = {
-            "notebook": notebook_json,
+            "notebook": notebook_markdown,
             "test_cases": test_case_result_dicts,
             "cases_to_review": test_cases_to_review,
         }
