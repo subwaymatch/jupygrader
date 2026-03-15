@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from nbconvert import HTMLExporter
 from nbformat import NotebookNode
 
-from .models.grading_dataclasses import GradedResult
+from .models.results import GradedResult
 from .notebook_operations import extract_test_case_metadata_from_code
 
 

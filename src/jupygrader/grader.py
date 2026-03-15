@@ -1,14 +1,9 @@
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from .models.batch_grading_manager import BatchGradingManager
-from .models.grading_dataclasses import (
-    AIGradingMode,
-    BatchGradingConfig,
-    FileDict,
-    FilePath,
-    GradedResult,
-    GradingItem,
-)
+from .grading.batch_grading_manager import BatchGradingManager
+from .models.ai_models import AIGradingMode
+from .models.config import BatchGradingConfig, FileDict, FilePath, GradingItem
+from .models.results import GradedResult
 
 if TYPE_CHECKING:
     import openai

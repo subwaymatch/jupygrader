@@ -3,7 +3,7 @@ import ast
 import re
 import black
 import hashlib
-from jupygrader.models.grading_dataclasses import TestCaseMetadata
+from jupygrader.models.results import TestCaseMetadata
 from pathlib import Path
 from typing import Union, List, Optional
 import nbformat
