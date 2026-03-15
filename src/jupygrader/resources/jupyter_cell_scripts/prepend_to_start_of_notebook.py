@@ -2,7 +2,7 @@
 # REMOVE_IN_HTML_OUTPUT
 from typing import Union
 
-from jupygrader.models.grading_dataclasses import GradedResult, TestCaseResult
+from jupygrader.models.results import GradedResult, TestCaseResult
 
 _graded_result = GradedResult()
 

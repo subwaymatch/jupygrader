@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 from .__about__ import __version__
 from .grader import grade_notebooks
-from .models.grading_dataclasses import AIGradingMode, GradedResult, TestCaseResult
+from .models.ai_models import AIGradingMode
+from .models.results import GradedResult, TestCaseResult
 from .notebook_operations import (
     extract_test_case_metadata_from_code,
     extract_test_cases_metadata_from_notebook,
