@@ -28,15 +28,14 @@ from tzlocal import get_localzone_name
 
 from ..__about__ import __version__ as jupygrader_version
 from ..constants import GRADED_RESULT_ELEMENT_ID, GRADED_RESULT_JSON_FILENAME
+from ..html_export import save_graded_notebook_to_html
 from ..notebook_operations import (
     comment_out_magic_commands,
     does_cell_contain_test_case,
-    extract_test_case_metadata_from_code,
     extract_user_code_from_notebook,
     get_test_cases_hash,
     is_manually_graded_test_case,
 )
-from ..html_export import save_graded_notebook_to_html
 from ..utils import download_file, get_jupyter_cell_script, is_url
 from .grading_dataclasses import (
     AIGradingMode,
@@ -572,7 +571,6 @@ class GradingTask:
             return False
 
         parsed: AIParsedResult = response.output_parsed
-        print(parsed)
 
         has_modified_scores = False
 
