@@ -93,15 +93,12 @@ def test_ai_integration_workflow():
 
 def test_apply_partial_ai_grading_does_not_modify_original_notebook():
     """The original notebook must not be modified when preprocessing for the AI payload."""
-    from jupygrader.models.grading_task import GradingTask
-    from jupygrader.models.grading_dataclasses import (
-        AIGradingMode,
-        AIParsedResult,
-        AITestCaseResult,
-        BatchGradingConfig,
-        GradedResult,
-        TestCaseResult,
-    )
+    from jupygrader.grading.execution_grading_task import ExecutionGradingTask
+    from jupygrader.models.ai_models import AIGradingMode, AIParsedResult, AITestCaseResult
+    from jupygrader.models.config import BatchGradingConfig
+    from jupygrader.models.results import GradedResult, TestCaseResult
+
+    GradingTask = ExecutionGradingTask
 
     # Build a minimal notebook that contains a base64 PNG image output
     nb = nbformat.v4.new_notebook()
@@ -178,15 +175,12 @@ def test_apply_partial_ai_grading_does_not_modify_original_notebook():
 
 def test_apply_partial_ai_grading_payload_is_markdown():
     """Payload 'notebook' field must be a Markdown string converted from the notebook."""
-    from jupygrader.models.grading_task import GradingTask
-    from jupygrader.models.grading_dataclasses import (
-        AIGradingMode,
-        AIParsedResult,
-        AITestCaseResult,
-        BatchGradingConfig,
-        GradedResult,
-        TestCaseResult,
-    )
+    from jupygrader.grading.execution_grading_task import ExecutionGradingTask
+    from jupygrader.models.ai_models import AIGradingMode, AIParsedResult, AITestCaseResult
+    from jupygrader.models.config import BatchGradingConfig
+    from jupygrader.models.results import GradedResult, TestCaseResult
+
+    GradingTask = ExecutionGradingTask
 
     nb = nbformat.v4.new_notebook()
     cell = new_code_cell(source='x = 42\nprint(x)')
