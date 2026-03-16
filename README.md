@@ -22,8 +22,15 @@
 - [📒 Create an autogradable notebook](#-create-an-autogradable-notebook)
   - [Code cell for learners](#code-cell-for-learners)
   - [Graded test cases](#graded-test-cases)
+  - [Manually graded items](#manually-graded-items)
   - [Obfuscate test cases](#obfuscate-test-cases)
   - [Add hidden test cases](#add-hidden-test-cases)
+- [🤖 AI-Assisted Grading](#-ai-assisted-grading)
+  - [Full AI grading](#full-ai-grading)
+  - [Review failed test cases](#review-failed-test-cases)
+  - [Grade manual items](#grade-manual-items)
+  - [Grade both manual and failed items](#grade-both-manual-and-failed-items)
+  - [Custom grading prompt](#custom-grading-prompt)
 - [🔧 Utility functions](#-utility-functions)
   - [Replace test cases](#replace-test-cases)
 - [📄 License](#-license)
@@ -36,12 +43,18 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 2. **Generate comprehensive reports** in multiple formats (JSON, HTML, TXT)
 3. **Extract student code** from notebooks into separate Python files
 4. **Verify notebook integrity** by computing hashes of test cases and submissions
+5. **Grade with AI assistance** — use an LLM to grade manual items, review failures, or evaluate notebooks entirely without execution
 
 ## ✨ Key Features
 
 - Executes notebooks in a controlled, temporary environment
 - Preserves the original notebook while creating graded versions
 - Adds grader scripts to notebooks to evaluate test cases
+- Supports multiple grading modes:
+  - Automatic grading via assertions and tests
+  - Manual grading
+  - Hybrid (automatic + manual)
+  - AI-assisted grading (full or partial)
 - Generates detailed grading results including:
   - Individual test case scores
   - Overall scores and summaries
@@ -53,8 +66,6 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
   - Plaintext summary
   - Extracted Python code
 - Includes metadata like Python version, platform, and file hashes for verification
-
-Jupygrader is designed for educational settings where instructors need to grade student work in Jupyter notebooks, providing automated feedback while maintaining records of submissions and grading results.
 
 ## 📦 Installation
 
@@ -73,32 +84,32 @@ pip install --upgrade jupygrader
 ### Basic usage
 
 ```python
-import jupygrader
+from jupygrader import grade_notebooks
 
 notebook_file_path = 'path/to/notebook.ipynb'
-jupygrader.grade_notebooks(notebook_file_path)
+grade_notebooks([notebook_file_path])
 ```
 
 Supplying a `pathlib.Path()` object is supported.
 
 ```python
-import jupygrader
+from jupygrader import grade_notebooks
 from pathlib import Path
 
 notebook_path = Path('path/to/notebook.ipynb')
-jupygrader.grade_notebooks(notebook_path)
+grade_notebooks([notebook_path])
 ```
 
-If the `output_dir_path` is not specified, the output files will be stored to the same directory as the notebook file.
+If the `output_path` is not specified, the output files will be stored to the same directory as the notebook file.
 
 During grading, Jupygrader preprocesses code cells and comments out lines that start with IPython shell/magic prefixes (`!` and `%`). This prevents notebook-only commands from causing syntax errors in the Python-based grading pipeline.
 
 ### Specify the output directory
 
 ```python
-import jupygrader
+from jupygrader import grade_notebooks
 
-jupygrader.grade_notebooks([{
+grade_notebooks([{
     "notebook_path": 'path/to/notebook.ipynb',
     "output_path": 'path/to/output'
 }])
@@ -171,9 +182,21 @@ _points = 2
 pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
 ```
 
+### Manually graded items
+
+Mark a test case with `_grade_manually = True` to flag it for human (or AI) review instead of assertion-based grading.
+
+```python
+_test_case = 'explain-your-approach'
+_points = 5
+_grade_manually = True
+
+# Students write a free-response answer here
+```
+
 ### Obfuscate test cases
 
-If you want to prevent learners from seeing the test case code, you can optionally set \_obfuscate = True to base64-encode the test cases.
+If you want to prevent learners from seeing the test case code, you can optionally set `_obfuscate = True` to base64-encode the test cases.
 
 Note that this provides only basic obfuscation, and students can easily decode the string to reveal the original code.
 
@@ -226,6 +249,117 @@ _points = 2
 
 if 'is_jupygrader_env' in globals():
     pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
+```
+
+## 🤖 AI-Assisted Grading
+
+Jupygrader can use an OpenAI-compatible model to assist with grading. Set the `ai_mode` parameter to one of the following string values:
+
+| `ai_mode` | Description |
+|---|---|
+| `"off"` | No AI grading (default) |
+| `"full"` | AI grades all test cases based on notebook content — no execution required |
+| `"manual_only"` | AI grades test cases marked `_grade_manually = True` |
+| `"review_failed"` | AI reviews auto-graded test cases that failed |
+| `"manual_and_failed"` | AI grades both manual items and failed test cases |
+
+> **Note:** `openai_model` is required whenever `ai_mode` is not `"off"`. Omitting it raises a `ValueError`.
+
+### Full AI grading
+
+Use `ai_mode="full"` to have the AI evaluate every test case based solely on the notebook's content, without executing it. This is ideal for open-ended assignments, essay-style responses, or notebooks that include general instructions rather than assertion-based tests.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="full",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+In `"full"` mode, test cases are parsed directly from the notebook's source cells (no execution). Notebooks without any test case cells are still processed and output artifacts are generated.
+
+### Review failed test cases
+
+Use `ai_mode="review_failed"` to have the AI explain why auto-graded test cases failed and optionally award partial credit.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="review_failed",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+### Grade manual items
+
+Use `ai_mode="manual_only"` to have the AI grade items marked `_grade_manually = True` in the notebook.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="manual_only",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+### Grade both manual and failed items
+
+Use `ai_mode="manual_and_failed"` to combine both workflows in a single pass.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="manual_and_failed",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+### Custom grading prompt
+
+Pass `custom_prompt` to give the AI model additional context or grading criteria. This works with all AI grading modes.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb"],
+    ai_mode="full",
+    openai_client=client,
+    openai_model="gpt-4o",
+    custom_prompt=(
+        "This is a data analysis assignment. "
+        "Award full points if the student produces a correct result, even if the approach differs. "
+        "Deduct points for hard-coded values."
+    ),
+)
 ```
 
 ## 🔧 Utility functions
