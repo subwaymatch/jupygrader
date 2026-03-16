@@ -130,6 +130,186 @@ graded_results = grade_notebooks(
 )
 ```
 
+---
+
+## 🤖 AI-Assisted Grading
+
+Jupygrader can use an OpenAI-compatible model to assist with grading. Pass an `openai_client`, an `openai_model`, and set `ai_mode` to activate AI grading.
+
+### AI grading modes
+
+| `ai_mode` | Description |
+|---|---|
+| `"off"` | No AI grading (default) |
+| `"full"` | AI grades all test cases based on notebook content — no execution required |
+| `"manual_only"` | AI grades test cases marked `_grade_manually = True` |
+| `"review_failed"` | AI reviews auto-graded test cases that failed |
+| `"manual_and_failed"` | AI grades both manual items and failed test cases |
+
+!!! warning "openai_model is required"
+
+    You must always specify `openai_model` when using any AI grading mode. Omitting it raises a `ValueError` before any grading begins.
+
+---
+
+### Full AI grading (`"full"`)
+
+Use `ai_mode="full"` to have the AI evaluate every test case based solely on the notebook's content, **without executing the notebook**. This is ideal for:
+
+- Open-ended or essay-style assignments
+- Rubric-based grading with general instructions
+- Notebooks that don't rely on assertion-based tests
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="full",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+In `"full"` mode, test cases are parsed directly from the notebook's source cells. The notebook is never executed — the AI grades each test case by reading the notebook content. Notebooks without any test case cells are still processed and all output artifacts are generated.
+
+**Notebook structure for full AI grading**
+
+Test cases in your notebook don't need assertion code — they just need a name and point value. The AI uses the surrounding notebook context to decide whether the student's work meets the criteria.
+
+```python
+# Cell 1: student work area
+_test_case = "question-1"
+_points = 5
+_grade_manually = True
+
+# Students write their free-response answer above this cell
+```
+
+You can also have a notebook with general instructions (no test cases). In that case, grading completes and artifacts are generated, but no AI call is made since there are no cases to evaluate.
+
+---
+
+### Grade manual items only (`"manual_only"`)
+
+Use `ai_mode="manual_only"` to have the AI grade test cases marked with `_grade_manually = True`. The notebook is still executed first; only manual items are sent to the AI.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="manual_only",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+**Notebook test case example**
+
+```python
+_test_case = "explain-your-approach"
+_points = 5
+_grade_manually = True
+
+# Students write a free-response answer in the cell above
+```
+
+---
+
+### Review failed test cases (`"review_failed"`)
+
+Use `ai_mode="review_failed"` to have the AI explain why auto-graded test cases failed and optionally award partial credit. The notebook is still executed; the AI receives the error messages for failed cases.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="review_failed",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+The AI can award partial points for failed test cases but keeps `did_pass` as `False`.
+
+---
+
+### Grade both manual and failed items (`"manual_and_failed"`)
+
+Use `ai_mode="manual_and_failed"` to combine both workflows in a single pass — the AI grades manual items and reviews failed test cases.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="manual_and_failed",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+---
+
+### Custom grading prompt
+
+Pass `custom_prompt` to give the AI additional context, assignment-specific criteria, or grading rubric details. This works with all AI grading modes.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb"],
+    ai_mode="full",
+    openai_client=client,
+    openai_model="gpt-4o",
+    custom_prompt=(
+        "This is a data analysis assignment using pandas. "
+        "Award full points if the student arrives at the correct result, "
+        "even if the approach differs from the expected solution. "
+        "Deduct 50% of points if the student hard-codes values instead of computing them."
+    ),
+)
+```
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb"],
+    ai_mode="manual_only",
+    openai_client=client,
+    openai_model="gpt-4o",
+    custom_prompt=(
+        "Grade the free-response questions based on clarity of explanation, "
+        "correct use of terminology, and depth of reasoning. "
+        "Award partial credit for partially correct answers."
+    ),
+)
+```
+
+---
+
 ## 📒 Create an autogradable notebook
 
 The instructor authors only one "solution" notebook, which contains both the solution code and test cases for all graded parts.
@@ -193,6 +373,18 @@ _test_case = 'create-a-pandas-series'
 _points = 2
 
 pd.testing.assert_series_equal(sample_series, pd.Series([-20, -10, 10, 20]))
+```
+
+### Manually graded items
+
+Mark a test case with `_grade_manually = True` to flag it for human or AI review instead of assertion-based grading.
+
+```python
+_test_case = 'explain-your-approach'
+_points = 5
+_grade_manually = True
+
+# Students write a free-response answer in the cell above
 ```
 
 ### Obfuscate test cases (Work-in-progress)

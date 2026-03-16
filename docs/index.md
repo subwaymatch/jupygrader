@@ -14,7 +14,7 @@ Easily grade Jupyter notebooks using test cases and generate detailed reports.
 
 ## Creating an autogradable notebook
 
-Creating an autogradable item is as simple as adding a cell with a test case name (`_test_case`) and points ( `_points` ) to the notebook.
+Creating an autogradable item is as simple as adding a cell with a test case name (`_test_case`) and points (`_points`) to the notebook.
 
 Assume your student is tasked to add `x` and `y`, and store the result to a new variable named `sum_xy`.
 
@@ -66,12 +66,14 @@ This will return a `GradedResult` object. Below is a sample output of the `Grade
   "grading_duration_in_seconds": 0.02,
   "test_case_results": [
     {
-      "test_case_name": "sum_xy",
+      "test_case_name": "calculate-sum",
       "points": 2,
       "available_points": 2,
       "did_pass": true,
       "grade_manually": false,
-      "message": ""
+      "error_message": null,
+      "is_graded": true,
+      "ai_feedback": null
     }
   ],
   "submission_notebook_hash": "c98c747e12a0456033956759c9daf7a0",
@@ -79,7 +81,6 @@ This will return a `GradedResult` object. Below is a sample output of the `Grade
   "grader_python_version": "3.12.5",
   "grader_platform": "Linux...",
   "jupygrader_version": "..."
-  // ... more fields here
 }
 ```
 
@@ -96,6 +97,55 @@ notebooks = glob.glob('submissions/*.ipynb')
 graded_results = grade_notebooks(notebooks)
 ```
 
+## AI-Assisted Grading
+
+Jupygrader supports AI-assisted grading via any OpenAI-compatible model. Set `ai_mode` to a string value to activate:
+
+| `ai_mode` | Description |
+|---|---|
+| `"off"` | No AI grading (default) |
+| `"full"` | AI grades all test cases based on notebook content — no execution required |
+| `"manual_only"` | AI grades test cases marked `_grade_manually = True` |
+| `"review_failed"` | AI reviews auto-graded test cases that failed |
+| `"manual_and_failed"` | AI grades both manual items and failed test cases |
+
+### Full AI grading
+
+Use `ai_mode="full"` to have the AI evaluate every test case from the notebook's source — no execution needed. Perfect for open-ended assignments and rubric-based grading.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="full",
+    openai_client=client,
+    openai_model="gpt-4o",
+)
+```
+
+### Partial AI grading
+
+Run the notebook normally, then send specific cases to the AI. Use a `custom_prompt` for assignment-specific criteria.
+
+```python
+import openai
+from jupygrader import grade_notebooks
+
+client = openai.OpenAI(api_key="your-api-key")
+
+results = grade_notebooks(
+    ["submissions/student1.ipynb", "submissions/student2.ipynb"],
+    ai_mode="manual_and_failed",
+    openai_client=client,
+    openai_model="gpt-4o",
+    custom_prompt="Award partial credit for correct reasoning even if the final answer is wrong.",
+)
+```
+
 ## 📝 Summary
 
 Jupygrader is a Python package for automated grading of Jupyter notebooks. It provides a framework to:
@@ -104,6 +154,7 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 2. **Generate comprehensive reports** in multiple formats (JSON, HTML, TXT)
 3. **Extract student code** from notebooks into separate Python files
 4. **Verify notebook integrity** by computing hashes of test cases and submissions
+5. **Grade with AI assistance** — use an LLM to grade manual items, review failures, or evaluate notebooks entirely without execution
 
 ## ✨ Key Features
 
@@ -113,12 +164,14 @@ Jupygrader is a Python package for automated grading of Jupyter notebooks. It pr
 - Supports multiple grading modes:
   - Automatic grading via assertions and tests
   - Manual grading
-  - Hybrid
+  - Hybrid (automatic + manual)
+  - AI-assisted grading (full or partial)
 - Generates detailed grading results including:
   - Individual test case scores
   - Overall scores and summaries
   - Success/failure status of each test
   - Error messages for failed test cases
+  - AI feedback when AI grading is used
 - Produces multiple output formats for instructors to review:
   - CSV export for batch grading results
   - Graded notebook (.ipynb)
@@ -159,25 +212,24 @@ Jupygrader generates multiple output formats for each graded notebook:
 Batch Processing with File Dependencies
 
 ```python
-from jupygrader import grade_notebooks, GradingItem
+from jupygrader import grade_notebooks
 
 # Configure grading with dependencies
 grading_configs = [
-    GradingItem(
-        notebook_path="assignments/hw1/student1.ipynb",
-        output_path="results/hw1",
-        copy_files=["data/dataset.csv", "utility_functions.py"]
-    ),
-    GradingItem(
-        notebook_path="assignments/hw1/student2.ipynb",
-        output_path="results/hw1",
-        copy_files=["data/dataset.csv", "utility_functions.py"]
-    )
+    {
+        "notebook_path": "assignments/hw1/student1.ipynb",
+        "output_path": "results/hw1",
+        "copy_files": ["data/dataset.csv", "utility_functions.py"],
+    },
+    {
+        "notebook_path": "assignments/hw1/student2.ipynb",
+        "output_path": "results/hw1",
+        "copy_files": ["data/dataset.csv", "utility_functions.py"],
+    },
 ]
 
 # Grade all notebooks with their dependencies
 results = grade_notebooks(grading_configs)
-
 ```
 
 Jupygrader is designed for educational settings where instructors need to grade student work in Jupyter notebooks, providing automated feedback while maintaining records of submissions and grading results.
