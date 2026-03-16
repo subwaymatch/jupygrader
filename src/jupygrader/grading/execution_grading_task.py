@@ -137,10 +137,12 @@ class ExecutionGradingTask(BaseGradingTask):
         if self.openai_client is None:
             return
 
-        model = self.batch_config.openai_model or "gpt-4o-mini"
+        model = self.batch_config.openai_model
         grader = AIGrader(self.openai_client, model)
 
-        has_modified = grader.grade_partial(self.graded_result, self.nb, ai_mode)
+        has_modified = grader.grade_partial(
+            self.graded_result, self.nb, ai_mode, self.batch_config.custom_prompt
+        )
 
         if has_modified:
             self._recalculate_scores()

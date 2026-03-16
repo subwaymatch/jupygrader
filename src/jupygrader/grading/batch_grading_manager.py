@@ -10,11 +10,13 @@ import pandas as pd
 import tempfile
 from tqdm.auto import tqdm
 
+from ..models.ai_models import AIGradingMode
 from ..models.config import BatchGradingConfig, FileDict, FilePath, GradingItem
 from ..models.results import GradedResult
 from ..notebook_operations import is_notebook_graded
 from ..utils import download_file, is_url
 from .execution_grading_task import ExecutionGradingTask
+from .full_ai_grading_task import FullAIGradingTask
 
 
 class BatchGradingManager:
@@ -215,9 +217,14 @@ class BatchGradingManager:
                             f"[{idx}/{num_items}] Grading: {notebook_name}",
                         )
 
-                    grading_task = ExecutionGradingTask(
-                        item, self.batch_config, self.openai_client
-                    )
+                    if self.batch_config.ai_mode == AIGradingMode.FULL:
+                        grading_task = FullAIGradingTask(
+                            item, self.batch_config, self.openai_client
+                        )
+                    else:
+                        grading_task = ExecutionGradingTask(
+                            item, self.batch_config, self.openai_client
+                        )
 
                     if (
                         grading_task.get_existing_graded_result() is not None
