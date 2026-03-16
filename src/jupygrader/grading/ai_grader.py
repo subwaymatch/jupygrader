@@ -1,6 +1,6 @@
 import copy
 import json
-from typing import Optional
+from typing import List, Optional
 
 import openai
 from nbconvert import MarkdownExporter
@@ -12,7 +12,7 @@ from ..models.results import GradedResult
 
 
 class AIGrader:
-    """Handles AI-assisted grading for partial grading modes.
+    """Handles AI-assisted grading for partial and full grading modes.
 
     Converts the notebook to Markdown and sends a single request to the
     OpenAI API to grade the specified test cases.
@@ -26,6 +26,11 @@ class AIGrader:
         'Review this failed test case based on the error message. Explain why it failed. '
         'Provide partial points if the code was close to passing. '
         'But leave the "did_pass" field as `False`.'
+    )
+    FULL_GRADING_INSTRUCTION = (
+        'Grade this test case based on the student\'s notebook content. '
+        'Assign points and provide feedback. '
+        'If the student\'s response is satisfactory, assign `True` to "did_pass".'
     )
 
     def __init__(self, openai_client: openai.OpenAI, model: str):
@@ -53,6 +58,7 @@ class AIGrader:
         graded_result: GradedResult,
         nb: NotebookNode,
         ai_mode: AIGradingMode,
+        custom_prompt: Optional[str] = None,
     ) -> bool:
         """Apply partial AI grading (MANUAL_ONLY, REVIEW_FAILED, or MANUAL_AND_FAILED).
 
@@ -107,16 +113,104 @@ class AIGrader:
             "cases_to_review": test_cases_to_review,
         }
 
+        system_content = (
+            "You are grading a student's Jupyter notebook submission. "
+            'Evaluate only the requested test cases in "cases_to_review" and return results.'
+        )
+        if custom_prompt:
+            system_content += f"\n\nAdditional grading instructions: {custom_prompt}"
+
         try:
             response = self.client.responses.parse(
                 model=self.model,
                 input=[
                     {
                         "role": "system",
-                        "content": (
-                            "You are grading a student's Jupyter notebook submission. "
-                            'Evaluate only the requested test cases in "test_cases_to_review" and return results.'
-                        ),
+                        "content": system_content,
+                    },
+                    {
+                        "role": "user",
+                        "content": json.dumps(payload),
+                    },
+                ],
+                text_format=AIParsedResult,
+            )
+        except Exception as e:
+            print(f"[AI grading error]: {e}")
+            return False
+
+        parsed: AIParsedResult = response.output_parsed
+        print(parsed)
+
+        has_modified_scores = False
+
+        for result in parsed.results:
+            tc = next(
+                (
+                    t
+                    for t in graded_result.test_case_results
+                    if t.test_case_name == result.test_case_name
+                ),
+                None,
+            )
+
+            if tc is None:
+                continue
+
+            tc.points = result.points
+            tc.did_pass = result.did_pass
+            tc.is_graded = True
+            tc.ai_feedback = result.feedback
+
+            has_modified_scores = True
+
+        return has_modified_scores
+
+    def grade_full(
+        self,
+        graded_result: GradedResult,
+        nb: NotebookNode,
+        custom_prompt: Optional[str] = None,
+    ) -> bool:
+        """Apply full AI grading (FULL mode).
+
+        All test cases are sent to AI for grading based solely on notebook content,
+        without any prior execution results. Returns True if any scores were modified,
+        False otherwise.
+        """
+        test_cases_to_review = [
+            {
+                "test_case_name": tc.test_case_name,
+                "instruction": self.FULL_GRADING_INSTRUCTION,
+            }
+            for tc in graded_result.test_case_results
+        ]
+
+        if not test_cases_to_review:
+            return False
+
+        notebook_markdown = self.notebook_to_markdown(nb)
+
+        payload = {
+            "notebook": notebook_markdown,
+            "cases_to_review": test_cases_to_review,
+        }
+
+        system_content = (
+            "You are grading a student's Jupyter notebook submission. "
+            "The notebook has NOT been executed — grade based solely on its content. "
+            'Evaluate all test cases in "cases_to_review" and return results.'
+        )
+        if custom_prompt:
+            system_content += f"\n\nAdditional grading instructions: {custom_prompt}"
+
+        try:
+            response = self.client.responses.parse(
+                model=self.model,
+                input=[
+                    {
+                        "role": "system",
+                        "content": system_content,
                     },
                     {
                         "role": "user",

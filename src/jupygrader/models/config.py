@@ -26,6 +26,7 @@ class BatchGradingConfig:
     execution_timeout: Optional[int] = 600
     ai_mode: AIGradingMode = AIGradingMode.OFF
     openai_model: Optional[str] = None
+    custom_prompt: Optional[str] = None
 
 
 @dataclass

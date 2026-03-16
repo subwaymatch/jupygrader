@@ -21,6 +21,7 @@ def grade_notebooks(
     ai_mode: AIGradingMode = AIGradingMode.OFF,
     openai_client: Optional["openai.OpenAI"] = None,
     openai_model: Optional[str] = None,
+    custom_prompt: Optional[str] = None,
 ) -> List[GradedResult]:
     """Grade multiple Jupyter notebooks with test cases.
 
@@ -47,14 +48,17 @@ def grade_notebooks(
             Set to None to disable the timeout. Defaults to 600 seconds.
         ai_mode: Mode for AI grading. Defaults to AIGradingMode.OFF.
         openai_client: OpenAI client instance (optional).
-        openai_model: Model name for OpenAI API (optional).
+        openai_model: Model name for OpenAI API. Required when ai_mode is not OFF.
+        custom_prompt: Optional additional instructions for the AI grading model.
+            Only used when ai_mode is not OFF.
 
     Returns:
         List of GradedResult objects containing detailed results for each notebook.
 
     Raises:
         TypeError: If an element in grading_items has an unsupported type.
-        ValueError: If a required path doesn't exist or has invalid configuration.
+        ValueError: If a required path doesn't exist, has invalid configuration,
+            or if ai_mode is not OFF but openai_model is not specified.
 
     Examples:
         >>> # Grade multiple notebooks with default settings
@@ -66,6 +70,12 @@ def grade_notebooks(
         ...     GradingItem(notebook_path="student2.ipynb", output_path="results"),
         ... ], base_files=["data.csv", "helpers.py"], export_csv=True)
     """
+    if ai_mode != AIGradingMode.OFF and openai_model is None:
+        raise ValueError(
+            f"openai_model must be specified when using an AI grading mode (ai_mode={ai_mode!r}). "
+            "Please provide a model name (e.g., 'gpt-4o', 'gpt-4o-mini')."
+        )
+
     batch_config = BatchGradingConfig(
         base_files=base_files,
         verbose=verbose,
@@ -75,6 +85,7 @@ def grade_notebooks(
         execution_timeout=execution_timeout,
         ai_mode=ai_mode,
         openai_model=openai_model,
+        custom_prompt=custom_prompt,
     )
 
     manager = BatchGradingManager(
