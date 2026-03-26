@@ -193,6 +193,7 @@ class BatchGradingManager:
     ) -> List[GradedResult]:
         num_items = len(self.grading_items)
         num_skipped_items = 0
+        num_already_graded_skipped = 0
         num_failed_items = 0
 
         start_time = time.time()
@@ -241,6 +242,7 @@ class BatchGradingManager:
                     elif is_notebook_graded(item.notebook_path):
                         if self.verbose:
                             print(f"Skipping already graded notebook: {notebook_path}")
+                        num_already_graded_skipped += 1
                         continue
 
                     else:
@@ -272,17 +274,21 @@ class BatchGradingManager:
 
         elapsed_time = time.time() - start_time
 
+        num_graded_items = num_items - num_already_graded_skipped
+
         if self.verbose:
             print("-" * 70)
             print(
-                f"Completed grading {num_items} notebook(s) in {elapsed_time:.2f} seconds"
+                f"Completed grading {num_graded_items} notebook(s) in {elapsed_time:.2f} seconds"
             )
 
-            print(f"Successfully graded: {num_items - num_failed_items}/{num_items}")
+            print(f"Successfully graded: {num_graded_items - num_failed_items}/{num_graded_items}")
+            if num_already_graded_skipped > 0:
+                print(f"Skipped {num_already_graded_skipped} notebook(s) that was already graded")
             if num_skipped_items > 0:
-                print(f"Skipped: {num_skipped_items}/{num_items} (already graded)")
+                print(f"Skipped: {num_skipped_items}/{num_graded_items} (using cached results)")
             if num_failed_items > 0:
-                print(f"Failed to grade: {num_failed_items}/{num_items}")
+                print(f"Failed to grade: {num_failed_items}/{num_graded_items}")
 
         if self.batch_config.export_csv:
             self.export_results_to_csv()
