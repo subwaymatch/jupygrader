@@ -18,9 +18,6 @@ load_dotenv(".env.test")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-print(f"OPENAI_BASE_URL: {OPENAI_BASE_URL}")
-print(f"OPENAI_API_KEY: {OPENAI_API_KEY}")
-
 TEST_NOTEBOOKS_DIR = Path(__file__).resolve().parent / "test-files"
 TEST_OUTPUT_DIR = Path(__file__).resolve().parent / "test-output" / "ai-integration"
 

@@ -1,8 +1,7 @@
 import requests
 from typing import Union
 from pathlib import Path
-import socket
-from requests.exceptions import RequestException
+from requests.exceptions import ConnectionError, RequestException, Timeout
 from importlib.resources import files
 import click
 from functools import wraps
@@ -29,9 +28,9 @@ def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> boo
     Args:
         url: The URL to download from
         destination: Path where the downloaded file should be saved
-        verify_ssl: Whether to verify SSL certificates (default: True)
         timeout: Connection timeout in seconds (default: 30)
-        max_retries: Number of retry attempts (default: 2)
+        max_retries: Number of retry attempts for connection errors and
+            timeouts (default: 2)
 
     Returns:
         bool: True if download was successful, False otherwise
@@ -41,11 +40,7 @@ def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> boo
 
     for attempt in range(max_retries + 1):
         try:
-            # Create a session for potential retries
-            session = requests.Session()
-
-            # Configure the request with timeout and SSL verification options
-            response = session.get(
+            response = requests.get(
                 url,
                 stream=True,
                 timeout=timeout,
@@ -62,8 +57,8 @@ def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> boo
 
             return True
 
-        except (socket.gaierror, socket.timeout) as e:
-            # Handle DNS resolution failures and connection timeouts
+        except (ConnectionError, Timeout) as e:
+            # Retry transient connection failures and timeouts
             if attempt < max_retries:
                 print(f"Connection error: {e}. Retry {attempt + 1}/{max_retries}...")
                 continue
@@ -80,8 +75,10 @@ def download_file(url: str, destination: Path, timeout=30, max_retries=2) -> boo
 
         except Exception as e:
             # Catch any other unexpected errors
-            print(f"Unexpected error downloading{url} to {destination}: {e}")
+            print(f"Unexpected error downloading {url} to {destination}: {e}")
             return False
+
+    return False
 
 
 def process_notebook_paths(func):

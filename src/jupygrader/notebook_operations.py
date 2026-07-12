@@ -8,11 +8,6 @@ from pathlib import Path
 from typing import Union, List, Optional
 import nbformat
 
-test_case_name_pattern = r'^\s*_test_case\s*=\s*[\'"](.*)[\'"]'
-test_case_points_pattern = r"^\s*_points\s*=\s*(.*)[\s#]*.*[\r\n]"
-manual_grading_pattern = r"^\s*_grade_manually\s*=\s*(True|False)"
-
-
 def _extract_assignment_literal_value(code_str: str, variable_name: str) -> Optional[object]:
     """Extract literal value assigned to a variable in Python source code."""
     try:
@@ -218,7 +213,10 @@ def replace_test_case(
         if (cell.cell_type == "code") and does_cell_contain_test_case(cell):
             test_case_metadata = extract_test_case_metadata_from_code(cell.source)
 
-            if test_case_metadata.get("test_case") == test_case_name:
+            if (
+                test_case_metadata is not None
+                and test_case_metadata.test_case_name == test_case_name
+            ):
                 cell.source = new_test_case_code
 
     return nb

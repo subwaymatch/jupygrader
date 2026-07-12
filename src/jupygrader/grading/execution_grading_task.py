@@ -1,6 +1,5 @@
 import json
 import textwrap
-from pathlib import Path
 from typing import Optional
 
 import nbformat
@@ -16,6 +15,7 @@ from ..models.results import GradedResult
 from ..notebook_operations import (
     comment_out_magic_commands,
     does_cell_contain_test_case,
+    extract_test_case_metadata_from_code,
     get_test_cases_hash,
     is_manually_graded_test_case,
 )
@@ -41,22 +41,36 @@ class ExecutionGradingTask(BaseGradingTask):
     # ------------------------------------------------------------------
 
     def convert_test_case_using_grader_template(self, cell: NotebookNode) -> None:
-        """Wrap a test case cell with the appropriate grader template."""
+        """Wrap a test case cell with the appropriate grader template.
+
+        The test case name and points parsed from the cell source are injected
+        ahead of the try block, so that a cell failing before its own
+        ``_test_case = ...`` assignment runs is still recorded under the correct
+        name instead of a stale value from a previously executed test cell.
+        """
         if not does_cell_contain_test_case(cell):
             return
 
-        source = cell.source
+        metadata = extract_test_case_metadata_from_code(cell.source)
+        if metadata is None:
+            return
+
+        metadata_lines = [
+            f"_test_case = {metadata.test_case_name!r}",
+            f"_points = {metadata.points!r}",
+        ]
 
         if is_manually_graded_test_case(cell):
             grader_template_code = get_jupyter_cell_script("grader_manual_template.py")
-            source = cell.source
+            metadata_lines.append(f"_grade_manually = {metadata.grade_manually!r}")
         else:
             grader_template_code = get_jupyter_cell_script("grader_template.py")
-            source = textwrap.indent(cell.source, "    ")
+
+        source = textwrap.indent(cell.source, "    ")
 
         converted_source = grader_template_code.replace(
-            "# TEST_CASE_REPLACE_HERE", source
-        )
+            "# TEST_CASE_METADATA_REPLACE_HERE", "\n".join(metadata_lines)
+        ).replace("# TEST_CASE_REPLACE_HERE", source)
 
         cell.source = converted_source
 
@@ -110,7 +124,7 @@ class ExecutionGradingTask(BaseGradingTask):
     # ------------------------------------------------------------------
 
     def process_grading_results(self) -> None:
-        results_json_path = Path(GRADED_RESULT_JSON_FILENAME)
+        results_json_path = self.temp_workdir_path / GRADED_RESULT_JSON_FILENAME
 
         if not results_json_path.exists():
             raise FileNotFoundError(

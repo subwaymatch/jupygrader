@@ -107,6 +107,10 @@ class BatchGradingManager:
         items: Union[FilePath, GradingItem, List[Union[FilePath, GradingItem, dict]]],
     ) -> List[GradingItem]:
         """Converts input list items to GradingItem objects."""
+        # Accept a single item so a bare string isn't iterated character by character
+        if isinstance(items, (str, Path, GradingItem, dict)):
+            items = [items]
+
         normalized_items: List[GradingItem] = []
         for item in items:
             if isinstance(item, (str, Path)):
@@ -129,11 +133,18 @@ class BatchGradingManager:
             if isinstance(self.batch_config.base_files, dict):
                 for src in list(self.batch_config.base_files.keys()):
                     if is_url(src):
-                        temp_path = Path(tempfile.NamedTemporaryFile(delete=False).name)
+                        temp_file = tempfile.NamedTemporaryFile(delete=False)
+                        temp_file.close()
+                        temp_path = Path(temp_file.name)
+                        cached_files.append(temp_path)
 
                         print(f"Caching remote base file: {src}")
-                        download_file(src, temp_path)
-                        cached_files.append(temp_path)
+                        if not download_file(src, temp_path):
+                            # base_files apply to every grading item — grading
+                            # without them would silently produce wrong scores
+                            raise RuntimeError(
+                                f"Failed to download base file: {src}"
+                            )
 
                         # Replace the original URL with the local cached path
                         self.batch_config.base_files[temp_path] = (
@@ -141,9 +152,6 @@ class BatchGradingManager:
                         )
 
             yield
-
-        except Exception as e:
-            print(f"[Error in cache_remote_base_files()]: {e}")
 
         finally:
             for file_path in cached_files:
@@ -227,8 +235,10 @@ class BatchGradingManager:
                             item, self.batch_config, self.openai_client
                         )
 
+                    existing_graded_result = grading_task.get_existing_graded_result()
+
                     if (
-                        grading_task.get_existing_graded_result() is not None
+                        existing_graded_result is not None
                         and not self.batch_config.regrade_existing
                     ):
                         if self.verbose:
@@ -237,7 +247,7 @@ class BatchGradingManager:
                             )
 
                         num_skipped_items += 1
-                        graded_result = grading_task.get_existing_graded_result()
+                        graded_result = existing_graded_result
 
                     elif is_notebook_graded(item.notebook_path):
                         if self.verbose:

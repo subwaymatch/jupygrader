@@ -23,7 +23,7 @@ def _record_test_case(
     if test_case_name in map(
         lambda x: x.test_case_name, _graded_result.test_case_results
     ):
-        warning_message = f'[Warning] Jupygrader: An identical test case name "{test_case_name}" already exists. Test cases with identical test case names will be graded \n\n'
+        warning_message = f'[Warning] Jupygrader: An identical test case name "{test_case_name}" already exists. Duplicate test case names may lead to incorrect or overwritten grading results.\n\n'
 
     _graded_result.test_case_results.append(
         TestCaseResult(

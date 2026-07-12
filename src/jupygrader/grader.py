@@ -44,10 +44,12 @@ def grade_notebooks(
             output directories. Defaults to None.
         regrade_existing: Whether to regrade notebooks even if results already exist.
             Defaults to False.
-        execution_timeout: Maximum time (in seconds) allowed for notebook execution.
-            Set to None to disable the timeout. Defaults to 600 seconds.
+        execution_timeout: Maximum time (in seconds) allowed for each cell's
+            execution. Note this is a per-cell limit, not a limit on the total
+            notebook runtime. Set to None to disable the timeout.
+            Defaults to 600 seconds.
         ai_mode: Mode for AI grading. Defaults to AIGradingMode.OFF.
-        openai_client: OpenAI client instance (optional).
+        openai_client: OpenAI client instance. Required when ai_mode is not OFF.
         openai_model: Model name for OpenAI API. Required when ai_mode is not OFF.
         custom_prompt: Optional additional instructions for the AI grading model.
             Only used when ai_mode is not OFF.
@@ -58,7 +60,8 @@ def grade_notebooks(
     Raises:
         TypeError: If an element in grading_items has an unsupported type.
         ValueError: If a required path doesn't exist, has invalid configuration,
-            or if ai_mode is not OFF but openai_model is not specified.
+            or if ai_mode is not OFF but openai_model or openai_client is
+            not specified.
 
     Examples:
         >>> # Grade multiple notebooks with default settings
@@ -70,11 +73,18 @@ def grade_notebooks(
         ...     GradingItem(notebook_path="student2.ipynb", output_path="results"),
         ... ], base_files=["data.csv", "helpers.py"], export_csv=True)
     """
-    if ai_mode != AIGradingMode.OFF and openai_model is None:
-        raise ValueError(
-            f"openai_model must be specified when using an AI grading mode (ai_mode={ai_mode!r}). "
-            "Please provide a model name (e.g., 'gpt-4o', 'gpt-4o-mini')."
-        )
+    if ai_mode != AIGradingMode.OFF:
+        if openai_model is None:
+            raise ValueError(
+                f"openai_model must be specified when using an AI grading mode (ai_mode={ai_mode!r}). "
+                "Please provide a model name (e.g., 'gpt-4o', 'gpt-4o-mini')."
+            )
+        if openai_client is None:
+            raise ValueError(
+                f"openai_client must be provided when using an AI grading mode (ai_mode={ai_mode!r}). "
+                "Without a client, AI grading would be silently skipped and "
+                "notebooks could receive zero scores."
+            )
 
     batch_config = BatchGradingConfig(
         base_files=base_files,

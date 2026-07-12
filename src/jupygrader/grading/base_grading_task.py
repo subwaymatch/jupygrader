@@ -1,5 +1,6 @@
 import contextlib
 import hashlib
+import html
 import json
 import os
 import platform
@@ -8,11 +9,11 @@ import shutil
 import sys
 import tempfile
 import time
-import uuid
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterator, List, Optional, Tuple, Union
+from urllib.parse import urlsplit
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -28,6 +29,21 @@ from ..models.config import BatchGradingConfig, CopyFileItem, FileDict, FilePath
 from ..models.results import GradedResult
 from ..notebook_operations import extract_user_code_from_notebook
 from ..utils import download_file, is_url
+
+
+def sanitize_for_markdown_table(value: object) -> str:
+    """Escape untrusted text before embedding it in a Markdown/HTML report cell.
+
+    Test case names, error messages, and AI feedback can contain arbitrary
+    student- or model-controlled text. Notebook Markdown cells render raw HTML,
+    so unescaped content would allow script injection in the graded HTML report.
+    """
+    if value is None:
+        return ""
+    text = html.escape(str(value))
+    text = text.replace("|", "\\|")
+    text = text.replace("\r\n", "\n").replace("\n", "<br>")
+    return text
 
 
 class BaseGradingTask(ABC):
@@ -102,7 +118,7 @@ class BaseGradingTask(ABC):
             "Autograded Test Cases": f"Passed {graded_result.num_passed_cases} out of {graded_result.num_autograded_cases} cases",
             "Pending Test Cases": f"⌛ {graded_result.num_manually_graded_cases} item{'s' if graded_result.num_manually_graded_cases > 1 else ''} worth a total of {graded_result.max_manually_graded_score} point{'s' if graded_result.max_manually_graded_score > 1 else ''} require manual grading",
             "Total Available Points": graded_result.max_total_score,
-            "Filename": graded_result.filename,
+            "Filename": sanitize_for_markdown_table(graded_result.filename),
             "Autograder Finished At": graded_result.grading_finished_at,
             "Autograder Duration": f"{graded_result.grading_duration_in_seconds} second{'' if graded_result.grading_duration_in_seconds == 0 else 's'}",
             "Test Cases Checksum": graded_result.test_cases_hash,
@@ -145,7 +161,7 @@ class BaseGradingTask(ABC):
                     tc_counts[tc_name_cleaned] = 0
                 tc_counts[tc_name_cleaned] += 1
                 anchor_id = f"{tc_name_cleaned}_id{tc_counts[tc_name_cleaned]}"
-                test_case_link = f"<a href='#{anchor_id}'>{o.test_case_name}</a>"
+                test_case_link = f"<a href='#{anchor_id}'>{html.escape(o.test_case_name)}</a>"
 
                 test_case_links.append(test_case_link)
 
@@ -155,6 +171,13 @@ class BaseGradingTask(ABC):
 
             # replace test_case_name column with linked texts
             df_r["test_case_name"] = test_case_links
+
+            # escape untrusted text so it cannot inject HTML into the report
+            for untrusted_column in ("error_message", "ai_feedback"):
+                if untrusted_column in df_r.columns:
+                    df_r[untrusted_column] = df_r[untrusted_column].apply(
+                        sanitize_for_markdown_table
+                    )
 
             df_r.loc[~df_r["is_graded"], "points"] = np.nan
             df_r["available_points"] = df_r["available_points"].astype(str)
@@ -214,6 +237,24 @@ class BaseGradingTask(ABC):
 
         return resolved_notebook_path, resolved_output_path
 
+    def _resolve_dest_within_workdir(self, dest: FilePath, label: str) -> Path:
+        """Resolve a destination path and ensure it stays inside the grading workdir.
+
+        Destination paths may come from user-supplied configuration; without this
+        check, an absolute path or a ``..`` component could write outside the
+        temporary grading directory.
+        """
+        workdir = self.temp_workdir_path.resolve()
+        resolved_dest = (workdir / dest).resolve()
+
+        if resolved_dest != workdir and not resolved_dest.is_relative_to(workdir):
+            raise ValueError(
+                f"Invalid {label} destination outside the grading directory: {dest}"
+            )
+
+        resolved_dest.parent.mkdir(parents=True, exist_ok=True)
+        return resolved_dest
+
     def copy_required_files(self) -> None:
         """Copy notebook and any additional required files to the temporary directory."""
         filename = self.notebook_path.name
@@ -231,14 +272,26 @@ class BaseGradingTask(ABC):
 
             copy_file_items: List[CopyFileItem] = []
 
-            files = (
-                [files]
-                if isinstance(files, (str, Path)) and not is_url(files)
-                else files
-            )
+            if isinstance(files, (str, Path)):
+                files = [files]
 
             if isinstance(files, list):
                 for src in files:
+                    if is_url(src):
+                        # URLs in list form are downloaded into the workdir root,
+                        # named after the last path segment of the URL
+                        url_filename = (
+                            os.path.basename(urlsplit(str(src)).path)
+                            or "downloaded_file"
+                        )
+                        resolved_dest = self._resolve_dest_within_workdir(
+                            url_filename, label
+                        )
+                        copy_file_items.append(
+                            CopyFileItem(src=src, dest=resolved_dest, is_url=True)
+                        )
+                        continue
+
                     resolved_src = Path(src).resolve()
 
                     try:
@@ -248,8 +301,9 @@ class BaseGradingTask(ABC):
                     except ValueError:
                         relative_path = Path(resolved_src.name)
 
-                    resolved_dest = self.temp_workdir_path / relative_path
-                    resolved_dest.parent.mkdir(parents=True, exist_ok=True)
+                    resolved_dest = self._resolve_dest_within_workdir(
+                        relative_path, label
+                    )
 
                     copy_file_items.append(
                         CopyFileItem(
@@ -261,8 +315,7 @@ class BaseGradingTask(ABC):
 
             elif isinstance(files, dict):
                 for src, dest in files.items():
-                    resolved_dest = self.temp_workdir_path / dest
-                    resolved_dest.parent.mkdir(parents=True, exist_ok=True)
+                    resolved_dest = self._resolve_dest_within_workdir(dest, label)
 
                     if is_url(src):
                         copy_file_items.append(
@@ -287,7 +340,10 @@ class BaseGradingTask(ABC):
 
             for copy_item in copy_file_items:
                 if copy_item.is_url:
-                    download_file(str(copy_item.src), copy_item.dest)
+                    if not download_file(str(copy_item.src), copy_item.dest):
+                        print(
+                            f"Warning: failed to download {label} from {copy_item.src}, skipping copy"
+                        )
                 elif copy_item.src.exists():
                     if copy_item.src.is_file():
                         shutil.copy2(copy_item.src, copy_item.dest)
@@ -310,14 +366,16 @@ class BaseGradingTask(ABC):
     def use_temporary_grading_environment(
         self,
     ) -> Iterator[None]:
-        """Context manager for setting up and cleaning up the grading environment."""
+        """Context manager for setting up and cleaning up the grading environment.
+
+        Exceptions raised inside the managed block are NOT suppressed here — they
+        must propagate to the caller so that grading failures are reported with
+        their actual error message instead of being silently swallowed.
+        """
         filename = self.notebook_path.name
 
-        # Create a temporary random directory for grading
-        self.temp_workdir_path = Path(tempfile.gettempdir()) / (
-            "jupygrader_" + str(uuid.uuid4())[:6]
-        )
-        self.temp_workdir_path.mkdir(parents=True, exist_ok=False)
+        # Create a temporary random directory for grading (mkdtemp is race-free)
+        self.temp_workdir_path = Path(tempfile.mkdtemp(prefix="jupygrader_"))
         self.temp_notebook_path = self.temp_workdir_path / filename
 
         original_cwd = os.getcwd()
@@ -331,16 +389,12 @@ class BaseGradingTask(ABC):
 
             yield
 
-        except Exception as e:
-            print(f"[Error in use_temporary_grading_environment()]: {e}")
-
         finally:
             # Change back to the original working directory
             os.chdir(original_cwd)
 
             # Clean up the temporary working directory
-            if self.temp_workdir_path.exists() and self.temp_workdir_path.is_dir():
-                shutil.rmtree(self.temp_workdir_path, ignore_errors=True)
+            shutil.rmtree(self.temp_workdir_path, ignore_errors=True)
 
     def _populate_graded_result_metadata(self) -> None:
         """Fill in system/environment metadata on self.graded_result."""
@@ -351,7 +405,11 @@ class BaseGradingTask(ABC):
         self.graded_result.jupygrader_version = jupygrader_version
 
         item_grading_end_time = time.time()
-        local_zone = ZoneInfo(get_localzone_name())
+        try:
+            local_zone = ZoneInfo(get_localzone_name())
+        except Exception:
+            # Containers and minimal environments may not expose a local timezone
+            local_zone = timezone.utc
 
         self.graded_result.grading_finished_at = datetime.fromtimestamp(
             item_grading_end_time, tz=local_zone
