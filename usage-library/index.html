@@ -1,0 +1,1322 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../usage-cli/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Using as a Python Library - Jupygrader Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue-grey" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#using-jupygrader-as-a-python-library" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Jupygrader Documentation" class="md-header__button md-logo" aria-label="Jupygrader Documentation" data-md-component="logo">
+      
+  <img src="../images/logo_small_icon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Jupygrader Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Using as a Python Library
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/subwaymatch/jupygrader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subwaymatch/jupygrader
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Jupygrader Documentation" class="md-nav__button md-logo" aria-label="Jupygrader Documentation" data-md-component="logo">
+      
+  <img src="../images/logo_small_icon.png" alt="logo">
+
+    </a>
+    Jupygrader Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/subwaymatch/jupygrader" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    subwaymatch/jupygrader
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using as a Python Library
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using as a Python Library
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-jupygrader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Update Jupygrader
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grade-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade Notebooks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Grade Notebooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#grade-multiple-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade multiple notebooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-assisted-grading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤖 AI-Assisted Grading
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🤖 AI-Assisted Grading">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-grading-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI grading modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-ai-grading-full" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full AI grading ("full")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grade-manual-items-only-manual_only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade manual items only ("manual_only")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-failed-test-cases-review_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review failed test cases ("review_failed")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grade-both-manual-and-failed-items-manual_and_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade both manual and failed items ("manual_and_failed")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-grading-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom grading prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-an-autogradable-notebook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📒 Create an autogradable notebook
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📒 Create an autogradable notebook">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-cell-for-learners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code cell for learners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grader-only-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grader-only cells
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graded-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graded test cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-graded-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manually graded items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscate-test-cases-work-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obfuscate test cases (Work-in-progress)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-hidden-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add hidden test cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Add hidden test cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#original-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Original test case
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../usage-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using as a CLI Tool
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📦 Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-jupygrader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔄 Update Jupygrader
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#grade-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade Notebooks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Grade Notebooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#grade-multiple-notebooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade multiple notebooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ai-assisted-grading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🤖 AI-Assisted Grading
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🤖 AI-Assisted Grading">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ai-grading-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AI grading modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-ai-grading-full" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Full AI grading ("full")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grade-manual-items-only-manual_only" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade manual items only ("manual_only")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#review-failed-test-cases-review_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Review failed test cases ("review_failed")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grade-both-manual-and-failed-items-manual_and_failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grade both manual and failed items ("manual_and_failed")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-grading-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom grading prompt
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-an-autogradable-notebook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📒 Create an autogradable notebook
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="📒 Create an autogradable notebook">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#code-cell-for-learners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code cell for learners
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grader-only-cells" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Grader-only cells
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graded-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graded test cases
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manually-graded-items" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manually graded items
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#obfuscate-test-cases-work-in-progress" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Obfuscate test cases (Work-in-progress)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#add-hidden-test-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Add hidden test cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Add hidden test cases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#original-test-case" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Original test case
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="using-jupygrader-as-a-python-library">Using <code>jupygrader</code> as a Python Library</h1>
+<h2 id="installation">📦 Installation</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="go">pip install jupygrader</span>
+</code></pre></div>
+<h2 id="update-jupygrader">🔄 Update Jupygrader</h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="go">pip install --upgrade jupygrader</span>
+</code></pre></div>
+<h2 id="grade-notebooks">Grade Notebooks</h2>
+<hr />
+<h3 id="grade-multiple-notebooks">Grade multiple notebooks</h3>
+<p>Use the <code>grade_notebooks()</code> function to grade Jupyter notebooks. You can pass a list of notebook paths or a list of dictionaries for a more detailed configuration.</p>
+<p>Before execution, Jupygrader preprocesses code cells and comments out lines beginning with <code>!</code> or <code>%</code> so IPython shell/magic commands do not break Python-based grading.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># Grade a list of notebooks</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="n">graded_results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">([</span><span class="s2">"path/to/notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"path/to/notebook2.ipynb"</span><span class="p">])</span>
+</code></pre></div>
+<div class="admonition info">
+<p class="admonition-title">Custom Output Path and File Copying</p>
+<p>You can specify the output path and copy files to the working directory for each notebook by passing a dictionary for each notebook.</p>
+<p>See the example below.</p>
+</div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">item1</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="s2">"notebook_path"</span><span class="p">:</span> <span class="s2">"path/to/notebook1.ipynb"</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="s2">"output_path"</span><span class="p">:</span> <span class="s2">"path/to/output1"</span><span class="p">,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="s2">"copy_files"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"data1.csv"</span><span class="p">],</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="p">}</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">item2</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="s2">"notebook_path"</span><span class="p">:</span> <span class="s2">"path/to/notebook2.ipynb"</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="c1"># Use default output_path and do not copy files</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="p">}</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">graded_results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">([</span><span class="n">item1</span><span class="p">,</span> <span class="n">item2</span><span class="p">])</span>
+</code></pre></div>
+<p>You can also specify a dictionary for <code>copy_files</code> to place them in specific locations.</p>
+<p>The key is the source file and the value is the destination path.</p>
+<p>The destination path is relative to the working directory of the Jupyter notebook.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">item1</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="s2">"notebook_path"</span><span class="p">:</span> <span class="s2">"path/to/notebook1.ipynb"</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="s2">"copy_files"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"my_data.parquet"</span><span class="p">:</span> <span class="s2">"my_data.parquet"</span><span class="p">},</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">}</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="n">item2</span> <span class="o">=</span> <span class="p">{</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="s2">"notebook_path"</span><span class="p">:</span> <span class="s2">"path/to/notebook2.ipynb"</span><span class="p">,</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="s2">"copy_files"</span><span class="p">:</span> <span class="p">{</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span class="s2">"data/population.csv"</span><span class="p">:</span> <span class="s2">"another/path/population.csv"</span><span class="p">,</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span class="s2">"titanic.db"</span><span class="p">:</span> <span class="s2">"databases/titanic.db"</span><span class="p">,</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="p">},</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="p">}</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="n">graded_results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">([</span><span class="n">item1</span><span class="p">,</span> <span class="n">item2</span><span class="p">])</span>
+</code></pre></div>
+<p>If your assignment has base files that should be copied to every notebook's workspace, you can specify them in the <code>base_files</code> parameter of the <code>grade_notebooks</code> function. This will copy those files to the working directory of each notebook being graded.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">graded_results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="p">[</span><span class="s2">"notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"notebook2.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">base_files</span><span class="o">=</span><span class="p">{</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span class="c1"># Copy from the URL to data/my_data.csv in the working directory relative to the notebook</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="s2">"https://example.com/path/to/base_file.csv"</span><span class="p">:</span> <span class="s2">"data/my_data.csv"</span><span class="p">,</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>        <span class="c1"># Local files are also supported</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span class="s2">"local-data/another_file.key"</span><span class="p">:</span> <span class="s2">"openai_api_key.key"</span><span class="p">,</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span class="p">},</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">)</span>
+</code></pre></div>
+<p>If a notebook has been already graded, it will skip grading and return the cached result. This is useful for large assignments where you want to avoid re-grading notebooks that have not changed.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">graded_results1</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="p">[</span><span class="s2">"notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"notebook2.ipynb"</span><span class="p">,</span> <span class="s2">"notebook3.ipynb"</span><span class="p">]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="p">)</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="c1"># The second call will skip re-grading for all three notebooks if they have not changed, and the jupygrader version is the same</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="n">graded_results2</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span class="p">[</span><span class="s2">"notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"notebook2.ipynb"</span><span class="p">,</span> <span class="s2">"notebook3.ipynb"</span><span class="p">]</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">)</span>
+</code></pre></div>
+<p>To force a regrade, use <code>regrade_existing=True</code> parameter. This will re-grade all specified notebooks regardless of whether they have been previously graded or not.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">graded_results2</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span class="p">[</span><span class="s2">"notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"notebook2.ipynb"</span><span class="p">,</span> <span class="s2">"notebook3.ipynb"</span><span class="p">],</span> <span class="n">regrade_existing</span><span class="o">=</span><span class="kc">True</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="p">)</span>
+</code></pre></div>
+<p>You can also control the verbosity of the output and whether to export the graded results to a CSV file. By default, verbose output is enabled and the graded results are exported to a CSV file named <code>graded_results_{%Y%m%d_%H%M%S}.csv</code> in the current working directory.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">graded_results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="p">[</span><span class="s2">"notebook1.ipynb"</span><span class="p">,</span> <span class="s2">"notebook2.ipynb"</span><span class="p">,</span> <span class="s2">"notebook3.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Default, set to False to disable verbose output</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="n">export_csv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Default, set to False to disable CSV export</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">csv_output_path</span><span class="o">=</span><span class="s2">"path/to/output/graded_results.csv"</span><span class="p">,</span>  <span class="c1"># Optional: specify a custom path for the CSV output,</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="ai-assisted-grading">🤖 AI-Assisted Grading</h2>
+<p>Jupygrader can use an OpenAI-compatible model to assist with grading. Pass an <code>openai_client</code>, an <code>openai_model</code>, and set <code>ai_mode</code> to activate AI grading.</p>
+<h3 id="ai-grading-modes">AI grading modes</h3>
+<table>
+<thead>
+<tr>
+<th><code>ai_mode</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>"off"</code></td>
+<td>No AI grading (default)</td>
+</tr>
+<tr>
+<td><code>"full"</code></td>
+<td>AI grades all test cases based on notebook content — no execution required</td>
+</tr>
+<tr>
+<td><code>"manual_only"</code></td>
+<td>AI grades test cases marked <code>_grade_manually = True</code></td>
+</tr>
+<tr>
+<td><code>"review_failed"</code></td>
+<td>AI reviews auto-graded test cases that failed</td>
+</tr>
+<tr>
+<td><code>"manual_and_failed"</code></td>
+<td>AI grades both manual items and failed test cases</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">openai_model is required</p>
+<p>You must always specify <code>openai_model</code> when using any AI grading mode. Omitting it raises a <code>ValueError</code> before any grading begins.</p>
+</div>
+<hr />
+<h3 id="full-ai-grading-full">Full AI grading (<code>"full"</code>)</h3>
+<p>Use <code>ai_mode="full"</code> to have the AI evaluate every test case based solely on the notebook's content, <strong>without executing the notebook</strong>. This is ideal for:</p>
+<ul>
+<li>Open-ended or essay-style assignments</li>
+<li>Rubric-based grading with general instructions</li>
+<li>Notebooks that don't rely on assertion-based tests</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">,</span> <span class="s2">"submissions/student2.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"full"</span><span class="p">,</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">)</span>
+</code></pre></div>
+<p>In <code>"full"</code> mode, test cases are parsed directly from the notebook's source cells. The notebook is never executed — the AI grades each test case by reading the notebook content. Notebooks without any test case cells are still processed and all output artifacts are generated.</p>
+<p><strong>Notebook structure for full AI grading</strong></p>
+<p>Test cases in your notebook don't need assertion code — they just need a name and point value. The AI uses the surrounding notebook context to decide whether the student's work meets the criteria.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Cell 1: student work area</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s2">"question-1"</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">5</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">_grade_manually</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="c1"># Students write their free-response answer above this cell</span>
+</code></pre></div>
+<p>You can also have a notebook with general instructions (no test cases). In that case, grading completes and artifacts are generated, but no AI call is made since there are no cases to evaluate.</p>
+<hr />
+<h3 id="grade-manual-items-only-manual_only">Grade manual items only (<code>"manual_only"</code>)</h3>
+<p>Use <code>ai_mode="manual_only"</code> to have the AI grade test cases marked with <code>_grade_manually = True</code>. The notebook is still executed first; only manual items are sent to the AI.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">,</span> <span class="s2">"submissions/student2.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"manual_only"</span><span class="p">,</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="p">)</span>
+</code></pre></div>
+<p><strong>Notebook test case example</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s2">"explain-your-approach"</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">5</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="n">_grade_manually</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="c1"># Students write a free-response answer in the cell above</span>
+</code></pre></div>
+<hr />
+<h3 id="review-failed-test-cases-review_failed">Review failed test cases (<code>"review_failed"</code>)</h3>
+<p>Use <code>ai_mode="review_failed"</code> to have the AI explain why auto-graded test cases failed and optionally award partial credit. The notebook is still executed; the AI receives the error messages for failed cases.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">,</span> <span class="s2">"submissions/student2.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"review_failed"</span><span class="p">,</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">)</span>
+</code></pre></div>
+<p>The AI can award partial points for failed test cases but keeps <code>did_pass</code> as <code>False</code>.</p>
+<hr />
+<h3 id="grade-both-manual-and-failed-items-manual_and_failed">Grade both manual and failed items (<code>"manual_and_failed"</code>)</h3>
+<p>Use <code>ai_mode="manual_and_failed"</code> to combine both workflows in a single pass — the AI grades manual items and reviews failed test cases.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">,</span> <span class="s2">"submissions/student2.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"manual_and_failed"</span><span class="p">,</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h3 id="custom-grading-prompt">Custom grading prompt</h3>
+<p>Pass <code>custom_prompt</code> to give the AI additional context, assignment-specific criteria, or grading rubric details. This works with all AI grading modes.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"full"</span><span class="p">,</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>    <span class="n">custom_prompt</span><span class="o">=</span><span class="p">(</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>        <span class="s2">"This is a data analysis assignment using pandas. "</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>        <span class="s2">"Award full points if the student arrives at the correct result, "</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>        <span class="s2">"even if the approach differs from the expected solution. "</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a>        <span class="s2">"Deduct 50</span><span class="si">% o</span><span class="s2">f points if the student hard-codes values instead of computing them."</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span class="p">),</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">jupygrader</span><span class="w"> </span><span class="kn">import</span> <span class="n">grade_notebooks</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="n">client</span> <span class="o">=</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s2">"your-api-key"</span><span class="p">)</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="n">results</span> <span class="o">=</span> <span class="n">grade_notebooks</span><span class="p">(</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>    <span class="p">[</span><span class="s2">"submissions/student1.ipynb"</span><span class="p">],</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>    <span class="n">ai_mode</span><span class="o">=</span><span class="s2">"manual_only"</span><span class="p">,</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>    <span class="n">openai_client</span><span class="o">=</span><span class="n">client</span><span class="p">,</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>    <span class="n">openai_model</span><span class="o">=</span><span class="s2">"gpt-4o"</span><span class="p">,</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>    <span class="n">custom_prompt</span><span class="o">=</span><span class="p">(</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>        <span class="s2">"Grade the free-response questions based on clarity of explanation, "</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a>        <span class="s2">"correct use of terminology, and depth of reasoning. "</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>        <span class="s2">"Award partial credit for partially correct answers."</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>    <span class="p">),</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="create-an-autogradable-notebook">📒 Create an autogradable notebook</h2>
+<p>The instructor authors only one "solution" notebook, which contains both the solution code and test cases for all graded parts.</p>
+<h3 id="code-cell-for-learners">Code cell for learners</h3>
+<p>Any code between <code># YOUR CODE BEGINS</code> and <code># YOUR CODE ENDS</code> are stripped in the student version.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="c1"># YOUR CODE BEGINS</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="n">sample_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="c1"># YOUR CODE ENDS</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">sample_series</span><span class="p">)</span>
+</code></pre></div>
+<p>nbgrader syntax (<code>### BEGIN SOLUTION</code>, <code>### END SOLUTION</code>) is also supported.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1">### BEGIN SOLUTION</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="n">sample_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">])</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="c1">### END SOLUTION</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">sample_series</span><span class="p">)</span>
+</code></pre></div>
+<p>In the student-facing notebook, the code cell will look like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># YOUR CODE BEGINS</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="c1"># YOUR CODE ENDS</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="nb">print</span><span class="p">(</span><span class="n">sample_series</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="grader-only-cells">Grader-only cells</h3>
+<p>To keep setup notes or helper code in the instructor notebook only, start any cell with one of the following markers. The full cell will be removed in the generated student version:</p>
+<ul>
+<li><code># GRADER_ONLY</code> (case-insensitive)</li>
+<li><code># grader_only</code> (case-insensitive)</li>
+<li><code>! grader_only</code> (case-insensitive)</li>
+<li><code>_grader_only = True</code> (case-sensitive; whitespace is ignored)</li>
+</ul>
+<h3 id="graded-test-cases">Graded test cases</h3>
+<p>A graded test case requires a test case name and an assigned point value.</p>
+<ul>
+<li>The <code>_test_case</code> variable should store the name of the test case.</li>
+<li>The <code>_points</code> variable should store the number of points, either as an integer or a float.</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s1">'create-a-pandas-series'</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_series_equal</span><span class="p">(</span><span class="n">sample_series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]))</span>
+</code></pre></div>
+<h3 id="manually-graded-items">Manually graded items</h3>
+<p>Mark a test case with <code>_grade_manually = True</code> to flag it for human or AI review instead of assertion-based grading.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s1">'explain-your-approach'</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">5</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="n">_grade_manually</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="c1"># Students write a free-response answer in the cell above</span>
+</code></pre></div>
+<h3 id="obfuscate-test-cases-work-in-progress">Obfuscate test cases (Work-in-progress)</h3>
+<p>If you want to prevent learners from seeing the test case code, you can optionally set <code>_obfuscate = True</code> to base64-encode the test cases.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This provides only basic obfuscation, and students with technical knowledge can easily decode the string to reveal the original code. Supporting a password-based encryption method is planned for future releases.</p>
+</div>
+<p><strong>Instructor notebook</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s1">'create-a-pandas-series'</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="n">_obfuscate</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_series_equal</span><span class="p">(</span><span class="n">sample_series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]))</span>
+</code></pre></div>
+<p><strong>Student notebook</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># DO NOT CHANGE THE CODE IN THIS CELL</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s1">'create-a-pandas-series'</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">_obfuscate</span> <span class="o">=</span> <span class="kc">True</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="kn">import</span><span class="w"> </span><span class="nn">base64</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_b64</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="n">_64</span> <span class="o">=</span> <span class="n">_b64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="s1">'cGQudGVzdGluZy5hc3NlcnRfc2VyaWVzX2VxdWFsKHNhbXBsZV9zZXJpZXMsIHBkLlNlcmllcyhbLT</span><span class="se">\</span>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="s1">IwLCAtMTAsIDEwLCAyMF0pKQ=='</span><span class="p">)</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="nb">eval</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="n">_64</span><span class="p">,</span> <span class="s1">'&lt;string&gt;'</span><span class="p">,</span> <span class="s1">'exec'</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="add-hidden-test-cases">Add hidden test cases</h3>
+<p>Hidden test cases only run while grading.</p>
+<h4 id="original-test-case">Original test case</h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="n">_test_case</span> <span class="o">=</span> <span class="s1">'create-a-pandas-series'</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">_points</span> <span class="o">=</span> <span class="mi">2</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1">### BEGIN HIDDEN TESTS</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="n">pd</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_series_equal</span><span class="p">(</span><span class="n">sample_series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]))</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="c1">### END HIDDEN TESTS</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
