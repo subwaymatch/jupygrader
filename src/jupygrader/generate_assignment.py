@@ -12,10 +12,6 @@ SOLUTION_STRIP_PATTERN = re.compile(
 )
 SOLUTION_REPLACEMENT = "# YOUR CODE BEGINS\n\n# YOUR CODE ENDS"
 
-POINTS_PATTERN = re.compile(r"^_points\s*=\s*([\d\.]*)$", re.MULTILINE)
-TEST_CASE_NAME_PATTERN = re.compile(
-    r"^_test_case\s*=\s*[\'\"](.*)[\'\"].*$", re.MULTILINE
-)
 HIDDEN_TEST_PATTERN = re.compile(
     r"^### BEGIN HIDDEN TESTS(.*?)### END HIDDEN TESTS", re.DOTALL | re.MULTILINE
 )

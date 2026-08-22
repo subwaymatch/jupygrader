@@ -38,7 +38,7 @@ The primary entry point for grading. All functionality is accessible through thi
 
     graded_results = grade_notebooks(
         [item1, item2],
-        execution_timeout=300  # Set execution timeout to 300 seconds (5 minutes)
+        execution_timeout=300  # Allow up to 300 seconds (5 minutes) per cell
     )
     ```
 
@@ -87,7 +87,7 @@ The primary entry point for grading. All functionality is accessible through thi
 | `export_csv` | `bool` | `True` | Export results to a timestamped CSV file |
 | `csv_output_path` | `str` or `Path` | `None` | Custom path for the CSV export |
 | `regrade_existing` | `bool` | `False` | Re-grade notebooks even if cached results exist |
-| `execution_timeout` | `int` or `None` | `600` | Max seconds for notebook execution; `None` disables timeout |
+| `execution_timeout` | `int` or `None` | `600` | Max seconds allowed per cell execution (not total notebook runtime); `None` disables timeout |
 | `ai_mode` | `str` | `"off"` | AI grading mode — see table below |
 | `openai_client` | `openai.OpenAI` | `None` | OpenAI client instance; required when `ai_mode` is not `"off"` |
 | `openai_model` | `str` | `None` | Model name (e.g. `"gpt-4o"`); **required** when `ai_mode` is not `"off"` |
