@@ -200,7 +200,8 @@ class BatchGradingManager:
         self,
     ) -> List[GradedResult]:
         num_items = len(self.grading_items)
-        num_skipped_items = 0
+        num_successfully_graded = 0
+        num_cached_results = 0
         num_already_graded_skipped = 0
         num_failed_items = 0
 
@@ -220,6 +221,7 @@ class BatchGradingManager:
                     notebook_path = item.notebook_path
 
                     notebook_name = Path(notebook_path).name
+                    using_cached_result = False
 
                     if self.verbose:
                         print(
@@ -246,7 +248,8 @@ class BatchGradingManager:
                                 f"Using previously graded results for: {notebook_name}"
                             )
 
-                        num_skipped_items += 1
+                        num_cached_results += 1
+                        using_cached_result = True
                         graded_result = existing_graded_result
 
                     elif is_notebook_graded(item.notebook_path):
@@ -261,6 +264,8 @@ class BatchGradingManager:
                     if graded_result is not None:
                         self.graded_results.append(graded_result)
                         self._record_success(graded_result)
+                        if not using_cached_result:
+                            num_successfully_graded += 1
                     else:
                         num_failed_items += 1
                         error_message = (
@@ -284,21 +289,19 @@ class BatchGradingManager:
 
         elapsed_time = time.time() - start_time
 
-        num_graded_items = num_items - num_already_graded_skipped
-
         if self.verbose:
             print("-" * 70)
             print(
-                f"Completed grading {num_graded_items} notebook(s) in {elapsed_time:.2f} seconds"
+                f"Completed processing {num_items} notebook(s) in {elapsed_time:.2f} seconds"
             )
 
-            print(f"Successfully graded: {num_graded_items - num_failed_items}/{num_graded_items}")
+            print(f"Successfully graded: {num_successfully_graded}")
+            if num_cached_results > 0:
+                print(f"Used cached results: {num_cached_results}")
             if num_already_graded_skipped > 0:
-                print(f"Skipped {num_already_graded_skipped} notebook(s) that was already graded")
-            if num_skipped_items > 0:
-                print(f"Skipped: {num_skipped_items}/{num_graded_items} (using cached results)")
+                print(f"Skipped already graded notebooks: {num_already_graded_skipped}")
             if num_failed_items > 0:
-                print(f"Failed to grade: {num_failed_items}/{num_graded_items}")
+                print(f"Failed to grade: {num_failed_items}")
 
         if self.batch_config.export_csv:
             self.export_results_to_csv()
