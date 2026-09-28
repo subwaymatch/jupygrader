@@ -1,9 +1,11 @@
 import copy
 import json
-from typing import Dict, FrozenSet, Optional
+import re
+from typing import Dict, FrozenSet, List, Optional, Union
 
 import openai
 from nbconvert import MarkdownExporter
+from nbconvert.filters import strip_ansi
 from nbformat import NotebookNode
 
 from ..models.ai_models import AIGradingMode, AIParsedResult
@@ -38,21 +40,113 @@ class AIGrader:
         "system message and in \"cases_to_review\"."
     )
 
+    # Limits for cell outputs sent to the model. The model cannot view images or
+    # interactive charts, so those are removed; long text outputs are shortened.
+    IMAGE_MIME_TYPES = frozenset(
+        {"image/png", "image/jpeg", "image/gif", "image/svg+xml"}
+    )
+    MAX_OUTPUT_CHARS = 10_000
+    PLOTLY_FIGURE_PLACEHOLDER = "[Plotly figure omitted]"
+
+    _PLOTLY_JSON_MIME_TYPE = "application/vnd.plotly.v1+json"
+    _PLOTLY_FIGURE_MARKER = "plotly-graph-div"
+    _PLOTLY_LOADER_MARKER = "window.PlotlyConfig"
+    _DATA_URI_PATTERN = re.compile(r"(data:[\w.+-]+/[\w.+-]+;base64,)[A-Za-z0-9+/=]+")
+    # Placeholder reprs such as "<IPython.core.display.HTML object>" carry no content
+    _OBJECT_REPR_PATTERN = re.compile(r"^<.+ (?:object|at 0x[0-9a-fA-F]+)>$", re.DOTALL)
+
     def __init__(self, openai_client: openai.OpenAI, model: str):
         self.client = openai_client
         self.model = model
 
     @staticmethod
-    def notebook_to_markdown(nb: NotebookNode) -> str:
-        """Convert a notebook to Markdown, stripping base64 images to reduce tokens."""
+    def _as_text(value: Union[str, List[str]]) -> str:
+        return "".join(value) if isinstance(value, list) else value
+
+    @classmethod
+    def _strip_data_uris(cls, text: str) -> str:
+        """Replace the payload of base64 data URIs, keeping the media type."""
+        return cls._DATA_URI_PATTERN.sub(r"\1[omitted]", text)
+
+    @classmethod
+    def _truncate(cls, text: str) -> str:
+        """Keep the beginning and end of text longer than MAX_OUTPUT_CHARS."""
+        if len(text) <= cls.MAX_OUTPUT_CHARS:
+            return text
+
+        half = cls.MAX_OUTPUT_CHARS // 2
+        omitted = len(text) - 2 * half
+        return (
+            f"{text[:half]}\n[... {omitted:,} characters omitted ...]\n{text[-half:]}"
+        )
+
+    @classmethod
+    def _compact_output(cls, output: NotebookNode) -> bool:
+        """Shrink a cell output in place to reduce tokens.
+
+        Returns False if the output carries no useful content and should be removed.
+        """
+        output_type = output.get("output_type")
+
+        if output_type == "stream":
+            output["text"] = cls._truncate(cls._as_text(output.get("text", "")))
+            return True
+
+        if output_type == "error":
+            traceback = strip_ansi("\n".join(output.get("traceback", [])))
+            output["traceback"] = [cls._truncate(traceback)]
+            return True
+
+        data = output.get("data")
+        if not data:
+            return True
+
+        for mime_type in cls.IMAGE_MIME_TYPES:
+            data.pop(mime_type, None)
+
+        html = cls._as_text(data.get("text/html", ""))
+        plain = cls._as_text(data.get("text/plain", "")).strip()
+
+        if cls._PLOTLY_JSON_MIME_TYPE in data or cls._PLOTLY_FIGURE_MARKER in html:
+            output["data"] = NotebookNode({"text/plain": cls.PLOTLY_FIGURE_PLACEHOLDER})
+            return True
+
+        if cls._PLOTLY_LOADER_MARKER in html:
+            # Script that loads plotly.js (up to several MB); contains no figure
+            return False
+
+        if html and plain and not cls._OBJECT_REPR_PATTERN.match(plain):
+            # Prefer the plain-text version (e.g., DataFrames): same content, fewer tokens
+            del data["text/html"]
+
+        for mime_type, value in data.items():
+            if mime_type.startswith("text/"):
+                data[mime_type] = cls._truncate(
+                    cls._strip_data_uris(cls._as_text(value))
+                )
+
+        return True
+
+    @classmethod
+    def notebook_to_markdown(cls, nb: NotebookNode) -> str:
+        """Convert a notebook to Markdown, removing or shrinking outputs to reduce tokens.
+
+        Images, Plotly figures, and base64 data URIs are removed, outputs with a
+        plain-text version are sent as plain text, and each text output is
+        limited to ``MAX_OUTPUT_CHARS`` characters.
+        """
         nb_copy = copy.deepcopy(nb)
 
-        IMAGE_MIME_TYPES = {"image/png", "image/jpeg", "image/gif", "image/svg+xml"}
         for cell in nb_copy.get("cells", []):
-            for output in cell.get("outputs", []):
-                data = output.get("data", {})
-                for mime_type in IMAGE_MIME_TYPES:
-                    data.pop(mime_type, None)
+            if cell.get("cell_type") in ("markdown", "raw"):
+                cell["source"] = cls._strip_data_uris(
+                    cls._as_text(cell.get("source", ""))
+                )
+
+            if "outputs" in cell:
+                cell["outputs"] = [
+                    output for output in cell["outputs"] if cls._compact_output(output)
+                ]
 
         md_exporter = MarkdownExporter()
         notebook_markdown, _ = md_exporter.from_notebook_node(nb_copy)
