@@ -38,7 +38,9 @@ def sanitize_for_markdown_table(value: object) -> str:
     student- or model-controlled text. Notebook Markdown cells render raw HTML,
     so unescaped content would allow script injection in the graded HTML report.
     """
-    if value is None:
+    # pandas stores a missing string as NaN (pandas 3 does this for None too),
+    # which would otherwise render as "nan" in the report
+    if value is None or (pd.api.types.is_scalar(value) and pd.isna(value)):
         return ""
     text = html.escape(str(value))
     text = text.replace("|", "\\|")

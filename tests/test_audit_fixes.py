@@ -2,8 +2,11 @@
 
 import csv
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import numpy as np
+import pandas as pd
 import pytest
 from nbformat.v4 import new_code_cell, new_notebook
 
@@ -153,6 +156,52 @@ def test_sanitize_for_markdown_table_escapes_html():
     assert "\n" not in sanitized
     assert "\\|" in sanitized
     assert sanitize_for_markdown_table(None) == ""
+
+
+def test_sanitize_for_markdown_table_blanks_missing_values():
+    assert sanitize_for_markdown_table(float("nan")) == ""
+    assert sanitize_for_markdown_table(np.nan) == ""
+    assert sanitize_for_markdown_table(pd.NA) == ""
+    assert sanitize_for_markdown_table(0) == "0"
+    assert sanitize_for_markdown_table("") == ""
+
+
+def test_results_table_leaves_missing_feedback_blank():
+    """Test cases without AI feedback or an error message show blank cells, not 'nan'."""
+    graded_result = GradedResult(
+        filename="submission.ipynb",
+        test_case_results=[
+            TestCaseResult(
+                test_case_name="q1",
+                points=1,
+                available_points=1,
+                did_pass=True,
+                error_message="",
+                is_graded=True,
+            ),
+            TestCaseResult(
+                test_case_name="q2",
+                points=2,
+                available_points=3,
+                did_pass=True,
+                grade_manually=True,
+                error_message=None,
+                is_graded=True,
+                ai_feedback="Good observations.",
+            ),
+        ],
+        num_autograded_cases=2,
+    )
+    task = SimpleNamespace(graded_result=graded_result, nb=new_notebook())
+
+    ExecutionGradingTask.add_graded_result_to_notebook(task)
+
+    results_table = next(
+        cell.source for cell in task.nb.cells if "| test_case_name" in cell.source
+    )
+    assert "Good observations." in results_table
+    assert "nan" not in results_table.lower()
+    assert "None" not in results_table
 
 
 def test_normalize_grading_items_accepts_single_string():
