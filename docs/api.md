@@ -55,7 +55,7 @@ The primary entry point for grading. All functionality is accessible through thi
         ["submissions/student1.ipynb", "submissions/student2.ipynb"],
         ai_mode="full",
         openai_client=client,
-        openai_model="gpt-4o",
+        openai_model="gpt-6-luna",
     )
     ```
 
@@ -72,7 +72,7 @@ The primary entry point for grading. All functionality is accessible through thi
         ["submissions/student1.ipynb", "submissions/student2.ipynb"],
         ai_mode="manual_and_failed",
         openai_client=client,
-        openai_model="gpt-4o",
+        openai_model="gpt-6-luna",
         custom_prompt="Award partial credit for correct reasoning even if the final answer is wrong.",
     )
     ```
@@ -90,7 +90,7 @@ The primary entry point for grading. All functionality is accessible through thi
 | `execution_timeout` | `int` or `None` | `600` | Max seconds allowed per cell execution (not total notebook runtime); `None` disables timeout |
 | `ai_mode` | `str` | `"off"` | AI grading mode — see table below |
 | `openai_client` | `openai.OpenAI` | `None` | OpenAI client instance; required when `ai_mode` is not `"off"` |
-| `openai_model` | `str` | `None` | Model name (e.g. `"gpt-4o"`); **required** when `ai_mode` is not `"off"` |
+| `openai_model` | `str` | `None` | Model name (e.g. `"gpt-6-luna"`); **required** when `ai_mode` is not `"off"` |
 | `custom_prompt` | `str` | `None` | Additional grading instructions appended to the AI system prompt |
 
 #### AI grading modes

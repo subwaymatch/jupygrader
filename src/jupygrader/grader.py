@@ -77,7 +77,7 @@ def grade_notebooks(
         if openai_model is None:
             raise ValueError(
                 f"openai_model must be specified when using an AI grading mode (ai_mode={ai_mode!r}). "
-                "Please provide a model name (e.g., 'gpt-4o', 'gpt-4o-mini')."
+                "Please provide a model name (e.g., 'gpt-6-luna', 'gpt-6-sol')."
             )
         if openai_client is None:
             raise ValueError(

@@ -31,6 +31,7 @@
   - [Grade manual items](#grade-manual-items)
   - [Grade both manual and failed items](#grade-both-manual-and-failed-items)
   - [Custom grading prompt](#custom-grading-prompt)
+  - [Estimated cost](#estimated-cost)
 - [🔧 Utility functions](#-utility-functions)
   - [Replace test cases](#replace-test-cases)
 - [📄 License](#-license)
@@ -279,7 +280,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -299,7 +300,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="review_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -317,7 +318,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_only",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -335,7 +336,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_and_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -353,13 +354,64 @@ results = grade_notebooks(
     ["submissions/student1.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
     custom_prompt=(
         "This is a data analysis assignment. "
         "Award full points if the student produces a correct result, even if the approach differs. "
         "Deduct points for hard-coded values."
     ),
 )
+```
+
+### Estimated cost
+
+Jupygrader sends **one request per notebook** in every AI mode. The request contains the whole notebook converted to Markdown (code, Markdown cells, and text outputs, trimmed as described in [Which outputs are sent to the model](#which-outputs-are-sent-to-the-model)), the list of test cases, and a short system prompt. So cost grows with **notebook length**, not with the number of test cases the AI reviews. If there is nothing to review (for example, `review_failed` on a notebook where every test case passed), no request is sent.
+
+To estimate the input size of a notebook:
+
+- Count about **1 token per 3 characters** of notebook text (code, Markdown, and text outputs). Each output counts for at most 10,000 characters.
+- Add about **1,000 tokens** for the system prompt, test case list, and response schema.
+- In `manual_only`, `review_failed`, and `manual_and_failed` modes, the notebook is executed first. The copy sent to the model includes the grading code Jupygrader injects, which adds about **1,000–2,000 tokens**, depending on the number of test cases.
+
+Estimates for `gpt-6-luna` at standard pricing ($0.10 per 1M input tokens, $0.50 per 1M output tokens):
+
+| Notebook | Typical size | Input tokens | Cost per notebook | Cost per 100 notebooks |
+| --- | --- | ---: | ---: | ---: |
+| Short exercise | 10–20 cells | ~3,000 | $0.0008–$0.0023 | $0.08–$0.23 |
+| Course assignment | 40–50 cells with table outputs | ~10,000 | $0.0015–$0.0030 | $0.15–$0.30 |
+| Long notebook | ~120,000 characters of text | ~40,000 | $0.0045–$0.0060 | $0.45–$0.60 |
+
+For reference, [`for-llm-grading.ipynb`](tests/test-files/ai-integration/for-llm-grading.ipynb) (20 cells, 6 test cases) sends about 1,500 input tokens in `full` mode and about 3,200 in `manual_and_failed` mode. A 42-cell SQL course assignment with saved outputs sends about 8,200 input tokens in `full` mode.
+
+These figures assume **1,000–4,000 output tokens** per notebook: the JSON feedback plus the model's reasoning tokens, which are billed as output (`gpt-6-luna` reasons at `medium` effort by default). Output length varies by model and notebook. Check your actual usage in the OpenAI dashboard. Prices are from [OpenAI's pricing page](https://developers.openai.com/api/docs/pricing) as of September 2026.
+
+#### Which outputs are sent to the model
+
+Before sending a notebook, Jupygrader removes content the model cannot use and shortens long outputs. Code and Markdown cells are not shortened (only base64 data inside Markdown cells is removed), and the original notebook is not changed.
+
+| Output | What the model receives | Example |
+| --- | --- | --- |
+| Images (Matplotlib, Seaborn, PNG, JPEG, GIF, SVG) | Removed; the text label (`<Figure size 640x480 with 1 Axes>`) is kept | ~15 tokens |
+| Plotly figures | `[Plotly figure omitted]`; outputs that only load plotly.js are removed | A figure saved with the `notebook` renderer drops from ~1.8 million tokens to ~8 |
+| pandas DataFrames and other outputs that have a plain-text version | The plain-text version; the HTML version is dropped | A 50-row DataFrame drops from ~2,500 tokens to ~800 |
+| HTML without a plain-text version (such as `IPython.display.HTML` or a pandas `Styler`) | The HTML, with base64 data removed | Grows with the size of the HTML |
+| Base64 data URIs in outputs or Markdown cells | `data:image/png;base64,[omitted]` | The embedded file adds no tokens |
+| Any text output longer than 10,000 characters (`print()` output, tracebacks, HTML) | The first and last 5,000 characters, with a note of how many were omitted | Long outputs add at most ~10,000 characters each |
+| JavaScript and ipywidgets | A short text label | <10 tokens |
+
+Because the model cannot see charts, check charts with test cases that inspect the figure object (for example, the bar heights in a Matplotlib `Axes`) rather than with AI grading.
+
+Which outputs the model sees depends on the mode:
+
+- **`full` mode:** the notebook is not executed, so the outputs saved in the submitted file are trimmed and sent.
+- **Other AI modes:** Jupygrader runs the notebook first, so fresh outputs are trimmed and sent.
+
+To change the per-output limit, set `AIGrader.MAX_OUTPUT_CHARS` before grading:
+
+```python
+from jupygrader.grading.ai_grader import AIGrader
+
+AIGrader.MAX_OUTPUT_CHARS = 20_000
 ```
 
 ## 🔧 Utility functions

@@ -170,7 +170,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -207,7 +207,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_only",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -237,7 +237,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="review_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -259,7 +259,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_and_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -279,7 +279,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
     custom_prompt=(
         "This is a data analysis assignment using pandas. "
         "Award full points if the student arrives at the correct result, "
@@ -299,7 +299,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb"],
     ai_mode="manual_only",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
     custom_prompt=(
         "Grade the free-response questions based on clarity of explanation, "
         "correct use of terminology, and depth of reasoning. "
