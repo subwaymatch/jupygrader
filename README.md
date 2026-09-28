@@ -385,7 +385,28 @@ For reference, [`for-llm-grading.ipynb`](tests/test-files/ai-integration/for-llm
 
 These figures assume **1,000–4,000 output tokens** per notebook: the JSON feedback plus the model's reasoning tokens, which are billed as output (`gpt-6-luna` reasons at `medium` effort by default). Output length varies by model and notebook. Check your actual usage in the OpenAI dashboard. Prices are from [OpenAI's pricing page](https://developers.openai.com/api/docs/pricing) as of September 2026.
 
-> **Note:** In `full` mode, the notebook is not re-executed, so saved rich outputs are sent as they are. Only static images (PNG, JPEG, GIF, SVG) are removed. A saved Plotly figure can embed the whole plotly.js library as HTML. In [`common.ipynb`](tests/test-files/basic-workflow/common.ipynb), one such output makes the request about 1.37 million tokens. That is larger than `gpt-6-luna`'s 1.05M-token context window, so the request fails and the notebook receives no AI grade. Clear large outputs before using `full` mode on such notebooks.
+#### Which outputs are sent to the model
+
+Jupygrader removes **only static images** (PNG, JPEG, GIF, SVG) before sending a notebook. It does not remove or truncate other outputs, including large dynamic ones. Each output is converted to Markdown, and that step keeps one representation per output:
+
+| Output | Sent to the model? | Measured size |
+| --- | --- | --- |
+| Matplotlib/Seaborn charts | Image removed; only the text label (`<Figure size ...>`) is sent | ~15 tokens |
+| pandas DataFrames | Sent as an **HTML table** | ~3–4× the tokens of the printed text version |
+| `print()` and other streamed text | Sent in full, never truncated | 500 printed lines ≈ 7,500 tokens |
+| Error tracebacks | Sent in full | ~700 tokens for a pandas `KeyError` |
+| `IPython.display.HTML` output | Sent as raw HTML | Grows with the size of the HTML |
+| Plotly figure, `plotly_mimetype` or `vscode` renderer (the current default in Jupyter and VS Code, and when Jupygrader runs the notebook) | Only Plotly's JSON is saved, and it is dropped | ~0 tokens |
+| Plotly figure, `colab` or `notebook_connected` renderer (the default in Google Colab) | Sent as HTML with the chart's data inline | ~3,200 tokens for a 10-bar chart; ~355,000 for a 20,000-point scatter plot |
+| Plotly figure, `notebook` renderer | Sent as HTML that **embeds all of plotly.js** | ~1.4–1.8 million tokens per figure |
+| JavaScript and ipywidgets | Only the short text label is sent | <10 tokens |
+
+Which outputs the model sees depends on the mode:
+
+- **`full` mode:** the notebook is not executed, so the outputs saved in the submitted file are sent unchanged.
+- **Other AI modes:** Jupygrader runs the notebook first, which replaces the saved outputs with fresh ones.
+
+> **Warning:** A single Plotly figure saved with the `notebook` renderer (alone or as `plotly_mimetype+notebook`) can exceed `gpt-6-luna`'s 1.05M-token context window. In [`common.ipynb`](tests/test-files/basic-workflow/common.ipynb), one such output makes the request about 1.37 million tokens. The request then fails, and the notebook receives no AI grade. Before using `full` mode, clear large outputs or ask learners to avoid the `notebook` renderer. Plotly charts saved in Colab also grow with the number of data points. Likewise, `pd.set_option("display.max_rows", None)` or large `print()` loops can add tens of thousands of tokens.
 
 ## 🔧 Utility functions
 
