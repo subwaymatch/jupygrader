@@ -123,7 +123,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -141,7 +141,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_and_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
     custom_prompt="Award partial credit for correct reasoning even if the final answer is wrong.",
 )
 ```
