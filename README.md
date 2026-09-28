@@ -31,6 +31,7 @@
   - [Grade manual items](#grade-manual-items)
   - [Grade both manual and failed items](#grade-both-manual-and-failed-items)
   - [Custom grading prompt](#custom-grading-prompt)
+  - [Estimated cost](#estimated-cost)
 - [🔧 Utility functions](#-utility-functions)
   - [Replace test cases](#replace-test-cases)
 - [📄 License](#-license)
@@ -279,7 +280,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -299,7 +300,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="review_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -317,7 +318,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_only",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -335,7 +336,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb", "submissions/student2.ipynb"],
     ai_mode="manual_and_failed",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
 )
 ```
 
@@ -353,7 +354,7 @@ results = grade_notebooks(
     ["submissions/student1.ipynb"],
     ai_mode="full",
     openai_client=client,
-    openai_model="gpt-4o",
+    openai_model="gpt-6-luna",
     custom_prompt=(
         "This is a data analysis assignment. "
         "Award full points if the student produces a correct result, even if the approach differs. "
@@ -361,6 +362,30 @@ results = grade_notebooks(
     ),
 )
 ```
+
+### Estimated cost
+
+Jupygrader sends **one request per notebook** in every AI mode. The request contains the whole notebook converted to Markdown (code, Markdown cells, and text outputs; static images are removed), the list of test cases, and a short system prompt. So cost grows with **notebook length**, not with the number of test cases the AI reviews. If there is nothing to review (for example, `review_failed` on a notebook where every test case passed), no request is sent.
+
+To estimate the input size of a notebook:
+
+- Count about **1 token per 3 characters** of notebook text (code, Markdown, and text outputs such as printed DataFrames).
+- Add about **1,000 tokens** for the system prompt, test case list, and response schema.
+- In `manual_only`, `review_failed`, and `manual_and_failed` modes, the notebook is executed first. The copy sent to the model includes the grading code Jupygrader injects, which adds about **1,000–2,000 tokens**, depending on the number of test cases.
+
+Estimates for `gpt-6-luna` at standard pricing ($0.10 per 1M input tokens, $0.50 per 1M output tokens):
+
+| Notebook | Typical size | Input tokens | Cost per notebook | Cost per 100 notebooks |
+| --- | --- | ---: | ---: | ---: |
+| Short exercise | 10–20 cells | ~3,000 | $0.0008–$0.0023 | $0.08–$0.23 |
+| Course assignment | 40–50 cells with table outputs | ~15,000 | $0.0020–$0.0035 | $0.20–$0.35 |
+| Long notebook | ~120,000 characters of text | ~40,000 | $0.0045–$0.0060 | $0.45–$0.60 |
+
+For reference, [`for-llm-grading.ipynb`](tests/test-files/ai-integration/for-llm-grading.ipynb) (20 cells, 6 test cases) sends about 1,500 input tokens in `full` mode and about 3,300 in `manual_and_failed` mode. A 42-cell SQL course assignment with saved outputs sends about 12,600 input tokens in `full` mode.
+
+These figures assume **1,000–4,000 output tokens** per notebook: the JSON feedback plus the model's reasoning tokens, which are billed as output (`gpt-6-luna` reasons at `medium` effort by default). Output length varies by model and notebook. Check your actual usage in the OpenAI dashboard. Prices are from [OpenAI's pricing page](https://developers.openai.com/api/docs/pricing) as of September 2026.
+
+> **Note:** In `full` mode, the notebook is not re-executed, so saved rich outputs are sent as they are. Only static images (PNG, JPEG, GIF, SVG) are removed. A saved Plotly figure can embed the whole plotly.js library as HTML. In [`common.ipynb`](tests/test-files/basic-workflow/common.ipynb), one such output makes the request about 1.37 million tokens. That is larger than `gpt-6-luna`'s 1.05M-token context window, so the request fails and the notebook receives no AI grade. Clear large outputs before using `full` mode on such notebooks.
 
 ## 🔧 Utility functions
 
