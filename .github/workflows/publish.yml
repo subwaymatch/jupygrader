@@ -1,0 +1,68 @@
+name: Publish to PyPI
+
+# Runs when a GitHub release is published. Uses PyPI trusted publishing,
+# so no API token is stored in the repository.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install Hatch
+        run: pip install hatch
+
+      - name: Check that the release tag matches the package version
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          PACKAGE_VERSION="$(hatch version)"
+          if [ "${RELEASE_TAG#v}" != "$PACKAGE_VERSION" ]; then
+            echo "::error::Release tag '$RELEASE_TAG' does not match version '$PACKAGE_VERSION' in src/jupygrader/__about__.py."
+            exit 1
+          fi
+
+      - name: Build
+        run: hatch build
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v5
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/jupygrader
+    permissions:
+      id-token: write # required for trusted publishing
+
+    steps:
+      - name: Download the distribution packages
+        uses: actions/download-artifact@v6
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
