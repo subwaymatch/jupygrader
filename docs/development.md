@@ -60,6 +60,29 @@ pip install dist\jupygrader-...-py3-none-any.whl
 
 ## Publish to PyPI
 
+Releases are published by the `.github/workflows/publish.yml` workflow when a GitHub release is published. It uses PyPI trusted publishing, so no API token is needed.
+
+### One-time setup
+
+On [pypi.org](https://pypi.org/manage/project/jupygrader/settings/publishing/), open the `jupygrader` project's **Publishing** settings and add a GitHub publisher:
+
+- Owner: `subwaymatch`
+- Repository name: `jupygrader`
+- Workflow name: `publish.yml`
+- Environment name: `pypi`
+
+### Release a new version
+
+1. Update `__version__` in `src/jupygrader/__about__.py`. Bump the patch version (for example, `0.5.1` to `0.5.2`) for fixes and behavior changes. Bump the minor version only when the public API changes.
+2. Merge the change into `main`.
+3. On GitHub, create a release from `main` with a tag that matches the version, such as `v0.5.2`.
+
+The workflow checks that the tag matches `__version__`, builds the package, and uploads it to PyPI. Follow its progress in the repository's **Actions** tab.
+
+### Publish manually
+
+To publish from your own computer instead, build the package and run:
+
 ```console
 hatch publish
 
