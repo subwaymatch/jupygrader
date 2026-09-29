@@ -60,24 +60,26 @@ pip install dist\jupygrader-...-py3-none-any.whl
 
 ## Publish to PyPI
 
-Releases are published by the `.github/workflows/publish.yml` workflow when a GitHub release is published. It uses PyPI trusted publishing, so no API token is needed.
+Releases are published automatically by the `.github/workflows/publish.yml` workflow. It uses PyPI trusted publishing, so no API token is needed.
 
 ### One-time setup
 
-On [pypi.org](https://pypi.org/manage/project/jupygrader/settings/publishing/), open the `jupygrader` project's **Publishing** settings and add a GitHub publisher:
-
-- Owner: `subwaymatch`
-- Repository name: `jupygrader`
-- Workflow name: `publish.yml`
-- Environment name: `pypi`
+1. On [pypi.org](https://pypi.org/manage/project/jupygrader/settings/publishing/), open the `jupygrader` project's **Publishing** settings and add a GitHub publisher:
+   - Owner: `subwaymatch`
+   - Repository name: `jupygrader`
+   - Workflow name: `publish.yml`
+   - Environment name: `pypi`
+2. On GitHub, go to the repository's **Settings > Environments**, create an environment named `pypi`, and add yourself under **Required reviewers**. The workflow then waits for your approval before uploading to PyPI.
 
 ### Release a new version
 
-1. Update `__version__` in `src/jupygrader/__about__.py`. Bump the patch version (for example, `0.5.1` to `0.5.2`) for fixes and behavior changes. Bump the minor version only when the public API changes.
-2. Merge the change into `main`.
-3. On GitHub, create a release from `main` with a tag that matches the version, such as `v0.5.2`.
+1. In a pull request, update `__version__` in `src/jupygrader/__about__.py`. Bump the patch version (for example, `0.5.1` to `0.5.2`) for fixes and behavior changes. Bump the minor version only when the public API changes.
+2. Merge the pull request into `main`.
+3. In the repository's **Actions** tab, open the **Publish to PyPI** run and click **Review deployments**, then **Approve and deploy**.
 
-The workflow checks that the tag matches `__version__`, builds the package, and uploads it to PyPI. Follow its progress in the repository's **Actions** tab.
+The workflow skips versions that are already on PyPI. After uploading, it creates a GitHub release named after the version (for example, `v0.5.2`) with generated release notes.
+
+If a run fails (for example, before the one-time setup is finished), fix the cause and start it again from **Actions > Publish to PyPI > Run workflow**. Steps that already finished are skipped.
 
 ### Publish manually
 
