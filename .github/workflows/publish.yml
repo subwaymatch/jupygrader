@@ -1,17 +1,84 @@
 name: Publish to PyPI
 
-# Runs when a GitHub release is published. Uses PyPI trusted publishing,
-# so no API token is stored in the repository.
+# Runs when a version bump (or a change to this workflow) is merged into main.
+# If the version in src/jupygrader/__about__.py is not on PyPI yet, it builds
+# the package, waits for approval in the "pypi" environment, uploads it with
+# PyPI trusted publishing (no stored token), and creates a matching GitHub
+# release. Running it again is safe: finished steps are skipped.
 on:
-  release:
-    types: [published]
+  push:
+    branches:
+      - main
+    paths:
+      - src/jupygrader/__about__.py
+      - .github/workflows/publish.yml
+  workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
 jobs:
+  check:
+    name: Check for a new version
+    # Only publish from main, even when the workflow is started manually
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      publish_needed: ${{ steps.pypi.outputs.publish_needed }}
+      release_needed: ${{ steps.release.outputs.release_needed }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Read the package version
+        id: version
+        run: |
+          VERSION="$(python3 -c "ns = {}; exec(open('src/jupygrader/__about__.py').read(), ns); print(ns['__version__'])")"
+          echo "Package version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether this version is on PyPI
+        id: pypi
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          STATUS="$(curl -s -o /dev/null -w '%{http_code}' "https://pypi.org/pypi/jupygrader/$VERSION/json")"
+          if [ "$STATUS" = "404" ]; then
+            echo "Version $VERSION is not on PyPI yet."
+            echo "publish_needed=true" >> "$GITHUB_OUTPUT"
+          elif [ "$STATUS" = "200" ]; then
+            echo "Version $VERSION is already on PyPI."
+            echo "publish_needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Unexpected response from PyPI (HTTP $STATUS)."
+            exit 1
+          fi
+
+      - name: Check whether the GitHub release exists
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "v$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release v$VERSION already exists."
+            echo "release_needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_needed=true" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
     name: Build distribution
+    needs: check
+    if: needs.check.outputs.publish_needed == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -28,16 +95,6 @@ jobs:
       - name: Install Hatch
         run: pip install hatch
 
-      - name: Check that the release tag matches the package version
-        env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-        run: |
-          PACKAGE_VERSION="$(hatch version)"
-          if [ "${RELEASE_TAG#v}" != "$PACKAGE_VERSION" ]; then
-            echo "::error::Release tag '$RELEASE_TAG' does not match version '$PACKAGE_VERSION' in src/jupygrader/__about__.py."
-            exit 1
-          fi
-
       - name: Build
         run: hatch build
 
@@ -49,11 +106,12 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: build
+    needs: [check, build]
     runs-on: ubuntu-latest
+    # Required reviewers on this environment make the job wait for approval
     environment:
       name: pypi
-      url: https://pypi.org/p/jupygrader
+      url: https://pypi.org/project/jupygrader/${{ needs.check.outputs.version }}/
     permissions:
       id-token: write # required for trusted publishing
 
@@ -66,3 +124,29 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    name: Create GitHub release
+    needs: [check, publish]
+    # Also runs when the version was already on PyPI but has no release yet
+    if: >-
+      always() &&
+      needs.check.result == 'success' &&
+      needs.check.outputs.release_needed == 'true' &&
+      (needs.publish.result == 'success' ||
+      (needs.publish.result == 'skipped' && needs.check.outputs.publish_needed == 'false'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: |
+          gh release create "v$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "v$VERSION" \
+            --generate-notes
